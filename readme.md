@@ -289,14 +289,9 @@
 * 因有持久化成本，请保证调用方法的参数及返回值尽量小
 
 ## 七、FAQ
-1. 为什么判断业务事务有没有执行时（TransStatusLogger.checkTransactionStatus()）需要使用 select for update
-	* 该方法是检查某条记录是否存在，以此判断事务是否提交。
-	* 如果不用select for update，在MVCC的情况下，会出现查询不到，但实际上是已经提交了的情况
-2. 用于CRASH恢复的TransStatusLogger.checkTransactionStatus()的select for update如何保证查出来的结果为空时，业务事务就一定没有提交
-	* 在调用EasyTransFacade.startEasyTrans()时，就会写入对应的执行记录，且
-	* 在这个方法执行前，远程事务方法的调用都会失败，因此
-	* 要执行Crash恢复的话，框架的执行记录一定已经插入过，select for update要么
-		* 查找不到记录，事务已经回滚了
-		* 查找得到记录，事务提交了
-		* 等待业务事务结束，得到上述两种结果
-	* 因此可以成功识别最终的提交状态
+1. 如何在CRASH后判断一个柔性事务是否提交？
+	* 在调用startEasyTrans()方法时，框架将插入一条记录到executed_trans中
+	* 在调用startEasyTrans()方法后，才可以执行远程事务方法
+	* 业务发起者（主控事务）将持有executed_trans记录的锁直到主控事务回滚或者提交
+	* 因此CRASH恢复进程使用select for update 查询executed_trans记录时，必然能得到准确的是否已经提交的结果（若主控事务仍在进行中，select for update将会等待）
+	* 使用select for update是为了避免在MVCC情况下错误查询出最终事务提交结果的情况
