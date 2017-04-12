@@ -198,20 +198,21 @@
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
     
     -- 记录方法调用信息，用于处理幂等
-    CREATE TABLE `idempotent` (
-      `src_app_id` varchar(32) COLLATE utf8mb4_bin NOT NULL COMMENT '来源AppID',
-      `src_bus_code` varchar(128) COLLATE utf8mb4_bin NOT NULL COMMENT '来源业务类型',
-      `src_trx_id` varchar(64) COLLATE utf8mb4_bin NOT NULL COMMENT '来源交易ID',
-      `app_id` varchar(32) COLLATE utf8mb4_bin NOT NULL COMMENT '调用APPID',
-      `bus_code` varchar(128) COLLATE utf8mb4_bin NOT NULL COMMENT '调用的业务代码',
-      `called_methods` varchar(128) COLLATE utf8mb4_bin NOT NULL COMMENT '被调用过的方法名',
-      `md5` char(32) COLLATE utf8mb4_bin NOT NULL COMMENT '参数摘要',
-      `sync_method_result` blob COMMENT '同步方法的返回结果',
-      `create_time` datetime NOT NULL COMMENT '执行时间',
-      `update_time` datetime NOT NULL COMMENT '更新时间',
-      `lock_version` int(11) NOT NULL COMMENT '乐观锁版本号',
-      PRIMARY KEY (`src_app_id`,`src_bus_code`,`src_trx_id`,`app_id`,`bus_code`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+	CREATE TABLE `idempotent` (
+	  `src_app_id` varchar(32) NOT NULL COMMENT '来源AppID',
+	  `src_bus_code` varchar(128) NOT NULL COMMENT '来源业务类型',
+	  `src_trx_id` varchar(64) NOT NULL COMMENT '来源交易ID',
+	  `app_id` varchar(32) NOT NULL COMMENT '调用APPID',
+	  `bus_code` varchar(128) NOT NULL COMMENT '调用的业务代码',
+	  `called_methods` varchar(128) NOT NULL COMMENT '被调用过的方法名',
+	  `md5` char(32) NOT NULL COMMENT '参数摘要',
+	  `sync_method_result` blob COMMENT '同步方法的返回结果',
+	  `create_time` datetime NOT NULL COMMENT '执行时间',
+	  `update_time` datetime NOT NULL,
+	  `lock_version` int(11) NOT NULL COMMENT '乐观锁版本号',
+	  PRIMARY KEY (`src_app_id`,`src_bus_code`,`src_trx_id`,`app_id`,`bus_code`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 需要有一个记录事务日志的数据库，并为其创建两张表。每个业务服务都必须有对应的事务日志数据库。可多个服务共用一个，也可以一个服务单独一个事务日志。
 
