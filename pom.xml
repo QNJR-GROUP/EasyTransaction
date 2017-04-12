@@ -3,7 +3,7 @@
   
   <groupId>com.yiqiniu.easytrans</groupId>
   <artifactId>easytrans-core</artifactId>
-  <version>0.1.0-RELEASE</version>
+  <version>0.2.0-RELEASE</version>
   
   	<repositories>
 		<repository>
@@ -25,6 +25,7 @@
   
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<org.springframework.version>3.2.4.RELEASE</org.springframework.version>
 	</properties>
 
