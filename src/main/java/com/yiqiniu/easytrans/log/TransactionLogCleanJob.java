@@ -53,7 +53,7 @@ public class TransactionLogCleanJob {
 			@Override
 			public void run() {
 				try{
-					if(master.hasLeaserShip()){
+					if(master.hasLeaderShip()){
 						Calendar instance = Calendar.getInstance();
 						instance.add(Calendar.DATE, -cleanLogDaysRestriction);
 						LOG.info("START CLEAN EXPIRED TRANSACTION LOGS.DAYS:" + cleanLogDaysRestriction);
@@ -75,26 +75,18 @@ public class TransactionLogCleanJob {
 		Date nextExeucteTime;
 		try {
 			String dayString = dayFormatter.format(new Date());
-			
 			nextExeucteTime = wholeFormatter.parse(dayString + " " + cleanTime);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
 		
-		if("00:00:00".equals(cleanTime)){
+		if(nextExeucteTime.getTime() < System.currentTimeMillis()){
 			Calendar instance = Calendar.getInstance();
 			instance.setTime(nextExeucteTime);
 			instance.add(Calendar.DATE, 1);
 			nextExeucteTime = instance.getTime();
 		}
+		
 		return nextExeucteTime;
 	}
-	
-	public static void main(String[] args) {
-		Date parse = calcNextExecuteTime("00:00:00");
-		System.out.println(parse);
-		parse = calcNextExecuteTime("13:10:01");
-		System.out.println(parse);
-	}
-	
 }
