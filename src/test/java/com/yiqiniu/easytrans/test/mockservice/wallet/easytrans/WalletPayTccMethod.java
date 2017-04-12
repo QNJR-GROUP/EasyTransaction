@@ -8,7 +8,7 @@ import com.yiqiniu.easytrans.filter.EasyTransResult;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.IdempotentTypeDeclare;
 import com.yiqiniu.easytrans.protocol.tcc.TccMethod;
-import com.yiqiniu.easytrans.protocol.tcc.TccTransRequest;
+import com.yiqiniu.easytrans.protocol.tcc.TccMethodRequest;
 import com.yiqiniu.easytrans.test.Constant;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderService;
 import com.yiqiniu.easytrans.test.mockservice.wallet.WalletService;
@@ -58,7 +58,7 @@ public class WalletPayTccMethod implements TccMethod<WalletPayTccMethodRequest, 
 	}
 	
 	@BusinessIdentifer(appId=Constant.APPID,busCode=METHOD_NAME,rpcTimeOut=2000)
-	public static class WalletPayTccMethodRequest implements TccTransRequest<WalletPayTccMethodResult>{
+	public static class WalletPayTccMethodRequest implements TccMethodRequest<WalletPayTccMethodResult>{
 
 		private static final long serialVersionUID = 1L;
 		

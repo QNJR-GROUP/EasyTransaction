@@ -96,7 +96,7 @@ public class ReliableMessageMethodExecutor implements EasyTransExecutor,LogProce
 			messageSentContent.setLeftDemiConentId(leftContent.getcId());
 			messageSentContent.setRemoteMessageId(send.getMessageId());
 			logCtx.getLogCache().cacheLog(messageSentContent);
-			LOG.info("Compensable method executed:" + businessIdentifer);
+			LOG.info("Reliable message sent:" + businessIdentifer);
 			return true;
 		}else{
 			//rollback
