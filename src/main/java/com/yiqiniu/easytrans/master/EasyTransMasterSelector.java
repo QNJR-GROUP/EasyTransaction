@@ -8,7 +8,7 @@ public interface EasyTransMasterSelector {
 	 * whether this job has the leadership
 	 * @return
 	 */
-	boolean hasLeaserShip();
+	boolean hasLeaderShip();
 	
 	/**
 	 * wait till taken LeaderShip or closed.

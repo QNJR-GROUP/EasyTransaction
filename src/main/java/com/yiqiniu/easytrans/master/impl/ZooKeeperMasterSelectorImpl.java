@@ -36,7 +36,7 @@ public class ZooKeeperMasterSelectorImpl implements EasyTransMasterSelector {
 	}
 	
 	@Override
-	public boolean hasLeaserShip() {
+	public boolean hasLeaderShip() {
 		return leaderLatch.hasLeadership();
 	}
 

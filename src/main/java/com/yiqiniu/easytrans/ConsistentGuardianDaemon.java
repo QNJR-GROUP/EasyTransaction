@@ -59,7 +59,7 @@ public class ConsistentGuardianDaemon {
 
 				try {
 					master.await();
-					if (!master.hasLeaserShip()) {
+					if (!master.hasLeaderShip()) {
 						mapRetryInfo.clear();
 						return;
 					}
@@ -99,7 +99,7 @@ public class ConsistentGuardianDaemon {
 							locationId = null;
 						}
 						
-					} while (collections != null && collections.size() != 0	&& master.hasLeaserShip());
+					} while (collections != null && collections.size() != 0	&& master.hasLeaderShip());
 				} catch(InterruptedException e){
 					LOG.warn("Interrupte recived,end consisten guadian");
 					
