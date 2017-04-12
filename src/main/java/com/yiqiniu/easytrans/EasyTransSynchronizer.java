@@ -11,7 +11,6 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
@@ -26,7 +25,6 @@ import com.yiqiniu.easytrans.log.vo.Content;
  *	provide base instrument for TCC,MQ transaction support<br>
  *	interact with spring's TransactionSynchronizer
  */
-@Component
 public class EasyTransSynchronizer {
 	
 	private static final String LOG_PROCESS_CONTEXT = "LOG_PROCESS_CONTEXT";

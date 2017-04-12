@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 import javax.annotation.Resource;
 
-import org.springframework.stereotype.Component;
-
 import com.yiqiniu.easytrans.context.LogProcessContext;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.queue.producer.EasyTransMsgPublishResult;
@@ -13,7 +11,6 @@ import com.yiqiniu.easytrans.queue.producer.EasyTransMsgPublisher;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcConsumer;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
 
-@Component
 public class RemoteServiceCaller {
 	
 	@Resource

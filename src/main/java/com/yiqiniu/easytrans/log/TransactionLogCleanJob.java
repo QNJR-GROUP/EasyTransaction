@@ -13,14 +13,12 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.yiqiniu.easytrans.config.EasyTransConifg;
 import com.yiqiniu.easytrans.master.EasyTransMasterSelector;
 import com.yiqiniu.easytrans.util.NamedThreadFactory;
 
-@Component
 public class TransactionLogCleanJob {
 	
 	@Resource

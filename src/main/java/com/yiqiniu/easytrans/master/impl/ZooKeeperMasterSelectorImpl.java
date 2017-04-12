@@ -10,12 +10,10 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.retry.RetryForever;
-import org.springframework.context.annotation.Lazy;
 
 import com.yiqiniu.easytrans.config.EasyTransConifg;
 import com.yiqiniu.easytrans.master.EasyTransMasterSelector;
 
-@Lazy
 public class ZooKeeperMasterSelectorImpl implements EasyTransMasterSelector {
 	
 	@Resource

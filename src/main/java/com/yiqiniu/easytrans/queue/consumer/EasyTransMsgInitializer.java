@@ -12,7 +12,6 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.config.EasyTransConifg;
 import com.yiqiniu.easytrans.filter.EasyTransFilter;
@@ -30,7 +29,6 @@ import com.yiqiniu.easytrans.util.ReflectUtil;
 /**
  * register the message handlers,wire the filters,dispatch handlers  
  */
-@Component
 public class EasyTransMsgInitializer implements EasyTransMsgListener {
 
 	private ConcurrentHashMap<Class<? extends EasyTransRequest<?, ?>>, EasyTransFilter> mapHandler = new ConcurrentHashMap<Class<? extends EasyTransRequest<?, ?>>, EasyTransFilter>();

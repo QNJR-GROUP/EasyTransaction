@@ -7,8 +7,6 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import org.springframework.stereotype.Component;
-
 import com.yiqiniu.easytrans.filter.EasyTransFilterChainFactory;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.BusinessProvider;
@@ -17,7 +15,6 @@ import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
 import com.yiqiniu.easytrans.provider.factory.ListableProviderFactory;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
-@Component
 public class EasyTransRpcProviderInitializer {
 	
 	@Resource

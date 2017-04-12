@@ -5,10 +5,11 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 	
-	<context:component-scan base-package="com.yiqiniu.easytrans"></context:component-scan>
+	<import resource="BasicEasyTransBeans.xml"/>
+	
+	<!-- Following beans can be replaced with your own implement -->
 	
 	<bean id="easyTransConfig" class="com.yiqiniu.easytrans.config.impl.PropertiesEasyTransConfigImpl"></bean>
-	
 	
 	<!-- If your service has only one datasource,you can use the following datasouce selector -->
 	<!-- <bean id="dataSourceSelector" class="com.yiqiniu.easytrans.datasource.impl.SingleDataSourceSelector">

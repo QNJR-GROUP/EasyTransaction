@@ -9,7 +9,6 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.EasyTransSynchronizer;
 import com.yiqiniu.easytrans.RemoteServiceCaller;
@@ -22,7 +21,6 @@ import com.yiqiniu.easytrans.protocol.msg.PublishResult;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
-@Component
 public class BestEffortMessageMethodExecutor implements EasyTransExecutor{
 
 	@Resource

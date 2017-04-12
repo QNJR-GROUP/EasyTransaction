@@ -10,7 +10,6 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.EasyTransSynchronizer;
 import com.yiqiniu.easytrans.LogProcessor;
@@ -27,7 +26,6 @@ import com.yiqiniu.easytrans.protocol.aft.AfterMasterTransMethod;
 import com.yiqiniu.easytrans.util.FutureAdapter;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
-@Component
 @RelativeInterface(AfterMasterTransMethod.class)
 public class AfterTransMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLogEventHandler {
 

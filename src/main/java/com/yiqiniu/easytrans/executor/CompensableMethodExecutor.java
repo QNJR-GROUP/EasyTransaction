@@ -8,7 +8,6 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.EasyTransSynchronizer;
 import com.yiqiniu.easytrans.LogProcessor;
@@ -24,7 +23,6 @@ import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.cps.CompensableMethod;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
-@Component
 @RelativeInterface(CompensableMethod.class)
 public class CompensableMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLogEventHandler {
 

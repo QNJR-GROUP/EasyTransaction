@@ -7,7 +7,6 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import com.yiqiniu.easytrans.context.LogProcessContext;
@@ -22,7 +21,6 @@ import com.yiqiniu.easytrans.log.vo.LogCollection;
 /**
  * Keep eventually consistent based on logs
  */
-@Component
 public class ConsistentGuardian {
 	
 	private Logger LOG = LoggerFactory.getLogger(this.getClass());

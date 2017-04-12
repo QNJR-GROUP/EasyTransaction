@@ -8,13 +8,11 @@ import java.util.concurrent.Future;
 import javax.annotation.Resource;
 
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.executor.EasyTransExecutor;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
-@Component
 public class EasyTransFacadeImpl implements EasyTransFacade{
 
 	@Resource
