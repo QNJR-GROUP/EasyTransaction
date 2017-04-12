@@ -72,10 +72,5 @@
 			<bean id="transLogJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
 				<property name="dataSource" ref="transLog" />
 			</bean>
-				
-			<!-- 数据源事务管理器，提供对单个javax.sql.DataSource事务管理，用于Spring JDBC、iBATIS等框架的事务管理 -->
-			<bean id="transLogTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-				<property name="dataSource" ref="transLog"/>
-			</bean>
 	
 </beans>
