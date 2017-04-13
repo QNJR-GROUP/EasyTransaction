@@ -52,11 +52,16 @@ public class DubboEasyTransFilter implements Filter{
 	}
 	
 	private boolean checkEasyTransRequest(Invocation invocation) {
-		if(invocation.getParameterTypes().length == 3 && ((Object[]) invocation.getArguments()[2])[0] instanceof EasyTransRequest){
-			return true;
-		}else{
-			return false;
+		if(invocation.getArguments().length == 3){
+			Object param3 = invocation.getArguments()[2];
+			if(param3 != null && param3.getClass().isArray()){
+				Object[] array = (Object[]) param3;
+				if(array.length > 0 && array[0] instanceof EasyTransRequest){
+					return true;
+				}
+			}
 		}
+		return false;
 	}
 	
 	private static class EasyTransFilterAdapter implements EasyTransFilter{
