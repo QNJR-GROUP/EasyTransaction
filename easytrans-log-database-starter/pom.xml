@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <artifactId>easytrans-log-database-starter</artifactId>
+
+  	<parent>
+		  <groupId>com.yiqiniu.easytrans</groupId>
+		  <artifactId>easytrans</artifactId>
+		  <version>${easytrans.version}</version>
+	</parent>
+  
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<easytrans.version>1.0.0-SNAPSHOT</easytrans.version>
+	</properties>
+
+<dependencies>
+	<dependency>
+		<groupId>com.yiqiniu.easytrans</groupId>
+		<artifactId>easytrans-core</artifactId>
+		<version>${easytrans.version}</version>
+	</dependency>
+
+	<dependency>
+		<groupId>com.alibaba</groupId>
+		<artifactId>druid</artifactId>
+		<version>1.1.5</version>
+	</dependency>
+
+
+</dependencies>
+  
+</project>

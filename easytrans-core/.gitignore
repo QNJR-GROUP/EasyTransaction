@@ -1,0 +1,11 @@
+server_back.properties
+*.class
+*.log
+*.log.*
+/target/*
+/.settings/*
+/bin/*
+/.project
+/.classpath
+/logs
+/target/

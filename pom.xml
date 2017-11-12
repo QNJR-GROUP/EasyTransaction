@@ -2,161 +2,50 @@
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>com.yiqiniu.easytrans</groupId>
-  <artifactId>easytrans-core</artifactId>
-  <version>0.2.1-RELEASE</version>
+  <artifactId>easytrans</artifactId>
+  <version>${easytrans.version}</version>
+  <packaging>pom</packaging>
+
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <easytrans.version>1.0.0-SNAPSHOT</easytrans.version>
+     </properties>
+
+
+    <modules>
+        <module>easytrans-core</module>
+        <module>easytrans-starter</module>
+        <module>easytrans-queue-ons-starter</module>
+        <module>easytrans-queue-kafka-starter</module>
+        <module>easytrans-rpc-dubbo-starter</module>
+        <module>easytrans-rpc-feign-starter</module>
+        <module>easytrans-log-database-starter</module>
+        <module>easytrans-log-kafka-starter</module>
+    </modules>
+
   
-  	<repositories>
-		<repository>
-			<id>snapshots</id>
-			<url>http://192.168.1.178:8081/nexus/content/repositories/snapshots</url>
-		</repository>
-	</repositories>
+	<parent>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-parent</artifactId>
+	    <version>1.5.6.RELEASE</version>
+	    <!-- <version>1.4.4.RELEASE</version> -->
+	</parent>
 
-	<distributionManagement>
-		<repository>
-			<id>releases</id>
-			<url>http://192.168.1.178:8081/nexus/content/repositories/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<url>http://192.168.1.178:8081/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
-  
+	<dependencyManagement>
+	    <dependencies>
+	        <dependency>
+	            <groupId>org.springframework.cloud</groupId>
+	            <artifactId>spring-cloud-dependencies</artifactId>
+	            <version>Dalston.SR4</version>
+	            <!-- <version>Camden.SR7</version> -->
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+	    </dependencies>
+	</dependencyManagement>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<org.springframework.version>3.2.4.RELEASE</org.springframework.version>
-	</properties>
-
-<dependencies>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>
-
-		
-		<!-- For Interface Concrete implements -->
-		<dependency>
-			<groupId>org.apache.curator</groupId>
-			<artifactId>curator-recipes</artifactId>
-			<version>2.11.1</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.101tec</groupId>
-			<artifactId>zkclient</artifactId>
-			<version>0.4</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>zookeeper</artifactId>
-					<groupId>org.apache.zookeeper</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo</artifactId>
-			<version>2.5.3</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.aliyun.openservices</groupId>
-			<artifactId>ons-client</artifactId>
-			<version>1.2.5</version>
-		</dependency>
-		
-		<!-- For Tests -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>hamcrest-core</artifactId>
-					<groupId>org.hamcrest</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-all</artifactId>
-			<version>1.3</version>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-			<version>${org.springframework.version}</version>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>druid</artifactId>
-			<version>1.0.9</version>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.13</version>
-			<scope>test</scope>
-		</dependency>
-			
-		<dependency>
-			<groupId>org.slf4j</groupId>
-  			<artifactId>slf4j-log4j12</artifactId>
-  			<version>1.7.2</version>
-  			<scope>test</scope>
-		</dependency>
-		
-		
-</dependencies>
-  
-  <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
-    <testSourceDirectory>src/test/java</testSourceDirectory>
-
-	<resources>
-			<resource>
-			<directory>src/main/resources</directory>
-		</resource>
-	</resources>
-
-	<testResources>
-		<testResource>
-			<directory>src/test/resources</directory>
-		</testResource>
-	</testResources>
 	
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
