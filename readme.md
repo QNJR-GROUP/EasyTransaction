@@ -80,8 +80,9 @@
     }
 
 使用方法如下，使用方直接调用远程方法即可，无需考虑具体的分布式事务类型及后续处理：
-    @Transactional
-    public void buySomething(int userId,long money){
+    	
+	 @Transactional
+   	 public void buySomething(int userId,long money){
             /**
 		* 本地业务方法，下订单，并获得订单号
 		*/
