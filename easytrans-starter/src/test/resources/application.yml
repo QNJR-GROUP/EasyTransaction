@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: trx-test-service  # the same with com.yiqiniu.easytrans.test.Constant.APPID
+ 
+debug: true
+
+easytrans:
+  master:
+    zk:
+      zooKeeperUrl: localhost:2181
+  log:
+    kafka:
+      enabled: false
+    database:
+      enabled: true
+      logCleanEnabled: true
+      logReservedDays: 14
+      logCleanTime: 01:22:00
+      druid:
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/translog?characterEncoding=UTF-8&useSSL=false
+        username: root
+        password: 123456
+  queue:
+    kafka:
+      enabled: false
+    ons:
+      enabled: true
+      consumer:
+        ConsumerId: CID-${spring.application.name}
+        AccessKey: LTAIgF4SRgLqmidK
+        SecretKey: jLDnKxuglLIZvHZ0495sI9mnKWMvGV
+        ONSAddr: http://onsaddr-internet.aliyun.com/rocketmq/nsaddr4client-internet
+      publisher:
+        ProducerId: PID-${spring.application.name}
+        AccessKey: LTAIgF4SRgLqmidK
+        SecretKey: jLDnKxuglLIZvHZ0495sI9mnKWMvGV
+        ONSAddr: http://onsaddr-internet.aliyun.com/rocketmq/nsaddr4client-internet
+  rpc:
+    feign:
+      enabled: false
+    dubbo:
+      enabled: true
+      dubbo-default-timeout: 2000
+      dubbo-zk-url: zookeeper://localhost:2181
+  test:
+    database:
+      driverClassName: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/trxtest?characterEncoding=UTF-8&useSSL=false #请自行创建一个空库，具体的表会由测试代码自行生成
+      username: root
+      password: 123456
+      
+      
+
+    
+      

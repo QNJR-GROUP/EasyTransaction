@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+	
+	<import resource="classpath:/BasicEasyTransBeans.xml"/>
+	
+	<!-- Following beans can be replaced with your own implement -->
+	
+	<bean id="easyTransConfig" class="com.yiqiniu.easytrans.config.impl.PropertiesEasyTransConfigImpl"></bean>
+	
+	<!-- If your service has only one datasource,you can use the following datasouce selector -->
+	<!-- <bean id="dataSourceSelector" class="com.yiqiniu.easytrans.datasource.impl.SingleDataSourceSelector">
+		<property name="dataSource" ref="testDataSource"></property>
+		<property name="transactionManager" ref="testTransactionManager"></property>
+	</bean> -->
+	<bean id="dataSourceSelector" class="com.yiqiniu.easytrans.test.mockservice.TestBusinessDataSourceSelector">
+	</bean>
+	
+	<bean id="easyTransFilterFactory" class="com.yiqiniu.easytrans.filter.DefaultEasyTransFilterFactory">
+		<property name="defaultFilters">
+			<list>
+				<bean class="com.yiqiniu.easytrans.idempotent.DefaultIdempotentHandlerFilter">
+					<property name="helper"><bean class="com.yiqiniu.easytrans.idempotent.IdempotentHelper"></bean></property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="transactionLogWritter" class="com.yiqiniu.easytrans.log.impl.DataBaseTransactionLogWritterImpl">
+		<property name="dataSource" ref="transLog"></property>
+	</bean>
+	
+	<bean id="transactionLogReader" class="com.yiqiniu.easytrans.log.impl.DataBaseTransactionLogReaderImpl">
+		<property name="dataSource" ref="transLog"></property>
+	</bean>
+	
+	<bean id="easyTransMasterSelector" class="com.yiqiniu.easytrans.master.impl.ZooKeeperMasterSelectorImpl"></bean>
+	
+	<bean id="listableProviderFactory" class="com.yiqiniu.easytrans.provider.factory.DefaultListableProviderFactory"></bean>
+	
+	<!-- queue setting -->
+	<bean class="com.yiqiniu.easytrans.queue.impl.ons.AliYunOnsHelper"></bean>
+	<bean id="easyTransMsgPublisher" class="com.yiqiniu.easytrans.queue.impl.ons.OnsEasyTransMsgPublisherImpl"></bean>
+	<bean id="easyTransMsgConsumer" class="com.yiqiniu.easytrans.queue.impl.ons.OnsEasyTransMsgConsumerImpl"></bean>
+	
+	<bean id="easyTransRpcClient" class="com.yiqiniu.easytrans.rpc.impl.dubbo.DubboEasyTransRpcConsumerImpl"></bean>
+	<bean id="easyTransRpcProvider" class="com.yiqiniu.easytrans.rpc.impl.dubbo.DubboEasyTransRpcProviderImpl"></bean>
+	
+	<bean id="objectSerializer" class="com.yiqiniu.easytrans.serialization.impl.SpringObjectSerialization"></bean>
+	
+	<bean id="transStatusLogger" class="com.yiqiniu.easytrans.datasource.impl.DefaultTransStatusLoggerImpl">
+	</bean>
+	
+	<!-- transLog -->
+			<bean id="transLog"  class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+				<property name="url" value="#{easyTransConfig.extendConfig['test.jdbc.url']}" />
+				<property name="username" value="#{easyTransConfig.extendConfig['test.jdbc.username']}" />
+				<property name="password" value="#{easyTransConfig.extendConfig['test.jdbc.password']}" />
+		
+				<!-- 配置最大 -->
+				<property name="maxActive" value="30" />
+				<!-- 配置初始化大小、最小 -->
+				<property name="initialSize" value="1" />
+				<property name="minIdle" value="1" />
+				<!-- 打开PSCache,并且指定每个连接上PSCache的大小;如果用Oracle,则把poolPreparedStatements配置为true,mysql可以配置为false;分库分表较多的数据库,建议配置为false; -->
+				<property name="poolPreparedStatements" value="false" />
+				<property name="maxPoolPreparedStatementPerConnectionSize" value="10" />
+			</bean>
+		
+			<bean id="transLogJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+				<property name="dataSource" ref="transLog" />
+			</bean>
+	
+</beans>
