@@ -34,6 +34,23 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 	private EasyTransMsgConsumer consumer;
 	private EasyTransFilterChainFactory filterChainFactory;
 	private String applicationName;
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	private EasyTransFilter consumeStatusCheckFilter = new EasyTransFilter(){
+
+		@Override
+		public EasyTransResult invoke(EasyTransFilterChain filterChain, Map<String, Object> header,
+				EasyTransRequest<?, ?> request) {
+			EasyTransResult result = filterChain.invokeFilterChain(header, request);
+			if(result.getValue() == null && result.getException() == null 
+					|| result.getValue().equals(EasyTransConsumeAction.ReconsumeLater)){
+				result.setException(new NeedToReconsumeLaterException());//help to roll back in idempotent filter
+			}
+			return result;
+		}
+		
+	};
+	
 	
 	
 	public EasyTransMsgInitializer(ListableProviderFactory serviceWareHouse, EasyTransMsgConsumer consumer,
@@ -45,9 +62,6 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 		this.applicationName = applicationName;
 		init();
 	}
-
-
-	private Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
 	@SuppressWarnings({ "unchecked" })
 	private void init(){
@@ -77,6 +91,7 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 		for(Entry<String, List<String>> e:map.entrySet()){
 			consumer.subscribe(e.getKey(), e.getValue(), this);
 		}
+		consumer.start();
 	}
 	
 	@Override
@@ -85,16 +100,23 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 		EasyTransFilter easyTransFilter = getFilter(message);
 		BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(message.getClass());
 		EasyTransFilterChain filterChain = filterChainFactory.getDefaultFilterChain(applicationName/*should use consumer's appId*/, businessIdentifer.busCode(), EasyTransFilterChain.MESSAGE_BUSINESS_FLAG);
+		filterChain.addFilter(consumeStatusCheckFilter);
 		filterChain.addFilter(easyTransFilter);
 		EasyTransResult result = filterChain.invokeFilterChain(header,message);
 		
-		try {
-			return (EasyTransConsumeAction) result.recreate();
-		} catch (Throwable e) {
-			LOG.error("Consume Error!",e);
-			throw new RuntimeException(e);
+		EasyTransConsumeAction consumeResult = (EasyTransConsumeAction) result.getValue();
+		if(consumeResult == null){
+			result.setValue(EasyTransConsumeAction.ReconsumeLater);
 		}
+		
+//		if(result.getException() != null && result.getException().getClass() != NeedToReconsumeLaterException.class){
+//			LOG.error("Consume Error!",result.getException());
+//		}
+		
+		return consumeResult;
 	}
+	
+
 
 
 	private EasyTransFilter getFilter(EasyTransRequest<?, ?> message) {
@@ -118,15 +140,24 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 					
 					try {
 						easyTransResult.setValue(((MessageBusinessProvider<?>)handler).consume(request));
+						if(easyTransResult.getValue() == EasyTransConsumeAction.CommitMessage) {
+							logger.info("EasyTrans message consume Success:" + request);
+						} else {
+							logger.warn("EasyTrans message consume later:" + request);
+						}
 					} catch (Throwable e) {
 						easyTransResult.setException(e);
+						logger.error("EasyTrans message consume Exception Occour:" + request,e);
 					}
-					
 					return easyTransResult;
 				}
 			};
 			mapHandler.put(requestClass, easyTransFilter);
 		}
+	}
+	
+	public static class NeedToReconsumeLaterException extends RuntimeException{
+		private static final long serialVersionUID = 1L;
 	}
 
 }

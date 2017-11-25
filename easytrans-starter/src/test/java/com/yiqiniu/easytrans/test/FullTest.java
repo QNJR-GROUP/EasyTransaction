@@ -37,6 +37,7 @@ import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAf
 import com.yiqiniu.easytrans.test.mockservice.order.NotReliableOrderMessage;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderMessage;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderService;
+import com.yiqiniu.easytrans.test.mockservice.order.OrderService.UtProgramedException;
 import com.yiqiniu.easytrans.test.mockservice.point.PointService;
 import com.yiqiniu.easytrans.test.mockservice.wallet.WalletService;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodRequest;
@@ -59,7 +60,7 @@ public class FullTest {
 	private TransactionLogReader logReader;
 	
 
-	@Value("spring.application.name")
+	@Value("${spring.application.name}")
 	private String applicationName;
 	
 	@Resource
@@ -84,98 +85,95 @@ public class FullTest {
 	private int concurrentTestId = 100000;
 	
 	/**
-	 * 测试本方法需要先配置好数据库
+	 * 测试本方法需要先配置好数据库及kafka
 	 * 在trxtest库中需要创建 executed_trans、idempotent表，建表语句在readme.md中，其余测试业务相关表会自动创建
-	 * 在translog库中需要创建trans_log_unfinished，trans_log_detail，建表语句也在readme.md中
+	 * （基于数据库的事务日志）在translog库中需要创建trans_log_unfinished，trans_log_detail，建表语句也在readme.md中
+	 * （基于KAFKA的消息队列）在kafka中创建以下队列,对应的复制策略，灾备等请自行考虑调整。（如果kafka没有配置自动创建TOPIC）
+	 * ./kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 3 --topic trx-test-service_ReliableOrderMsg
+	 * 
 	 * 
 	 * 测试案例中使用了多个指向同一个数据库的业务数据源模拟分布式事务的场景，这是为了测试方便。
 	 * 我们也可以使用多个数据源对应不同的数据库，并启动多个进程进行测试，但需要各位自行调整测试代码
+	 * 
+	 * 本测试在执行过程中可能会打印出很多异常信息，但同时也有很多异常是设定好，必须发生的，因此判断ut是否成功，只看最后的assert
 	 */
 	@Test
 	public void test(){
 
-		try {
-			//synchronizer test
-			//清除创建测试初始数据
-			cleanAndSetUp();
-			//测试主事务成功，从事务也全部成功的场景
-			commitedAndSubTransSuccess();
-			//测试在执行COMMIT前发生异常的场景
-			rollbackWithExceptionJustBeforeCommit();
-			//在主事务中，远程调用执行了一半后发生异常的场景
-			rollbackWithExceptionInMiddle();
-			//在主事务中没有执行过任何远程调用就发生了异常的场景
-			rollbackWithExceptionJustAfterStartEasyTrans();
-			
-			//wait for asynchronous operation
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			//consistent guardian test
-			//主事务提交了，在跟进最终一致性的时候发生异常的场景
-			commitWithExceptionInMiddleOfConsistenGuardian();
-			//主事务回滚了，在跟进相关补偿回滚操作时候发生异常的场景
-			rollbackWithExceptionInMiddleOfConsistenGuardian();
-			
-			//idempotent test
-			//激活线程池
-			activateThreadPool();
-			//并发执行TCC操作
-			sameMethodConcurrentTcc();
-			//并发执行可补偿操作
-			differentMethodConcurrentCompensable();
-			
-			//执行一遍后台补偿任务，以避免上述操作有未补偿成功的
-			//execute consistent guardian in case of timeout
-			List<LogCollection> unfinishedLogs = logReader.getUnfinishedLogs(null, 100, new Date());
-			for(LogCollection logCollection:unfinishedLogs){
-				guardian.process(logCollection);
-			}
-			
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			
-			//校验执行结果
-			//check execute result
-			Assert.assertTrue(accountingService.getTotalCost(1) == 2000);
-			Assert.assertTrue(expressService.getUserExpressCount(1) == 2);
-			Assert.assertTrue(orderService.getUserOrderCount(1) == 2);
-			Assert.assertTrue(pointService.getUserPoint(1) == 2000);
-			Assert.assertTrue(walletService.getUserTotalAmount(1) == 8000);
-			Assert.assertTrue(walletService.getUserFreezeAmount(1) == 0);
-			
-			
-			//测试单项功能
-			executeTccOnly();
-			executeCompensableOnly();
-			executeAfterTransMethodOnly();
-			executeReliableMsgOnly();
-			executeNotReliableMessageOnly();
 
-			
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		//synchronizer test
+		//清除创建测试初始数据
+		cleanAndSetUp();
+		//测试主事务成功，从事务也全部成功的场景
+		commitedAndSubTransSuccess();
+		
+		//测试在执行COMMIT前发生异常的场景
+		rollbackWithExceptionJustBeforeCommit();
+		//在主事务中，远程调用执行了一半后发生异常的场景
+		rollbackWithExceptionInMiddle();
+		//在主事务中没有执行过任何远程调用就发生了异常的场景
+		rollbackWithExceptionJustAfterStartEasyTrans();
+
+		//consistent guardian test
+		//主事务提交了，在跟进最终一致性的时候发生异常的场景
+		commitWithExceptionInMiddleOfConsistenGuardian();
+		//主事务回滚了，在跟进相关补偿回滚操作时候发生异常的场景
+		rollbackWithExceptionInMiddleOfConsistenGuardian();
+		
+		//idempotent test
+		//激活线程池
+		activateThreadPool();
+		//并发执行TCC操作
+		sameMethodConcurrentTcc();
+		//并发执行可补偿操作
+		differentMethodConcurrentCompensable();
+		
+		//测试单项功能
+		executeTccOnly();
+		executeCompensableOnly();
+		executeAfterTransMethodOnly();
+		executeReliableMsgOnly();
+		executeNotReliableMessageOnly();
+		
+		//测试队列消费失败情况
+		testMessageQueueConsumeFailue();
+		
+		//执行一遍后台补偿任务，以避免上述操作有未补偿成功的
+		//execute consistent guardian in case of timeout
+		List<LogCollection> unfinishedLogs = logReader.getUnfinishedLogs(null, 100, new Date());
+		for(LogCollection logCollection:unfinishedLogs){
+			guardian.process(logCollection);
 		}
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		sleep(20000);//wait for msg queue retry test finished
 		
 		Assert.assertTrue(walletService.getUserTotalAmount(1) == 7000);
 		Assert.assertTrue(walletService.getUserFreezeAmount(1) == 0);
 		Assert.assertTrue(accountingService.getTotalCost(1) == 3000);
 		Assert.assertTrue(expressService.getUserExpressCount(1) == 3);
-		Assert.assertTrue(pointService.getUserPoint(1) == 3000);
+		Assert.assertTrue(pointService.getUserPoint(1) == 5000);
 		System.out.println("Test Passed!!");
+	}
+
+	public void sleep(long sleepTime) {
+		try {
+			//等待消息队列两消息送到
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void testMessageQueueConsumeFailue() {
+		
+		//失败一次后成功
+		pointService.setSuccessErrorCount(1);
+		executeReliableMsgOnly();
+		
+		sleep(2000);
+		pointService.setSuccessErrorCount(4);
+		executeReliableMsgOnly();
+		
 	}
 	
 	private void executeNotReliableMessageOnly() {
@@ -319,7 +317,7 @@ public class FullTest {
 				try {
 					System.out.println(future.get());
 				} catch (ExecutionException e) {
-					e.printStackTrace();
+					LOG.info("Concurrent error message:" + e.getMessage());
 				}
 			}
 		} catch (InterruptedException e) {
@@ -333,7 +331,7 @@ public class FullTest {
 				try {
 					System.out.println(future.get());
 				} catch (ExecutionException e) {
-					e.printStackTrace();
+					LOG.info("Concurrent error message:" + e.getMessage());
 				}
 			}
 		} catch (InterruptedException e) {
@@ -348,7 +346,7 @@ public class FullTest {
 			OrderService.setExceptionTag(OrderService.EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_ROLLEDBACK_MASTER_TRANS);
 			orderService.buySomething(1, 1000);
 		} catch (Exception e) {
-			LOG.info("",e);
+			LOG.info(e.getMessage());
 		}
 		
 		try {
@@ -367,7 +365,7 @@ public class FullTest {
 			OrderService.setExceptionTag(OrderService.EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_SUCCESS_MASTER_TRANS);
 			orderService.buySomething(1, 1000);
 		} catch (Exception e) {
-			LOG.info("",e);
+			LOG.info(e.getMessage());
 		}
 		
 		try {
@@ -415,8 +413,8 @@ public class FullTest {
 		try {
 			OrderService.setExceptionTag(OrderService.EXCEPTION_TAG_BEFORE_COMMIT);
 			orderService.buySomething(1, 1000);
-		} catch (Exception e) {
-			LOG.info("",e);
+		} catch (UtProgramedException e) {
+			LOG.info(e.getMessage());
 		}
 		OrderService.clearExceptionSet();
 	}
@@ -425,8 +423,8 @@ public class FullTest {
 		try {
 			OrderService.setExceptionTag(OrderService.EXCEPTION_TAG_IN_THE_MIDDLE);
 			orderService.buySomething(1, 1000);
-		} catch (Exception e) {
-			LOG.info("",e);
+		} catch (UtProgramedException e) {
+			LOG.info(e.getMessage());
 		}
 		OrderService.clearExceptionSet();
 	}
@@ -435,8 +433,8 @@ public class FullTest {
 		try {
 			OrderService.setExceptionTag(OrderService.EXCEPTION_TAG_JUST_AFTER_START_EASY_TRANSACTION);
 			orderService.buySomething(1, 1000);
-		} catch (Exception e) {
-			LOG.info("",e);
+		} catch (UtProgramedException e) {
+			LOG.info(e.getMessage());
 		}
 		OrderService.clearExceptionSet();
 	}

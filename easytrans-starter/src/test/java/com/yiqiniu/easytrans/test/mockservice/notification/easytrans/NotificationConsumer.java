@@ -18,7 +18,7 @@ public class NotificationConsumer implements BestEffortMessageHandler<NotReliabl
 	
 	@Override
 	public EasyTransConsumeAction consume(EasyTransRequest<?, ?> request) {
-		service.addPointForBuying((NotReliableOrderMessage) request);
+		service.sendMsg((NotReliableOrderMessage) request);
 		return EasyTransConsumeAction.CommitMessage;
 	}
 

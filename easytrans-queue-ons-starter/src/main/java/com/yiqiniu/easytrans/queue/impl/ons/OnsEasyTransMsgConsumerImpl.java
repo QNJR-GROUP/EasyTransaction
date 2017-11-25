@@ -71,6 +71,12 @@ public class OnsEasyTransMsgConsumerImpl implements EasyTransMsgConsumer {
 	}
 
 
+	@Override
+	public void start() {
+		//DO NOTING
+	}
+
+
 
 	
 

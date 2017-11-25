@@ -65,8 +65,18 @@ public class OrderService {
 	private static ConcurrentHashMap<String,Object> throwExceptionSet = new  ConcurrentHashMap<String,Object>();
 	public static void checkThrowException(String exceptionTag){
 		if(throwExceptionSet.get(exceptionTag) != null){
-			throw new RuntimeException("exception set in UT:" + exceptionTag);
+			throw new UtProgramedException("exception set in UT:" + exceptionTag);
 		}
+	}
+	
+	public static class UtProgramedException extends RuntimeException{
+
+		private static final long serialVersionUID = 1L;
+
+		public UtProgramedException(String message) {
+			super(message);
+		}
+		
 	}
 
 	public static void setExceptionTag(String exceptionTag){

@@ -14,8 +14,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import com.yiqiniu.easytrans.context.LogProcessContext;
 import com.yiqiniu.easytrans.datasource.TransStatusLogger;
+import com.yiqiniu.easytrans.datasource.TransStatusLogger.TransactionStatus;
+import com.yiqiniu.easytrans.filter.MetaDataFilter;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
 import com.yiqiniu.easytrans.log.vo.Content;
+import com.yiqiniu.easytrans.protocol.TransactionId;
 
 /**
  *	provide base instrument for TCC,MQ transaction support<br>
@@ -67,7 +70,16 @@ public class EasyTransSynchronizer {
 		TransactionSynchronizationManager.registerSynchronization(new TransactionHook());
 		LogProcessContext logProcessContext = new LogProcessContext(applicationName, busCode, trxId, writer,transStatusLogger);
 		TransactionSynchronizationManager.bindResource(LOG_PROCESS_CONTEXT,logProcessContext);
-		transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId);
+		
+		//check whether is a parent transaction
+		TransactionId pTrxId = getParentTransactionId();
+		if(pTrxId == null){
+			//if this transaction is roll back, this record is will disappear
+			transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, null, null, null, TransactionStatus.COMMITTED);
+		} else {
+			//a transaction with parent transaction,it's status depends on parent
+			transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, pTrxId.getAppId(), pTrxId.getBusCode(), pTrxId.getTrxId(), TransactionStatus.UNKNOWN);
+		}
 	}
 
 	public void registerLog(Content content){
@@ -112,9 +124,15 @@ public class EasyTransSynchronizer {
 			final LogProcessContext logProcessContext = getLogProcessContext();
 			unbindLogProcessContext();
 			
+			boolean hasParentTransaction = getParentTransactionId() != null;
 			switch(status){
 				case STATUS_COMMITTED:
-					logProcessContext.setFinalMasterTransStatus(true);
+				if(hasParentTransaction){
+						//transaction with parent's status is depends on parent
+						logProcessContext.setFinalMasterTransStatus(null);
+					} else {
+						logProcessContext.setFinalMasterTransStatus(true);
+					}
 					break;
 				case STATUS_ROLLED_BACK:
 					logProcessContext.setFinalMasterTransStatus(false);
@@ -129,18 +147,36 @@ public class EasyTransSynchronizer {
 			//unwritten logs are not necessary logs
 			logProcessContext.getLogCache().clearCacheLogs();
 			
-			//asynchronous execute to enhance efficient
-			executor.execute(new Runnable() {
-				@Override
-				public void run() {
-					try{
-						consistentGuardian.process(logProcessContext);
-					}catch(Throwable e){
-						LOG.error("consistentGuardian execute exception!",e);
+			
+			if(hasParentTransaction){
+				//has parent transaction, the final transaction status is known
+				//pending the context a while and try to wait for the sync call back to tell final status
+				pendCompensation(logProcessContext);
+			} else {
+				//asynchronous execute to enhance efficient
+				executor.execute(new Runnable() {
+					@Override
+					public void run() {
+						try{
+							consistentGuardian.process(logProcessContext);
+						}catch(Throwable e){
+							LOG.error("consistentGuardian execute exception!",e);
+						}
 					}
-				}
-			});
+				});
+			}
+			
 		}
+	}
+
+	private TransactionId getParentTransactionId() {
+		return MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY);
+	}
+
+//	private ConcurrentSkipListMap<String,Tran>
+	private void pendCompensation(LogProcessContext logProcessContext) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

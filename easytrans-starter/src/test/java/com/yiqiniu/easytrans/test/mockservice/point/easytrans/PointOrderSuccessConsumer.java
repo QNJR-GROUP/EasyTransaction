@@ -16,10 +16,14 @@ public class PointOrderSuccessConsumer implements ReliableMessageHandler<OrderMe
 	@Resource
 	private PointService pointService;
 	
+
+
 	@Override
 	public EasyTransConsumeAction consume(EasyTransRequest<?, ?> request) {
+
 		pointService.addPointForBuying((OrderMessage) request);
 		return EasyTransConsumeAction.CommitMessage;
+//		return EasyTransConsumeAction.ReconsumeLater;
 	}
 
 	@Override

@@ -23,9 +23,36 @@ easytrans:
         password: 123456
   queue:
     kafka:
-      enabled: false
-    ons:
       enabled: true
+      produerCfg:
+        nativeCfg:
+          bootstrap.servers: localhost:9092
+          acks: all
+          retries: 0
+          batch.size: 16384
+          linger.ms: 1
+          buffer.memory: 3554432
+          key.serializer: org.apache.kafka.common.serialization.StringSerializer
+          value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      consumer-cfg:
+        reconsume: # when error occur,when the message will be reconsume.for efficent,please keep the array below small.
+#          - [3000,3] # retry every 3000 millseconds,for 3 times,after 3 time faliures will move to the next retry level
+#          - [60000,5] # retry every 1 minutes,for 3 times,after 3 time faliures will move to the next retry level
+#          - [300000,3] # retry every 5 minutes,for 3 times,after 3 time faliures will move to the next retry level
+#          - [3600000] # retry every 1 hour,forever
+          - [1000,1] # dead message queue test, you should use the config above in your business 
+          - [2000,1]
+          - [3000]
+
+        native-cfg:
+          bootstrap.servers: localhost:9092
+          group.id: ${spring.application.name}
+          enable.auto.commit: false # please do not change it
+          max.poll.records: 100
+          key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+          value.deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+    ons:
+      enabled: false
       consumer:
         ConsumerId: CID-${spring.application.name}
         AccessKey: LTAIgF4SRgLqmidK

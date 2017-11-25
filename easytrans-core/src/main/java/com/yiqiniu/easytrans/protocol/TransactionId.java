@@ -19,6 +19,12 @@ public class TransactionId implements Serializable {
 		this.busCode = busCode;
 		this.trxId = trxId;
 	}
+	
+	public TransactionId() {
+		super();
+	}
+
+
 
 	public String getAppId() {
 		return appId;

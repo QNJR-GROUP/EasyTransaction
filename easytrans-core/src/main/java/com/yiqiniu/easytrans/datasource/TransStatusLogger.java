@@ -3,6 +3,13 @@ package com.yiqiniu.easytrans.datasource;
 
 public interface TransStatusLogger {
 	
+	public static class TransactionStatus{
+		public static final int UNKNOWN = 0;
+		public static final int COMMITTED = 1;
+		public static final int ROLLBACKED = 2;
+	}
+	
+	
 	/**
 	 * check the master transaction status,the default implement is 
 	 * <ul>
@@ -16,10 +23,11 @@ public interface TransStatusLogger {
 	Boolean checkTransactionStatus(String appId,String busCode,String trxId);
 	
 	/**
-	 * invoke before transaction commit,to help checkStatus() indicate the final status of a business transaction
+	 * invoke before RPC is executed,to help checkStatus() indicate the final status of a business transaction
 	 * @param appId
 	 * @param busCode
 	 * @param trxId
 	 */
-	void writeExecuteFlag(String appId,String busCode,String trxId);
+	void writeExecuteFlag(String appId, String busCode, String trxId, String pAppId, String pBusCode, String pTrxId,
+			int status);
 }

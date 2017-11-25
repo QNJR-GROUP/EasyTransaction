@@ -14,13 +14,12 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.yiqiniu.easytrans.EnableEasyTransaction;
 import com.yiqiniu.easytrans.log.impl.database.EnableLogDatabaseImpl;
-import com.yiqiniu.easytrans.queue.impl.ons.EnableQueueOnsImpl;
 import com.yiqiniu.easytrans.rpc.impl.dubbo.EnableRpcDubboImpl;
 
 @Configuration
 @EnableEasyTransaction
 @ComponentScan(basePackages={"com.yiqiniu.easytrans.test.mockservice"})
-@EnableQueueOnsImpl
+//@EnableQueueOnsImpl
 @EnableRpcDubboImpl
 @EnableLogDatabaseImpl
 @EnableTransactionManagement

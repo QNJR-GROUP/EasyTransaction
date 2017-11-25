@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.test.mockservice.TestUtil;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderMessage;
+import com.yiqiniu.easytrans.test.mockservice.order.OrderService.UtProgramedException;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
 @Component
@@ -21,7 +22,46 @@ public class PointService {
 	@Value("spring.application.name")
 	private String applicationName;
 	
+	/**
+	 * continues error count
+	 */
+	private int currentErrorCount = 0;
+	
+	/**
+	 * after every successErrorCount will get an success call 
+	 */
+	private Integer successErrorCount = null;
+	
+	
+	
+	public int getCurrentErrorCount() {
+		return currentErrorCount;
+	}
+
+	public void setCurrentErrorCount(int currentErrorCount) {
+		this.currentErrorCount = currentErrorCount;
+	}
+
+	public Integer getSuccessErrorCount() {
+		return successErrorCount;
+	}
+
+	public void setSuccessErrorCount(Integer successErrorCount) {
+		this.successErrorCount = successErrorCount;
+	}
+	
 	public void addPointForBuying(OrderMessage msg){
+		
+		//for unit test
+		if(successErrorCount != null){
+			currentErrorCount++;
+			if(successErrorCount < currentErrorCount){
+				currentErrorCount = 0;
+			} else {
+				throw new UtProgramedException("error in message consume time:" + currentErrorCount);
+			}
+		}
+		
 
 		BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(msg.getClass());
 		

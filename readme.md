@@ -201,11 +201,21 @@
 每个运行业务的库都需要新增两张表
 
     -- 用于记录业务发起方的最终业务有没有执行
+    -- p_开头的，代表本事务对应的父事务id
+    -- select for update查询时，若事务ID对应的记录不存在则事务一定失败了
+    -- 记录存在，但status为1表示事务成功,为2表示事务失败（包含父事务和本事务）
+    -- 记录存在，但status为0表示本方法存在父事务，且父事务的最终状态未知
+    -- 父事务的状态将由发起方通过 优先同步告知 失败则 消息形式告知
     CREATE TABLE `executed_trans` (
       `app_id` varchar(32) CHARACTER SET utf8 NOT NULL,
       `bus_code` varchar(128) CHARACTER SET utf8 NOT NULL,
       `trx_id` varchar(64) CHARACTER SET utf8 NOT NULL,
-      PRIMARY KEY (`app_id`,`bus_code`,`trx_id`)
+      `p_app_id` varchar(32) CHARACTER SET utf8,
+      `p_bus_code` varchar(128) CHARACTER SET utf8,
+      `p_trx_id` varchar(64) CHARACTER SET utf8,
+      `status` tinyint(1) NOT NULL,
+      PRIMARY KEY (`app_id`,`bus_code`,`trx_id`),
+      KEY `parent` (`p_app_id`,`p_bus_code`,`p_trx_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
     
     -- 记录方法调用信息，用于处理幂等
@@ -288,15 +298,8 @@
 
 ## 六、最佳实践
 
-### Easytrans Spring XML配置文件
-* 由架构组配置公用的XML部分，供各个业务模块IMPORT。
-* 各个业务模块自行定义DatasourceSelector这个BEAN。
-* 若事务日志存储点由各个模块自行定义，那么用于存储日志的数据源也由各个业务模块自行定义
-
 ### 基于数据库的事务日志
-* 如果业务库和事务日志使用同一个数据库，那么最好为业务库和事务日志库创建不同的DataSource实例，以免产生死锁.
-* 可将各个模块的事务日志单独一个库存放，减轻单个数据库压力
-* 当数据库作为事务日志的底层实现成为瓶颈后，可自行实现一个更高效率的事务日志，如基于HBASE的事务日志
+* 将事务日志数据库与业务数据库分库库存放
 
 ### 参数及返回值
 * 因有持久化成本，请保证调用方法的参数及返回值尽量小
