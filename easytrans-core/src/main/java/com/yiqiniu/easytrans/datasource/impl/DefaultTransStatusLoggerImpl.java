@@ -3,6 +3,7 @@ package com.yiqiniu.easytrans.datasource.impl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
@@ -32,14 +33,26 @@ public class DefaultTransStatusLoggerImpl implements TransStatusLogger {
 		JdbcTemplate jdbcTemplate = getJdbcTemplate(dataSource);
 		
 		//select * for update
-		Integer count = jdbcTemplate.queryForObject("select count(1) from executed_trans where app_id = ? and bus_code = ? and trx_id = ? for update;", new Object[]{appId,busCode,trxId}, Integer.class);
+		List<Integer> statusList = jdbcTemplate.queryForList("select status from executed_trans where app_id = ? and bus_code = ? and trx_id = ? for update;", new Object[]{appId,busCode,trxId}, Integer.class);
 		
-		if(count == null){
-			return null;
-		}else if(count >= 1){
-			return true;
-		}else{
+		if(statusList == null || statusList.size() == 0) {
 			return false;
+		} else {
+			//it can only be 1 record,because it's search by primary key
+			int status = statusList.get(0);
+			
+			switch(status){
+			case 0:
+				//parent transaction status unknown
+				return null;
+			case 1:
+				//success
+				return true;
+			case 2:
+				return false;
+			default:
+				throw new IllegalArgumentException("unknown transaction status:" + status);
+			}
 		}
 	}
 
@@ -53,19 +66,23 @@ public class DefaultTransStatusLoggerImpl implements TransStatusLogger {
 	}
 
 	@Override
-	public void writeExecuteFlag(String appId, String busCode, String trxId) {
+	public void writeExecuteFlag(String appId, String busCode, String trxId, String pAppId, String pBusCode, String pTrxId, int status) {
 		
 		Connection connection = DataSourceUtils.getConnection(selctor.selectDataSource(appId, busCode, trxId));
 		
 		try {
-			PreparedStatement prepareStatement = connection.prepareStatement("INSERT INTO `executed_trans` (`app_id`, `bus_code`, `trx_id`) VALUES ( ?, ?, ?);");
+			PreparedStatement prepareStatement = connection.prepareStatement("INSERT INTO `executed_trans` (`app_id`, `bus_code`, `trx_id`,`p_app_id`, `p_bus_code`, `p_trx_id`,`status`) VALUES ( ?, ?, ?, ?, ?, ?, ?);");
 			prepareStatement.setString(1, appId);
 			prepareStatement.setString(2, busCode);
 			prepareStatement.setString(3, trxId);
+			prepareStatement.setString(4, pAppId);
+			prepareStatement.setString(5, pBusCode);
+			prepareStatement.setString(6, pAppId);
+			prepareStatement.setInt(7, status);
 			
 			int executeUpdate = prepareStatement.executeUpdate();
 			if(executeUpdate != 1){
-				throw new RuntimeException(String.format("insert count(%s) Error!%s %s %s", executeUpdate,appId,busCode,trxId));
+				throw new RuntimeException(String.format("insert count(%s) Error!%s %s %s %s %s %s %s", executeUpdate,appId,busCode,trxId,pAppId,pBusCode,pTrxId,status));
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("insert Sql failed,check whether the same transaction has been executed?",e);

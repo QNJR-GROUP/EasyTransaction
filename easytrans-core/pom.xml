@@ -46,18 +46,6 @@
 			<artifactId>curator-recipes</artifactId>
 		</dependency>
 		
-		<dependency>
-			<groupId>com.101tec</groupId>
-			<artifactId>zkclient</artifactId>
-			<version>0.4</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>zookeeper</artifactId>
-					<groupId>org.apache.zookeeper</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		
 
 </dependencies>
   

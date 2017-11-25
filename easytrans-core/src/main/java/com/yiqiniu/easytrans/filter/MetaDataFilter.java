@@ -32,6 +32,9 @@ public class MetaDataFilter implements EasyTransFilter {
 	@SuppressWarnings("unchecked")
 	public static <R>  R getMetaData(String key){
 		Map<String, Object> map = threadLocalHeader.get();
+		if(map == null){
+			return null;
+		}
 		return (R)map.get(key);
 	}
 

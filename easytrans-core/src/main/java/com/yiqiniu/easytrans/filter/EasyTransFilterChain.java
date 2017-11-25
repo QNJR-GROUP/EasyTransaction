@@ -6,7 +6,7 @@ import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 
 public interface EasyTransFilterChain {
 	
-	String MESSAGE_BUSINESS_FLAG = "@MSG";
+	String MESSAGE_BUSINESS_FLAG = "consume";
 	
 	String getAppId();
 	

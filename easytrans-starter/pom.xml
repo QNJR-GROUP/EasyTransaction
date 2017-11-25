@@ -60,12 +60,12 @@
 			<scope>test</scope>
 		</dependency>
 		
-		<dependency>
+<!-- 		<dependency>
 			<groupId>com.yiqiniu.easytrans</groupId>
 			<artifactId>easytrans-queue-ons-starter</artifactId>
 			<version>${easytrans.version}</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency> -->
 		
 		<dependency>
 			<groupId>com.yiqiniu.easytrans</groupId>

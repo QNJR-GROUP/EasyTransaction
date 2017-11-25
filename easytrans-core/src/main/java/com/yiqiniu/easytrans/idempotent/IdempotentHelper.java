@@ -113,9 +113,9 @@ public class IdempotentHelper {
 	private static final Object NULL_OBJECT = new Object();
 	public ExecuteOrder getExecuteOrder(String appId, String busCode ,String innerMethod) {
 		
-		if(EasyTransFilterChain.MESSAGE_BUSINESS_FLAG.equals(innerMethod)){
-			return null;
-		}
+//		if(EasyTransFilterChain.MESSAGE_BUSINESS_FLAG.equals(innerMethod)){
+//			return null;
+//		}
 		
 		String key = getKey(appId, busCode, innerMethod);
 		Object object = mapExecuteOrder.get(key);

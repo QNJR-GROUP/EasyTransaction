@@ -13,6 +13,6 @@ public class EasytransConstant {
 		public static final String CALL_SEQ = "cseq";
 	}
 	
-	public final static String EscapeChar = "#";
+	public final static String EscapeChar = "_";
 
 }

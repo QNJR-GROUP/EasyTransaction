@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
@@ -25,6 +28,8 @@ public class DubboEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 	private String applicationName;
 	private String dubboZkUrl;
 	private String dubboDefaultTimeout;
+	
+	private static Logger logger = LoggerFactory.getLogger(DubboEasyTransRpcProviderImpl.class);
 	
 	public DubboEasyTransRpcProviderImpl(EasyTransFilterChainFactory filterChainFactory, String applicationName,
 			String dubboZkUrl, String dubboDefaultTimeout) {
@@ -69,9 +74,12 @@ public class DubboEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 					//第一个参数类型为easytransRequest,第二个为map(业务外 框架用的元数据)
 					Method callMethod = getMethod(value.getClass(),method,new String[]{parameterTypes[0]});
 					try {
-						return callMethod.invoke(value, new Object[]{args[0]});
+						Object invokeResult = callMethod.invoke(value, new Object[]{args[0]});
+						logger.info("EasyTrans rpc call recived, executed success:" + args[0]);
+						return invokeResult;
 					} catch (IllegalAccessException | IllegalArgumentException
 							| InvocationTargetException e) {
+						logger.info("EasyTrans rpc call recived,executed failed:" + args[0], e);
 						throw new RuntimeException(e);
 					}
 				}
