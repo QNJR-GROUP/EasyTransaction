@@ -27,6 +27,7 @@ import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCps
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingResponse;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.AfterMasterTransMethodResult;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.ExpressDeliverAfterTransMethodRequest;
+import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayCascadeTccMethod.WalletPayCascadeTccMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodResult;
 
@@ -43,6 +44,7 @@ public class OrderService {
 	private TestUtil util;
 	
 	public static final String BUSINESS_CODE = "buySth";
+	public static final String BUSINESS_CODE_CASCADE = "buySthCascade";
 	
 	private static Object NULL_OBJECT = new Object();
 	private static ConcurrentHashMap<Class<?>,Object> notExecuteMap = new ConcurrentHashMap<Class<?>,Object>();
@@ -96,6 +98,25 @@ public class OrderService {
 		Integer queryForObject = jdbcTemplate.queryForObject("SELECT count(1) FROM `order` where user_id = ?;", Integer.class,userId);
 		return queryForObject == null?0:queryForObject;
 	}
+	
+	@Transactional("buySthTransactionManager")
+	public void buySomethingCascading(int userId,long money){
+		
+		JdbcTemplate jdbcTemplate = util.getJdbcTemplate(Constant.APPID, BUSINESS_CODE_CASCADE, String.valueOf(userId));
+		Integer id = saveOrderRecord(jdbcTemplate,userId,money);
+
+		transaction.startEasyTrans(BUSINESS_CODE_CASCADE, String.valueOf(id));
+		
+		/**
+		 * 调用级联事务
+		 */
+		WalletPayCascadeTccMethodRequest deductRequest = new WalletPayCascadeTccMethodRequest();
+		deductRequest.setUserId(userId);
+		deductRequest.setPayAmount(money);
+		Future<WalletPayTccMethodResult> execute = transaction.execute(deductRequest);
+		
+	}
+	
 	
 	@Transactional("buySthTransactionManager")
 	public Future<AfterMasterTransMethodResult> buySomething(int userId,long money){

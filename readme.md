@@ -264,13 +264,13 @@
     * 目前只支持DUBBO，正在开发SPRING CLOUD的支持
     * 欢迎增加额外实现
 * 消息队列实现
-    * 目前只支持阿里ONS(创建时请使用无序消息)，正在开发KAFKA的支持
+    * 目前支持阿里ONS(创建时请使用无序消息)及KAFKA
     * 欢迎增加额外实现，需实现两个核心方法
 * 序列化实现
     * 目前使用Spring-core提供的序列化，效率较低，但目前性能不是瓶颈，没做优化
     * 欢迎增加额外实现以提高效率
 * 增删改Filter具体实现类
-    * 目前只有幂等Filter及元数据设置FILTER
+    * 目前有幂等Filter、元数据设置FILTER、级联事务协助处理Filter
     * 若有额外需求可新增Filter
 * 数据源选择器的实现
     * 目前提供单数据源选择器
@@ -282,21 +282,7 @@
     * 目前基于ZK实现了主从选择
     * 若不想采用ZK可自行替换ZK实现
 
-## 五、当前计划
-目前正在完善基于SPRING CLOUD的RPC调用及基于KAFKA的事务日志存储和消息队列
-
-还有两个功能点没有完善，一个是同库事务短路功能，一个是TCC多层传递功能，其暂无排期。
-
-### 嵌套的TCC/补偿的考虑
-
-* Try/Compensable记录的ID， parentTrxAppId,parentTrxId,AppId,TrxId,logType,CallerId/TOPIC,MethodId/TAG,logDetail(Params)
-* parentTrxAppId,parentTrxId为null的 补偿方法执行日志 的补偿操作 是否执行 由AppId对应的 Revocer程序决定
-* 存在parentTrxAppId,parentTrxId的执行事务记录表明其补偿是由上级决定的，收到上级的补偿操作执行指令时，先根据上级传过来的父类执行trxId，查找出本地对应的trxId,找到执行过的可补偿方法，然后对远程调用一致的补偿方法，再调用本地定义的commit/cancel/compensation
-
-### 同库短路设计
-对于同一个服务，同一个数据库的远程服务调用，可短路到同一个事务中，提高效率
-
-## 六、最佳实践
+## 五、最佳实践
 
 ### 基于数据库的事务日志
 * 将事务日志数据库与业务数据库分库库存放
@@ -304,7 +290,7 @@
 ### 参数及返回值
 * 因有持久化成本，请保证调用方法的参数及返回值尽量小
 
-## 七、FAQ
+## 六、FAQ
 1. 如何在CRASH后判断一个柔性事务是否提交？
 	* 在调用startEasyTrans()方法时，框架将插入一条记录到executed_trans中
 	* 在调用startEasyTrans()方法后，才可以执行远程事务方法
@@ -312,18 +298,22 @@
 	* 因此CRASH恢复进程使用select for update 查询executed_trans记录时，必然能得到准确的是否已经提交的结果（若主控事务仍在进行中，select for update将会等待）
 	* 使用select for update是为了避免在MVCC情况下错误查询出最终事务提交结果的情况
 	
-## 八、RELEASENOTE
+## 七、RELEASENOTE
 
-目前MASTER版本为1.0.0-SNAPSHOT，其相对于之前的版本主要区别为：
+目前MASTER版本为1.0.0-SNAPSHOT，升级了一个大版本，计划引入较多功能，处于不稳定的开发版本状态，其相对于之前的版本主要区别为：
 
-* kafka事务日志库（开发中）
-* kafka队列实现（开发中）
-* feign rpc实现（开发中）
+* kafka消息队列实现（已完成）
 * 允许同一事务多次调用同一方法（已完成）
 * 解耦调用框架存储用的元数据与业务请求参数（已完成）
 * 使用spring自身的配置功能代替原来自定义的配置读取功能（已完成）
 * 使用spring boot风格改造代码，配置及使用更加方便（已完成）
-* 给UT方法添加了中文注释说明（已完成）
+* 事务级联功能（已完成，在事务模式里，除了传统补偿模式CompensableMethod不能进行事务级联，其他都可以进行事务级联）
+* feign rpc实现（开发中）
+* 同库短路设计（尚未开始）
+* 独立完成的DEMO（尚未开始）
+* kafka事务日志库（尚未开始）
+* 整合2PC，完成分布式事务各种主流场景的完整解决方案（尚未开始）
+
 
 需要注意的是
 

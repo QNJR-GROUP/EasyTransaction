@@ -43,7 +43,11 @@ public class ConsistentGuardian {
 	 * @param logCollection all the logs in the current time 
 	 */
 	public boolean process(LogCollection logCollection){
-		return process(new LogProcessContext(logCollection,writer,transChecker));
+		return process(buldLogContextFromLog(logCollection));
+	}
+
+	public LogProcessContext buldLogContextFromLog(LogCollection logCollection) {
+		return new LogProcessContext(logCollection,writer,transChecker);
 	}
 	
 	/**

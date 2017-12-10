@@ -13,7 +13,14 @@ import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 public interface DataSourceSelector {
 	
 	/**
-	 * for the use of master transaction
+	 * for the use of master transaction<br/>
+	 * if it's a cascade transaction,the data source select result should be the same with arouse method's database.<br/>
+	 * selectDataSource(String, String, EasyTransRequest<?, ?>) 
+	 * 
+	 * 主控事务发起者用于选择数据源的方法<br/>
+	 * 如果这个主控事务是级联事务里的一环，那么这个数据源选择器选择出来的datasource要跟唤起本主控事务的方法所选定的数据源一致。<br/>
+	 * 唤起本主控事务选定数据源的方法就是selectDataSource(String, String, EasyTransRequest<?, ?>)
+	 * 
 	 * @param appId
 	 * @param busCode
 	 * @param trxId
@@ -23,9 +30,9 @@ public interface DataSourceSelector {
 	
 	/**
 	 * for the use of slave transaction
-	 * @param appId
-	 * @param busCode
-	 * @param parentTrxId
+	 * @param slave transaction appId
+	 * @param slave transaction busCode
+	 * @param slave transaction request parameter
 	 * @return
 	 */
 	DataSource selectDataSource(String appId,String busCode,EasyTransRequest<?, ?> request);

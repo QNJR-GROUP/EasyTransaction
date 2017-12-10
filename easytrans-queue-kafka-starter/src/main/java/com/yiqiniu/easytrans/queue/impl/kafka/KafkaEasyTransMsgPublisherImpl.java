@@ -44,7 +44,7 @@ public class KafkaEasyTransMsgPublisherImpl implements EasyTransMsgPublisher {
 		String kafkaTopic = QueueKafkaHelper.getKafkaTopic(topic, tag);
 		
 		//calculate partition
-		TransactionId trxId = (TransactionId) header.get(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY);
+		TransactionId trxId = (TransactionId) header.get(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
 		int partition = calcMessagePartition(kafkaTopic, trxId);
 		
 		List<Header> kafkaHeaderList = new ArrayList<>(header.size());

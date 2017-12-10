@@ -1,5 +1,7 @@
 package com.yiqiniu.easytrans.datasource;
 
+import com.yiqiniu.easytrans.protocol.EasyTransRequest;
+import com.yiqiniu.easytrans.protocol.TransactionId;
 
 public interface TransStatusLogger {
 	
@@ -30,4 +32,12 @@ public interface TransStatusLogger {
 	 */
 	void writeExecuteFlag(String appId, String busCode, String trxId, String pAppId, String pBusCode, String pTrxId,
 			int status);
+
+	/**
+	 * 
+	 * @param pId
+	 * @param request
+	 * @param status
+	 */
+	void updateExecuteFlagForSlaveTrx(TransactionId pId, EasyTransRequest<?, ?> request, int status);
 }

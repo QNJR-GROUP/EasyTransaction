@@ -68,6 +68,7 @@ public class DubboEasyTransRpcConsumerImpl implements EasyTransRpcConsumer{
 			referenceConfig.setRegistry(new RegistryConfig(dubboZkUrl));
 			referenceConfig.setGroup(appId + "-" + busCode);
 			referenceConfig.setCheck(false);
+			referenceConfig.setSticky(true);//设置粘滞连接以优化级联事务的级联提交性能
 			genericService = referenceConfig.get();
 			mapRef.put(getTargetKey(appId,busCode), genericService);
 		}

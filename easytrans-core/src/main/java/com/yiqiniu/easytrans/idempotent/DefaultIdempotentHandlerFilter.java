@@ -82,7 +82,7 @@ public class DefaultIdempotentHandlerFilter implements IdempotentHandlerFilter {
 								Date dateNow = new Date();
 								if(idempotentPo == null){
 									idempotentPo = new IdempotentPo();
-									TransactionId transactionId = (TransactionId) header.get(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY);
+									TransactionId transactionId = (TransactionId) header.get(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
 									Integer callSeq = (Integer) header.get(EasytransConstant.CallHeadKeys.CALL_SEQ);
 									
 									idempotentPo.setSrcAppId(transactionId.getAppId());
