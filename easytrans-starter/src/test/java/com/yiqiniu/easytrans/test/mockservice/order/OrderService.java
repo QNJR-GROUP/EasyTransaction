@@ -42,6 +42,7 @@ public class OrderService {
 
 	@Resource
 	private TestUtil util;
+	private long cascadeTrxFinishedSleepMills = 0;
 	
 	public static final String BUSINESS_CODE = "buySth";
 	public static final String BUSINESS_CODE_CASCADE = "buySthCascade";
@@ -89,6 +90,12 @@ public class OrderService {
 		throwExceptionSet.clear();
 	}
 	
+	
+	
+
+	public void setCascadeTrxFinishedSleepMills(long cascadeTrxFinishedSleepMills) {
+		this.cascadeTrxFinishedSleepMills = cascadeTrxFinishedSleepMills;
+	}
 
 	@Resource
 	private EasyTransFacade transaction;
@@ -115,6 +122,23 @@ public class OrderService {
 		deductRequest.setPayAmount(money);
 		Future<WalletPayTccMethodResult> execute = transaction.execute(deductRequest);
 		
+		
+		try {
+			//主动获取一下结果，触发真正的远程调用
+			execute.get();
+		} catch (InterruptedException | ExecutionException e1) {
+			e1.printStackTrace();
+		}
+		
+		//在事务结束后主动停止若干秒，用于等待远端事务缓存过期，以测试该场景
+		if(cascadeTrxFinishedSleepMills > 0){
+			try {
+				Thread.sleep(cascadeTrxFinishedSleepMills);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	
 	}
 	
 	

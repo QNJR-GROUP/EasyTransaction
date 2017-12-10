@@ -40,8 +40,6 @@ public class ParentTrxStatusUpdateFilter implements EasyTransFilter {
 	public EasyTransResult invoke(EasyTransFilterChain filterChain, Map<String, Object> header,
 			EasyTransRequest<?, ?> request) {
 
-		EasyTransResult result = filterChain.invokeFilterChain(header, request);
-
 		Integer pTrxStatus = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRANSACTION_STATUS);
 		if(!pTrxStatus.equals(com.yiqiniu.easytrans.datasource.TransStatusLogger.TransactionStatus.UNKNOWN)){
 			// start transaction to update 
@@ -62,6 +60,6 @@ public class ParentTrxStatusUpdateFilter implements EasyTransFilter {
 			easyTransSynchronizer.cascadeExecuteCachedTransaction(pTrxId, commited);
 		}
 		
-		return result;
+		return filterChain.invokeFilterChain(header, request);
 	}
 }

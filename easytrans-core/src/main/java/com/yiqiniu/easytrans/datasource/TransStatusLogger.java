@@ -6,9 +6,9 @@ import com.yiqiniu.easytrans.protocol.TransactionId;
 public interface TransStatusLogger {
 	
 	public static class TransactionStatus{
-		public static final int UNKNOWN = 0;
-		public static final int COMMITTED = 1;
-		public static final int ROLLBACKED = 2;
+		public static final int COMMITTED = 0;
+		public static final int ROLLBACKED = 1;
+		public static final int UNKNOWN = 2;
 	}
 	
 	

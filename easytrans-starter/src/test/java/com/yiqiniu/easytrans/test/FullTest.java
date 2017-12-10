@@ -125,6 +125,7 @@ public class FullTest {
 			// 主事务回滚了，在跟进相关补偿回滚操作时候发生异常的场景
 			rollbackWithExceptionInMiddleOfConsistenGuardian();
 
+			
 			// idempotent test
 			// 激活线程池
 			activateThreadPool();
@@ -133,31 +134,43 @@ public class FullTest {
 			// 并发执行可补偿操作
 			differentMethodConcurrentCompensable();
 
+			//wallet 8000
+			//account waste 2000
+			//ExpressCount 2
+			//point 2000
 			// 测试单项功能
-			executeTccOnly();
-			executeCompensableOnly();
-			executeAfterTransMethodOnly();
-			executeReliableMsgOnly();
+			executeTccOnly();//wallet 7000
+			executeCompensableOnly();//account waste 3000
+			executeAfterTransMethodOnly();//ExpressCount 3
+			executeReliableMsgOnly();//point 3000
 			executeNotReliableMessageOnly();
 
 			// 测试队列消费失败情况
-			testMessageQueueConsumeFailue();
+			testMessageQueueConsumeFailue();//point 5000
 
 			// 级联事务成功提交测试
-			orderService.buySomethingCascading(1, 1000);
+			orderService.buySomethingCascading(1, 1000);//wallet 6000,account waste 4000,express count 4, point 6000
 			
 			// 级联事务回滚测试
 			walletService.setExceptionOccurInCascadeTransactionBusinessEnd(true);
-			orderService.buySomethingCascading(1, 1000);
+			try {
+				orderService.buySomethingCascading(1, 1000);
+			} catch (Exception e) {
+			}
 			walletService.setExceptionOccurInCascadeTransactionBusinessEnd(false);
 			
-			
+			// 级联事务同步成功，且缓存超时测试
+			orderService.setCascadeTrxFinishedSleepMills(10000);
+			orderService.buySomethingCascading(1, 1000);//wallet 5000,account waste 5000,express count 5, point 7000
+			orderService.setCascadeTrxFinishedSleepMills(0);
+
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+
+		sleep(10000);// wait for msg queue retry test finished
 		// 执行一遍后台补偿任务，以避免上述操作有未补偿成功的
 		// execute consistent guardian in case of timeout
 		List<LogCollection> unfinishedLogs = logReader.getUnfinishedLogs(null, 100, new Date());
@@ -165,13 +178,11 @@ public class FullTest {
 			guardian.process(logCollection);
 		}
 
-		sleep(20000);// wait for msg queue retry test finished
-
-		Assert.assertTrue(walletService.getUserTotalAmount(1) == 6000);
+		Assert.assertTrue(walletService.getUserTotalAmount(1) == 5000);
 		Assert.assertTrue(walletService.getUserFreezeAmount(1) == 0);
-		Assert.assertTrue(accountingService.getTotalCost(1) == 4000);
-		Assert.assertTrue(expressService.getUserExpressCount(1) == 4);
-		Assert.assertTrue(pointService.getUserPoint(1) == 6000);
+		Assert.assertTrue(accountingService.getTotalCost(1) == 5000);
+		Assert.assertTrue(expressService.getUserExpressCount(1) == 5);
+		Assert.assertTrue(pointService.getUserPoint(1) == 7000);
 		System.out.println("Test Passed!!");
 	}
 
@@ -374,16 +385,16 @@ public class FullTest {
 		} catch (Exception e) {
 			LOG.info(e.getMessage());
 		}
-
-		try {
-			Thread.sleep(1000);// wait for asynchronous operation
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//
+//		try {
+//			Thread.sleep(1000);// wait for asynchronous operation
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		OrderService.clearExceptionSet();
-		List<LogCollection> unfinishedLogs = logReader.getUnfinishedLogs(null, 1, new Date());
-		LogCollection logCollection = unfinishedLogs.get(0);
-		guardian.process(logCollection);
+//		List<LogCollection> unfinishedLogs = logReader.getUnfinishedLogs(null, 1, new Date());
+//		LogCollection logCollection = unfinishedLogs.get(0);
+//		guardian.process(logCollection);
 	}
 
 	private void commitWithExceptionInMiddleOfConsistenGuardian() {
@@ -395,15 +406,15 @@ public class FullTest {
 			LOG.info(e.getMessage());
 		}
 
-		try {
-			Thread.sleep(1000);// wait for asynchronous operation
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(1000);// wait for asynchronous operation
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		OrderService.clearExceptionSet();
-		List<LogCollection> unfinishedLogs = logReader.getUnfinishedLogs(null, 1, new Date());
-		LogCollection logCollection = unfinishedLogs.get(0);
-		guardian.process(logCollection);
+//		List<LogCollection> unfinishedLogs = logReader.getUnfinishedLogs(null, 1, new Date());
+//		LogCollection logCollection = unfinishedLogs.get(0);
+//		guardian.process(logCollection);
 	}
 
 	private void cleanAndSetUp() {

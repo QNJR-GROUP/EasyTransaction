@@ -139,43 +139,55 @@ public class EasyTransSynchronizer {
 		public void afterCompletion(int status) {
 			final LogProcessContext logProcessContext = getLogProcessContext();
 			unbindLogProcessContext();
-			
+
+			// the parent's transaction status
 			boolean hasParentTransaction = getParentTransactionId() != null;
-			switch(status){
-				case STATUS_COMMITTED:
-				if(hasParentTransaction){
-						//transaction with parent's status is depends on parent
+			Integer pTrxStatus = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRANSACTION_STATUS);
+
+			switch (status) {
+			case STATUS_COMMITTED:
+				if (hasParentTransaction) {
+					// the status of a transaction with parent depends on parent
+					// get parent transaction status
+					if (pTrxStatus == null || pTrxStatus.equals(TransactionStatus.UNKNOWN)) {
 						logProcessContext.setFinalMasterTransStatus(null);
 					} else {
-						logProcessContext.setFinalMasterTransStatus(true);
+						if (pTrxStatus.equals(TransactionStatus.COMMITTED)) {
+							logProcessContext.setFinalMasterTransStatus(true);
+						} else {
+							logProcessContext.setFinalMasterTransStatus(false);
+						}
 					}
-					break;
-				case STATUS_ROLLED_BACK:
-					logProcessContext.setFinalMasterTransStatus(false);
-					break;
-				case STATUS_UNKNOWN:
-					logProcessContext.setFinalMasterTransStatus(null);
-					break;
-				default:
-					throw new RuntimeException("Unkonw Status!");
+				} else {
+					logProcessContext.setFinalMasterTransStatus(true);
+				}
+				break;
+			case STATUS_ROLLED_BACK:
+				logProcessContext.setFinalMasterTransStatus(false);
+				break;
+			case STATUS_UNKNOWN:
+				logProcessContext.setFinalMasterTransStatus(null);
+				break;
+			default:
+				throw new RuntimeException("Unkonw Status!");
 			}
-			
-			//unwritten logs are not necessary logs
+
+			// unwritten logs are not necessary logs
 			logProcessContext.getLogCache().clearCacheLogs();
-			
-			
-			if(hasParentTransaction){
-				//has parent transaction, the final transaction status is unknown
-				//pending the context a while and try to wait for the sync call back to tell final status
-				//this require the consumer support the sticky call
+
+			if (hasParentTransaction && (pTrxStatus == null || pTrxStatus.equals(TransactionStatus.UNKNOWN))) {
+				// has parent transaction, the final transaction status is
+				// unknown
+				// pending the context a while and try to wait for the sync call
+				// back to tell final status
+				// this require the consumer support the sticky call
 				pendCompensationLogContext(logProcessContext);
 			} else {
-				//asynchronous execute to enhance efficient
+				// asynchronous execute to enhance efficient
 				executor.execute(getRunnableCompensation(logProcessContext));
 			}
-			
-		}
 
+		}
 
 	}
 	

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.msg.ReliableMessageHandler;
 import com.yiqiniu.easytrans.queue.consumer.EasyTransConsumeAction;
-import com.yiqiniu.easytrans.test.mockservice.order.OrderMessage;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderMessageForCascadingTest;
 import com.yiqiniu.easytrans.test.mockservice.point.PointService;
 
