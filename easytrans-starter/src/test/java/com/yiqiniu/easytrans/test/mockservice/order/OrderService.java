@@ -27,6 +27,7 @@ import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCps
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingResponse;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.AfterMasterTransMethodResult;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.ExpressDeliverAfterTransMethodRequest;
+import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayCascadeTccMethod.WalletPayCascadeTccMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodResult;
 
@@ -41,8 +42,10 @@ public class OrderService {
 
 	@Resource
 	private TestUtil util;
+	private long cascadeTrxFinishedSleepMills = 0;
 	
 	public static final String BUSINESS_CODE = "buySth";
+	public static final String BUSINESS_CODE_CASCADE = "buySthCascade";
 	
 	private static Object NULL_OBJECT = new Object();
 	private static ConcurrentHashMap<Class<?>,Object> notExecuteMap = new ConcurrentHashMap<Class<?>,Object>();
@@ -87,6 +90,12 @@ public class OrderService {
 		throwExceptionSet.clear();
 	}
 	
+	
+	
+
+	public void setCascadeTrxFinishedSleepMills(long cascadeTrxFinishedSleepMills) {
+		this.cascadeTrxFinishedSleepMills = cascadeTrxFinishedSleepMills;
+	}
 
 	@Resource
 	private EasyTransFacade transaction;
@@ -96,6 +105,42 @@ public class OrderService {
 		Integer queryForObject = jdbcTemplate.queryForObject("SELECT count(1) FROM `order` where user_id = ?;", Integer.class,userId);
 		return queryForObject == null?0:queryForObject;
 	}
+	
+	@Transactional("buySthTransactionManager")
+	public void buySomethingCascading(int userId,long money){
+		
+		JdbcTemplate jdbcTemplate = util.getJdbcTemplate(Constant.APPID, BUSINESS_CODE_CASCADE, String.valueOf(userId));
+		Integer id = saveOrderRecord(jdbcTemplate,userId,money);
+
+		transaction.startEasyTrans(BUSINESS_CODE_CASCADE, String.valueOf(id));
+		
+		/**
+		 * 调用级联事务
+		 */
+		WalletPayCascadeTccMethodRequest deductRequest = new WalletPayCascadeTccMethodRequest();
+		deductRequest.setUserId(userId);
+		deductRequest.setPayAmount(money);
+		Future<WalletPayTccMethodResult> execute = transaction.execute(deductRequest);
+		
+		
+		try {
+			//主动获取一下结果，触发真正的远程调用
+			execute.get();
+		} catch (InterruptedException | ExecutionException e1) {
+			e1.printStackTrace();
+		}
+		
+		//在事务结束后主动停止若干秒，用于等待远端事务缓存过期，以测试该场景
+		if(cascadeTrxFinishedSleepMills > 0){
+			try {
+				Thread.sleep(cascadeTrxFinishedSleepMills);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	
+	}
+	
 	
 	@Transactional("buySthTransactionManager")
 	public Future<AfterMasterTransMethodResult> buySomething(int userId,long money){

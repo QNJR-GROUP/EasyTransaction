@@ -83,7 +83,7 @@ public class IdempotentHelper {
 	 */
 	public IdempotentPo getIdempotentPo(EasyTransFilterChain filterChain, Map<String,Object> header, EasyTransRequest<?, ?> reqest){
 		BusinessIdentifer businessType = ReflectUtil.getBusinessIdentifer(reqest.getClass());
-		Object trxIdObj = header.get(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY);
+		Object trxIdObj = header.get(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
 		TransactionId transactionId = (TransactionId) trxIdObj;
 		Integer callSeq = Integer.parseInt(header.get(EasytransConstant.CallHeadKeys.CALL_SEQ).toString());
 		JdbcTemplate jdbcTemplate = getJdbcTemplate(filterChain, reqest);

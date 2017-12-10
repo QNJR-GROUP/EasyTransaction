@@ -13,6 +13,9 @@ import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import com.yiqiniu.easytrans.datasource.DataSourceSelector;
 import com.yiqiniu.easytrans.datasource.TransStatusLogger;
+import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
+import com.yiqiniu.easytrans.protocol.EasyTransRequest;
+import com.yiqiniu.easytrans.protocol.TransactionId;
 
 public class DefaultTransStatusLoggerImpl implements TransStatusLogger {
 
@@ -42,13 +45,13 @@ public class DefaultTransStatusLoggerImpl implements TransStatusLogger {
 			int status = statusList.get(0);
 			
 			switch(status){
-			case 0:
+			case TransactionStatus.UNKNOWN:
 				//parent transaction status unknown
 				return null;
-			case 1:
+			case TransactionStatus.COMMITTED:
 				//success
 				return true;
-			case 2:
+			case TransactionStatus.ROLLBACKED:
 				return false;
 			default:
 				throw new IllegalArgumentException("unknown transaction status:" + status);
@@ -77,7 +80,7 @@ public class DefaultTransStatusLoggerImpl implements TransStatusLogger {
 			prepareStatement.setString(3, trxId);
 			prepareStatement.setString(4, pAppId);
 			prepareStatement.setString(5, pBusCode);
-			prepareStatement.setString(6, pAppId);
+			prepareStatement.setString(6, pTrxId);
 			prepareStatement.setInt(7, status);
 			
 			int executeUpdate = prepareStatement.executeUpdate();
@@ -86,6 +89,25 @@ public class DefaultTransStatusLoggerImpl implements TransStatusLogger {
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("insert Sql failed,check whether the same transaction has been executed?",e);
+		}
+	}
+	
+	@Override
+	public void updateExecuteFlagForSlaveTrx(TransactionId pId, EasyTransRequest<?, ?> request, int status) {
+		
+		BusinessIdentifer businessIdentifer = request.getClass().getAnnotation(BusinessIdentifer.class);
+		
+		Connection connection = DataSourceUtils.getConnection(selctor.selectDataSource(businessIdentifer.appId(),businessIdentifer.busCode(),request));
+		
+		try {
+			PreparedStatement prepareStatement = connection.prepareStatement("UPDATE `executed_trans` SET `status` =  ? WHERE  `p_app_id` =  ? AND `p_bus_code` =  ? AND `p_trx_id` = ?;");
+			prepareStatement.setInt(1, status);
+			prepareStatement.setString(2, pId.getAppId());
+			prepareStatement.setString(3, pId.getBusCode());
+			prepareStatement.setString(4, pId.getTrxId());
+			prepareStatement.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException("updateExecuteFlagForSlaveTrx failed ",e);
 		}
 	}
 

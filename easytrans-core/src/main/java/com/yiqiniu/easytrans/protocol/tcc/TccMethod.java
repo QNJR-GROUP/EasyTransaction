@@ -2,7 +2,9 @@ package com.yiqiniu.easytrans.protocol.tcc;
 
 import java.io.Serializable;
 
+import com.yiqiniu.easytrans.datasource.TransStatusLogger.TransactionStatus;
 import com.yiqiniu.easytrans.protocol.ExecuteOrder;
+import com.yiqiniu.easytrans.protocol.MethodTransactionStatus;
 import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
 
 /**
@@ -27,12 +29,14 @@ public interface TccMethod<P extends TccMethodRequest<R>, R  extends Serializabl
 	 * @return
 	 */
 	@ExecuteOrder(doNotExecuteAfter = { "doConfirm", "doCancel" }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
+	@MethodTransactionStatus(TransactionStatus.UNKNOWN)
 	R doTry(P param);
 	
 	/**
 	 * consume the resources reserved in doTry and finish the transaction
 	 * @param param
 	 */
+	@MethodTransactionStatus(TransactionStatus.COMMITTED)
 	void doConfirm(P param);
 	
 	/**
@@ -40,5 +44,6 @@ public interface TccMethod<P extends TccMethodRequest<R>, R  extends Serializabl
 	 * @param param
 	 */
 	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = { "doTry" })
+	@MethodTransactionStatus(TransactionStatus.ROLLBACKED)
 	void doCancel(P param);
 }

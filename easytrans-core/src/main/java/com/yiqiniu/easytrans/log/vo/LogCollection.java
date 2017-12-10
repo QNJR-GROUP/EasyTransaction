@@ -66,8 +66,10 @@ public class LogCollection implements Serializable{
 
 	@Override
 	public String toString() {
-		return "LogCollection [appId=" + appId + ", trxId=" + trxId
-				+ ", orderedContents=" + orderedContents + "]";
+		return "LogCollection [appId=" + appId + ", busCode=" + busCode + ", trxId=" + trxId + ", orderedContents="
+				+ orderedContents + ", createTime=" + createTime + "]";
 	}
+
+
 	
 }

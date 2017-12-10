@@ -3,15 +3,20 @@ package com.yiqiniu.easytrans.core;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.yiqiniu.easytrans.context.LogProcessContext;
 import com.yiqiniu.easytrans.datasource.TransStatusLogger;
 import com.yiqiniu.easytrans.datasource.TransStatusLogger.TransactionStatus;
@@ -32,6 +37,12 @@ public class EasyTransSynchronizer {
 	private ConsistentGuardian consistentGuardian;
 	private TransStatusLogger transStatusLogger;
 	private String applicationName;
+	
+	private final Cache<TransactionId, ConcurrentLinkedQueue<LogProcessContext>> compensationLogContextCache = CacheBuilder.newBuilder()  
+	        .initialCapacity(10)  
+	        .concurrencyLevel(5)  
+	        .expireAfterWrite(10, TimeUnit.SECONDS)  
+	        .build();  
 	
 	public EasyTransSynchronizer(TransactionLogWritter writer, ConsistentGuardian consistentGuardian,
 			TransStatusLogger transStatusLogger, String applicationName) {
@@ -78,7 +89,12 @@ public class EasyTransSynchronizer {
 			transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, null, null, null, TransactionStatus.COMMITTED);
 		} else {
 			//a transaction with parent transaction,it's status depends on parent
-			transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, pTrxId.getAppId(), pTrxId.getBusCode(), pTrxId.getTrxId(), TransactionStatus.UNKNOWN);
+			//check whether the parent transaction status is determined
+			Integer pTransStatus = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRANSACTION_STATUS);
+			if(pTransStatus == null){
+				pTransStatus = TransactionStatus.UNKNOWN;
+			} 
+			transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, pTrxId.getAppId(), pTrxId.getBusCode(), pTrxId.getTrxId(), pTransStatus);
 		}
 	}
 
@@ -123,60 +139,102 @@ public class EasyTransSynchronizer {
 		public void afterCompletion(int status) {
 			final LogProcessContext logProcessContext = getLogProcessContext();
 			unbindLogProcessContext();
-			
+
+			// the parent's transaction status
 			boolean hasParentTransaction = getParentTransactionId() != null;
-			switch(status){
-				case STATUS_COMMITTED:
-				if(hasParentTransaction){
-						//transaction with parent's status is depends on parent
+			Integer pTrxStatus = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRANSACTION_STATUS);
+
+			switch (status) {
+			case STATUS_COMMITTED:
+				if (hasParentTransaction) {
+					// the status of a transaction with parent depends on parent
+					// get parent transaction status
+					if (pTrxStatus == null || pTrxStatus.equals(TransactionStatus.UNKNOWN)) {
 						logProcessContext.setFinalMasterTransStatus(null);
 					} else {
-						logProcessContext.setFinalMasterTransStatus(true);
-					}
-					break;
-				case STATUS_ROLLED_BACK:
-					logProcessContext.setFinalMasterTransStatus(false);
-					break;
-				case STATUS_UNKNOWN:
-					logProcessContext.setFinalMasterTransStatus(null);
-					break;
-				default:
-					throw new RuntimeException("Unkonw Status!");
-			}
-			
-			//unwritten logs are not necessary logs
-			logProcessContext.getLogCache().clearCacheLogs();
-			
-			
-			if(hasParentTransaction){
-				//has parent transaction, the final transaction status is known
-				//pending the context a while and try to wait for the sync call back to tell final status
-				pendCompensation(logProcessContext);
-			} else {
-				//asynchronous execute to enhance efficient
-				executor.execute(new Runnable() {
-					@Override
-					public void run() {
-						try{
-							consistentGuardian.process(logProcessContext);
-						}catch(Throwable e){
-							LOG.error("consistentGuardian execute exception!",e);
+						if (pTrxStatus.equals(TransactionStatus.COMMITTED)) {
+							logProcessContext.setFinalMasterTransStatus(true);
+						} else {
+							logProcessContext.setFinalMasterTransStatus(false);
 						}
 					}
-				});
+				} else {
+					logProcessContext.setFinalMasterTransStatus(true);
+				}
+				break;
+			case STATUS_ROLLED_BACK:
+				logProcessContext.setFinalMasterTransStatus(false);
+				break;
+			case STATUS_UNKNOWN:
+				logProcessContext.setFinalMasterTransStatus(null);
+				break;
+			default:
+				throw new RuntimeException("Unkonw Status!");
 			}
-			
+
+			// unwritten logs are not necessary logs
+			logProcessContext.getLogCache().clearCacheLogs();
+
+			if (hasParentTransaction && (pTrxStatus == null || pTrxStatus.equals(TransactionStatus.UNKNOWN))) {
+				// has parent transaction, the final transaction status is
+				// unknown
+				// pending the context a while and try to wait for the sync call
+				// back to tell final status
+				// this require the consumer support the sticky call
+				pendCompensationLogContext(logProcessContext);
+			} else {
+				// asynchronous execute to enhance efficient
+				executor.execute(getRunnableCompensation(logProcessContext));
+			}
+
 		}
+
+	}
+	
+	private Runnable getRunnableCompensation(final LogProcessContext logProcessContext) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				try{
+					consistentGuardian.process(logProcessContext);
+				}catch(Throwable e){
+					LOG.error("consistentGuardian execute exception!",e);
+				}
+			}
+		};
 	}
 
 	private TransactionId getParentTransactionId() {
-		return MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY);
+		return MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
 	}
 
-//	private ConcurrentSkipListMap<String,Tran>
-	private void pendCompensation(LogProcessContext logProcessContext) {
-		// TODO Auto-generated method stub
+	private void pendCompensationLogContext(LogProcessContext logProcessContext) {
+		try {
+			ConcurrentLinkedQueue<LogProcessContext>  set = compensationLogContextCache.get(getParentTransactionId(),new Callable<ConcurrentLinkedQueue<LogProcessContext>>(){
+				@Override
+				public ConcurrentLinkedQueue<LogProcessContext> call() throws Exception {
+					return new ConcurrentLinkedQueue<LogProcessContext>();
+				}
+			});
+			set.add(logProcessContext);
+		} catch (ExecutionException e) {
+			//it's OK to just log,this operation is just for efficient
+			LOG.error("cache pending transaction error",e);
+		}
+	}
+	
+	public void cascadeExecuteCachedTransaction(TransactionId pTrxId,boolean trxStatus){
+		ConcurrentLinkedQueue<LogProcessContext> queue = compensationLogContextCache.getIfPresent(pTrxId);
+		if(queue == null) {
+			return ;
+		}
 		
+		for(LogProcessContext logContext = queue.poll(); logContext != null; logContext = queue.poll()){
+			compensationLogContextCache.invalidate(pTrxId);
+			logContext.setFinalMasterTransStatus(trxStatus);
+			//asynchronous execute to enhance efficient
+			executor.execute(getRunnableCompensation(logContext));
+		}
 	}
 	
 }

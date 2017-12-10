@@ -34,6 +34,7 @@ import com.yiqiniu.easytrans.filter.DefaultEasyTransFilterFactory;
 import com.yiqiniu.easytrans.filter.EasyTransFilter;
 import com.yiqiniu.easytrans.filter.EasyTransFilterChainFactory;
 import com.yiqiniu.easytrans.filter.MetaDataFilter;
+import com.yiqiniu.easytrans.filter.ParentTrxStatusUpdateFilter;
 import com.yiqiniu.easytrans.idempotent.DefaultIdempotentHandlerFilter;
 import com.yiqiniu.easytrans.idempotent.IdempotentHandlerFilter;
 import com.yiqiniu.easytrans.idempotent.IdempotentHelper;
@@ -160,8 +161,13 @@ public class EasyTransCoreConfiguration {
 	}
 	
 	@Bean
-	public MetaDataFilter metaDataFilter(){
-		return new MetaDataFilter();
+	public MetaDataFilter metaDataFilter(ListableProviderFactory providerFactory){
+		return new MetaDataFilter(providerFactory);
+	}
+	
+	@Bean
+	public ParentTrxStatusUpdateFilter parentTrxStatusUpdateFilter(DataSourceSelector selector, TransStatusLogger transStatusLogger, EasyTransSynchronizer easyTransSynchronizer){
+		return new ParentTrxStatusUpdateFilter(selector, transStatusLogger, easyTransSynchronizer);
 	}
 	
 	@Bean

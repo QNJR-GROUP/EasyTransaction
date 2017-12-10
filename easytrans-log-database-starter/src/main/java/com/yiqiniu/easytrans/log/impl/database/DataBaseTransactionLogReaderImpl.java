@@ -91,7 +91,7 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 		if(currentDoList.size() != 0){
 			DataBaseTransactionLogDetail first = currentDoList.get(0);
 			String[] splitTransId = EasyTransStaticHelper.getSplitTransId(first.getTransLogId());
-			result.add(new LogCollection(splitTransId[0], splitTransId[1], splitTransId[2], currentContentList, first.getCreateTime()));
+			result.add(new LogCollection(splitTransId[0], splitTransId[1], splitTransId[2], new ArrayList<Content>(currentContentList), first.getCreateTime()));
 		}
 	}
 	

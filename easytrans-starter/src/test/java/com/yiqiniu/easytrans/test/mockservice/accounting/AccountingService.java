@@ -31,7 +31,7 @@ public class AccountingService {
 	public AccountingResponse accounting(AccountingRequest param) {
 		JdbcTemplate jdbcTemplate = getJdbcTemplate(param);
 		
-		TransactionId trxId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY);
+		TransactionId trxId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
 		
 		int update = jdbcTemplate.update("INSERT INTO `accounting` (`accounting_id`, `p_app_id`, `p_bus_code`, `p_trx_id`, `user_id`, `amount`, `create_time`) VALUES (NULL, ?, ?, ?, ?, ?, ?);",
 				trxId.getAppId(),
@@ -50,7 +50,7 @@ public class AccountingService {
 	public void reverseEntry(AccountingRequest param) {
 		JdbcTemplate jdbcTemplate = getJdbcTemplate(param);
 		
-		TransactionId trxId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY);
+		TransactionId trxId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
 		
 		int update = jdbcTemplate.update("INSERT INTO `accounting` (`accounting_id`, `p_app_id`, `p_bus_code`, `p_trx_id`, `user_id`, `amount`, `create_time`) VALUES (NULL, ?, ?, ?, ?, ?, ?);",
 				trxId.getAppId(),

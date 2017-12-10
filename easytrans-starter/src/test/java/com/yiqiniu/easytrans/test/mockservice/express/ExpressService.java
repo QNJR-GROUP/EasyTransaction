@@ -39,7 +39,7 @@ public class ExpressService {
 	private String callExternalServiceForPickupCargo(ExpressDeliverAfterTransMethodRequest param) {
 		//pretend to be a external service
 		JdbcTemplate jdbcTemplate = util.getJdbcTemplate(Constant.APPID,ExpressDeliverAfterTransMethod.BUSINESS_CODE,param);
-		TransactionId trxId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY);
+		TransactionId trxId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
 		
 		int update = jdbcTemplate.update("INSERT INTO `express` (`p_app_id`, `p_bus_code`, `p_trx_id`, `user_id`) VALUES (?, ?, ?, ?);", 
 				trxId.getAppId(),trxId.getBusCode(),trxId.getTrxId(),param.getUserId());

@@ -2,6 +2,8 @@ package com.yiqiniu.easytrans.protocol.aft;
 
 import java.io.Serializable;
 
+import com.yiqiniu.easytrans.datasource.TransStatusLogger.TransactionStatus;
+import com.yiqiniu.easytrans.protocol.MethodTransactionStatus;
 import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
 
 /**
@@ -12,5 +14,6 @@ import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
  * Methods here should be idempotent
  */
 public interface AfterMasterTransMethod<P extends AfterMasterTransRequest<R>, R extends Serializable> extends RpcBusinessProvider<P>{
+	@MethodTransactionStatus(TransactionStatus.COMMITTED)
 	R afterTransaction(P param);
 }

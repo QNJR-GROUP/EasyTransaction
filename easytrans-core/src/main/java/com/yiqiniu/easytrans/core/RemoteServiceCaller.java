@@ -41,7 +41,7 @@ public class RemoteServiceCaller {
 	
 	private Map<String,Object> initEasyTransRequestHeader(Integer callSeq, LogProcessContext logContext){
 		HashMap<String, Object> header = new HashMap<String,Object>();
-		header.put(EasytransConstant.CallHeadKeys.TANSACTION_ID_KEY, logContext.getTransactionId());
+		header.put(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY, logContext.getTransactionId());
 		header.put(EasytransConstant.CallHeadKeys.CALL_SEQ, callSeq);
 		return header; 
 	}
