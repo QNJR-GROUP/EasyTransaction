@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -43,7 +44,7 @@ import com.yiqiniu.easytrans.test.mockservice.wallet.WalletService;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodRequest;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { EasyTransTestConfiguration.class })
+@SpringBootTest(classes = { EasyTransTestConfiguration.class },webEnvironment = WebEnvironment.DEFINED_PORT)
 public class FullTest {
 
 	@Resource(name = "wholeJdbcTemplate")

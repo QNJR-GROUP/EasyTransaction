@@ -24,7 +24,7 @@ import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
 public interface TccMethod<P extends TccMethodRequest<R>, R  extends Serializable> extends RpcBusinessProvider<P> {
     
 	/**
-	 * reserve the resources than will be used in doConifirm(),so doConfirm() is always practicable in business
+	 * reserve the resources that will be used in doConifirm(),so doConfirm() is always practicable in business
 	 * @param param
 	 * @return
 	 */
