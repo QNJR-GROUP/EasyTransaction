@@ -1,4 +1,4 @@
-package com.yiqiniu.easytrans.rpc.impl.feign;
+package com.yiqiniu.easytrans.rpc.impl.rest;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(FeignEasyTransRpcConfiguration.class)
-public @interface EnableRpcFeignImpl {
+@Import(RestRibbonEasyTransRpcConfiguration.class)
+public @interface EnableRpcRestRibbonImpl {
 
 }

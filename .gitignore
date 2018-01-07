@@ -2,6 +2,7 @@ server_back.properties
 *.class
 *.log
 *.log.*
+.factorypath
 /target/*
 /.settings/*
 /bin/*

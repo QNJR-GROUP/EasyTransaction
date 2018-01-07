@@ -2,10 +2,12 @@ package com.yiqiniu.easytrans.test;
 
 import javax.sql.DataSource;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
@@ -14,15 +16,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.yiqiniu.easytrans.EnableEasyTransaction;
 import com.yiqiniu.easytrans.log.impl.database.EnableLogDatabaseImpl;
-import com.yiqiniu.easytrans.rpc.impl.dubbo.EnableRpcDubboImpl;
 
-@Configuration
+@SpringBootApplication
 @EnableEasyTransaction
 @ComponentScan(basePackages={"com.yiqiniu.easytrans.test.mockservice"})
 //@EnableQueueOnsImpl
-@EnableRpcDubboImpl
+//@EnableRpcDubboImpl
 @EnableLogDatabaseImpl
 @EnableTransactionManagement
+@EnableAutoConfiguration(exclude=DataSourceAutoConfiguration.class)
 public class EasyTransTestConfiguration {
 	
 	@Component

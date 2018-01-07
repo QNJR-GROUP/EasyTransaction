@@ -55,7 +55,7 @@ import com.yiqiniu.easytrans.recovery.ConsistentGuardianDaemonConfiguration;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcConsumer;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcProvider;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcProviderInitializer;
-import com.yiqiniu.easytrans.rpc.impl.feign.EnableRpcFeignImpl;
+import com.yiqiniu.easytrans.rpc.impl.rest.EnableRpcRestRibbonImpl;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
 import com.yiqiniu.easytrans.serialization.impl.SpringObjectSerialization;
 
@@ -195,8 +195,8 @@ public class EasyTransCoreConfiguration {
 	}
 	
 	
-	@ConditionalOnClass(EnableRpcFeignImpl.class)
-	@EnableRpcFeignImpl
+	@ConditionalOnClass(EnableRpcRestRibbonImpl.class)
+	@EnableRpcRestRibbonImpl
 	public static class EnableDefaultRpcImpl {
 	}
 	

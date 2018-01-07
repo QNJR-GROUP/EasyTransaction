@@ -4,6 +4,15 @@ spring:
  
 debug: true
 
+# RIBBON用，也可以直接开启Eureka
+trx-test-service:
+  ribbon:
+    listOfServers: localhost:8080
+    
+logging:
+  level:
+    root: info
+
 easytrans:
   master:
     zk:
@@ -64,10 +73,16 @@ easytrans:
         SecretKey: jLDnKxuglLIZvHZ0495sI9mnKWMvGV
         ONSAddr: http://onsaddr-internet.aliyun.com/rocketmq/nsaddr4client-internet
   rpc:
-    feign:
-      enabled: false
-    dubbo:
+    rest-ribbon:
       enabled: true
+      provider:
+        context: /easytrans
+      consumer:
+        trx-test-service:
+          context: /easytrans
+        
+    dubbo:
+      enabled: false
       dubbo-default-timeout: 2000
       dubbo-zk-url: zookeeper://localhost:2181
   test:

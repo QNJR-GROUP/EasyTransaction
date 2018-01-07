@@ -34,7 +34,7 @@ public class EasyTransRpcProviderInitializer {
 	private void init(){
 		
 		//set filters
-		rpcProvider.addEasyTransFilter(filterFactory.getDefaultFilters());;
+		rpcProvider.addEasyTransFilter(filterFactory.getDefaultFilters());
 		
 		Set<Class<?>> typeSet = wareHouse.getServiceTransactionTypeSet(RpcBusinessProvider.class);
 		
