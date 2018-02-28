@@ -171,20 +171,22 @@ public class FullTest {
 		}
 
 
-		sleep(10000);// wait for msg queue retry test finished
 		// 执行一遍后台补偿任务，以避免上述操作有未补偿成功的
 		// execute consistent guardian in case of timeout
 		List<LogCollection> unfinishedLogs = logReader.getUnfinishedLogs(null, 100, new Date());
 		for (LogCollection logCollection : unfinishedLogs) {
 			guardian.process(logCollection);
 		}
-
+		
+		sleep(20000);// wait for msg queue retry test finished
+		
 		Assert.assertTrue(walletService.getUserTotalAmount(1) == 5000);
 		Assert.assertTrue(walletService.getUserFreezeAmount(1) == 0);
 		Assert.assertTrue(accountingService.getTotalCost(1) == 5000);
 		Assert.assertTrue(expressService.getUserExpressCount(1) == 5);
 		Assert.assertTrue(pointService.getUserPoint(1) == 7000);
 		System.out.println("Test Passed!!");
+	
 	}
 
 	public void sleep(long sleepTime) {

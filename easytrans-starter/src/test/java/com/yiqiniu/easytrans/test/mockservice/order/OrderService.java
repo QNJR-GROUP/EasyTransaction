@@ -172,14 +172,23 @@ public class OrderService {
 		 */
 		WalletPayTccMethodRequest deductRequest = new WalletPayTccMethodRequest();
 		deductRequest.setUserId(userId);
-		deductRequest.setPayAmount(money/2);
+		deductRequest.setPayAmount(money/10);
 		//return future for the benefits of performance enhance(batch write execute log and batch execute RPC)
 		//返回future是为了能方便的优化性能(批量写日志及批量调用RPC)
 		Future<WalletPayTccMethodResult> deductFuture = null;
 		if(checkExecuteForTestCase(deductRequest.getClass())){
 			/**
-			 * 执行两遍，每次都扣一半的钱，以测试相同方法在业务上调用两次的场景
+			 * 执行10遍，每次都扣十分之一钱，以测试相同方法在业务上调用多次的场景
+			 * 因之前版本不支持同一事物内调用同一个方法多次，这里只是测试调用多次的场景，并无其他特殊含义
 			 */
+			deductFuture = transaction.execute(deductRequest);
+			deductFuture = transaction.execute(deductRequest);
+			deductFuture = transaction.execute(deductRequest);
+			deductFuture = transaction.execute(deductRequest);
+			deductFuture = transaction.execute(deductRequest);
+			deductFuture = transaction.execute(deductRequest);
+			deductFuture = transaction.execute(deductRequest);
+			deductFuture = transaction.execute(deductRequest);
 			deductFuture = transaction.execute(deductRequest);
 			deductFuture = transaction.execute(deductRequest);
 		}
