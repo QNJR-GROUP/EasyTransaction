@@ -1,8 +1,10 @@
 package com.yiqiniu.easytrans;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -177,10 +179,14 @@ public class EasyTransCoreConfiguration {
 	
 	@Bean
 	@ConditionalOnMissingBean(ListableProviderFactory.class)
-	public DefaultListableProviderFactory defaultListableProviderFactory(List<RpcBusinessProvider<?>> rpcBusinessProviderList,List<MessageBusinessProvider<?>> messageBusinessProviderList){
+	public DefaultListableProviderFactory defaultListableProviderFactory(Optional<List<RpcBusinessProvider<?>>> rpcBusinessProviderList, Optional<List<MessageBusinessProvider<?>>> messageBusinessProviderList){
 		HashMap<Class<?>, List<? extends BusinessProvider<?>>> mapProviderTypeBeans = new HashMap<Class<?>, List<? extends BusinessProvider<?>>>(2);
-		mapProviderTypeBeans.put(RpcBusinessProvider.class, rpcBusinessProviderList);
-		mapProviderTypeBeans.put(MessageBusinessProvider.class, messageBusinessProviderList);
+		
+		List<RpcBusinessProvider<?>> rpcList = rpcBusinessProviderList.orElse(Collections.emptyList());
+		List<MessageBusinessProvider<?>> msgList = messageBusinessProviderList.orElse(Collections.emptyList());
+		
+		mapProviderTypeBeans.put(RpcBusinessProvider.class, rpcList);
+		mapProviderTypeBeans.put(MessageBusinessProvider.class, msgList);
 		return new DefaultListableProviderFactory(mapProviderTypeBeans);
 	}
 	
