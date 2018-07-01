@@ -103,9 +103,10 @@ public class RestRibbonEasyTransRpcConsumerImpl implements EasyTransRpcConsumer{
 		}
 	}
 	
+	public RestTemplate getLoadBalancedRestTemplate() {
+		return loadBalancedRestTemplate;
+	}
 
-	
-	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public <P extends EasyTransRequest<R, ?>, R extends Serializable> R call(String appId, String busCode, String innerMethod, Map<String,Object> header, P params) {
