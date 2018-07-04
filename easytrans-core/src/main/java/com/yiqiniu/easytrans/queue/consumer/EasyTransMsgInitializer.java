@@ -33,7 +33,7 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 	private ListableProviderFactory serviceWareHouse;
 	private EasyTransMsgConsumer consumer;
 	private EasyTransFilterChainFactory filterChainFactory;
-	private String applicationName;
+//	private String applicationName;
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	private EasyTransFilter consumeStatusCheckFilter = new EasyTransFilter(){
@@ -43,6 +43,7 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 				EasyTransRequest<?, ?> request) {
 			EasyTransResult result = filterChain.invokeFilterChain(header, request);
 			if(result.getValue() == null && result.getException() == null 
+					|| result.getException() != null
 					|| result.getValue().equals(EasyTransConsumeAction.ReconsumeLater)){
 				result.setException(new NeedToReconsumeLaterException());//help to roll back in idempotent filter
 			}
@@ -59,7 +60,7 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 		this.serviceWareHouse = serviceWareHouse;
 		this.consumer = consumer;
 		this.filterChainFactory = filterChainFactory;
-		this.applicationName = applicationName;
+//		this.applicationName = applicationName;
 		init();
 	}
 	
@@ -99,7 +100,10 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 		
 		EasyTransFilter easyTransFilter = getFilter(message);
 		BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(message.getClass());
-		EasyTransFilterChain filterChain = filterChainFactory.getDefaultFilterChain(applicationName/*should use consumer's appId*/, businessIdentifer.busCode(), EasyTransFilterChain.MESSAGE_BUSINESS_FLAG);
+		//记不起当时改成applicationName并加上注解的原因了，改成直接从businessIdentifer取。
+		//已知的一个与之前的区别是，多个服务共享一个数据库的话，不支持多个服务都消费同一个消息，若出现该情况，只有一个服务会成功消费。因为幂等表里暂时并没有按消费者区分幂等记录，后续可调整完善。
+//		EasyTransFilterChain filterChain = filterChainFactory.getDefaultFilterChain(applicationName/*should use consumer's appId*/, businessIdentifer.busCode(), EasyTransFilterChain.MESSAGE_BUSINESS_FLAG);
+		EasyTransFilterChain filterChain = filterChainFactory.getDefaultFilterChain(businessIdentifer.appId(), businessIdentifer.busCode(), EasyTransFilterChain.MESSAGE_BUSINESS_FLAG);
 		filterChain.addFilter(consumeStatusCheckFilter);
 		filterChain.addFilter(easyTransFilter);
 		EasyTransResult result = filterChain.invokeFilterChain(header,message);
@@ -109,9 +113,9 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 			result.setValue(EasyTransConsumeAction.ReconsumeLater);
 		}
 		
-//		if(result.getException() != null && result.getException().getClass() != NeedToReconsumeLaterException.class){
-//			LOG.error("Consume Error!",result.getException());
-//		}
+		if(result.getException() != null && result.getException().getClass() != NeedToReconsumeLaterException.class){
+			logger.error("Consume Error!",result.getException());
+		}
 		
 		return consumeResult;
 	}
