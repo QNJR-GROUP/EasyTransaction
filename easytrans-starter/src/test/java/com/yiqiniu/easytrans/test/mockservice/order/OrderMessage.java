@@ -4,7 +4,7 @@ import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.msg.ReliableMessagePublishRequest;
 import com.yiqiniu.easytrans.test.Constant;
 
-@BusinessIdentifer(appId=Constant.APPID,busCode=OrderMessage.BUSINESS_CODE)
+@BusinessIdentifer(appId=Constant.APPID + "Test",busCode=OrderMessage.BUSINESS_CODE)
 public class OrderMessage implements ReliableMessagePublishRequest {
 
 	public static final String BUSINESS_CODE = "ReliableOrderMsg";
