@@ -20,6 +20,7 @@ import com.yiqiniu.easytrans.protocol.BusinessProvider;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.MessageBusinessProvider;
 import com.yiqiniu.easytrans.provider.factory.ListableProviderFactory;
+import com.yiqiniu.easytrans.queue.QueueTopicMapper;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
 
@@ -33,6 +34,7 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 	private ListableProviderFactory serviceWareHouse;
 	private EasyTransMsgConsumer consumer;
 	private EasyTransFilterChainFactory filterChainFactory;
+	private QueueTopicMapper queueTopicMapper;
 //	private String applicationName;
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
@@ -55,12 +57,12 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 	
 	
 	public EasyTransMsgInitializer(ListableProviderFactory serviceWareHouse, EasyTransMsgConsumer consumer,
-			EasyTransFilterChainFactory filterChainFactory, String applicationName) {
+			EasyTransFilterChainFactory filterChainFactory, QueueTopicMapper queueTopicMapper) {
 		super();
 		this.serviceWareHouse = serviceWareHouse;
 		this.consumer = consumer;
 		this.filterChainFactory = filterChainFactory;
-//		this.applicationName = applicationName;
+		this.queueTopicMapper = queueTopicMapper;
 		init();
 	}
 	
@@ -79,12 +81,15 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 				Class<? extends EasyTransRequest<?, ?>> clazz = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) messageHandler.getClass());
 				BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(clazz);
 				
-				List<String> list = map.get(businessIdentifer.appId());
+				
+				String[] topicTag = queueTopicMapper.mapToTopicTag(businessIdentifer.appId(), businessIdentifer.busCode());
+				
+				List<String> list = map.get(topicTag[0]);
 				if(list == null){
 					list = new ArrayList<String>();
-					map.put(businessIdentifer.appId(), list);
+					map.put(topicTag[0], list);
 				}
-				list.add(businessIdentifer.busCode());
+				list.add(topicTag[1]);
 			}
 		}
 		
