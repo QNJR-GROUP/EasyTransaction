@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.yiqiniu.easytrans.context.LogProcessContext;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
+import com.yiqiniu.easytrans.queue.QueueTopicMapper;
 import com.yiqiniu.easytrans.queue.producer.EasyTransMsgPublishResult;
 import com.yiqiniu.easytrans.queue.producer.EasyTransMsgPublisher;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcConsumer;
@@ -16,14 +17,16 @@ public class RemoteServiceCaller {
 	private EasyTransRpcConsumer consumer;
 	private EasyTransMsgPublisher publisher;
 	private ObjectSerializer serializer;
+	private QueueTopicMapper queueTopicMapper;
 	
 	
 	public RemoteServiceCaller(EasyTransRpcConsumer consumer, EasyTransMsgPublisher publisher,
-			ObjectSerializer serializer) {
+			ObjectSerializer serializer, QueueTopicMapper queueTopicMapper) {
 		super();
 		this.consumer = consumer;
 		this.publisher = publisher;
 		this.serializer = serializer;
+		this.queueTopicMapper = queueTopicMapper;
 	}
 
 	public <P extends EasyTransRequest<R,?>,R extends Serializable> R call(String appId,String busCode, Integer callSeq,String innerMethod,P params,LogProcessContext logContext){
@@ -35,8 +38,11 @@ public class RemoteServiceCaller {
 	}
 	
 	
-	public EasyTransMsgPublishResult publish(String topic, String tag, Integer callSeq, String key, EasyTransRequest<?, ?> request,LogProcessContext logContext){
-		return publisher.publish(topic, tag, key, initEasyTransRequestHeader(callSeq,logContext) ,serializer.serialization(request));
+	public EasyTransMsgPublishResult publish(String appid, String busCode, Integer callSeq, String key, EasyTransRequest<?, ?> request,LogProcessContext logContext){
+		
+		String[] topicTag = queueTopicMapper.mapToTopicTag(appid, busCode);
+		
+		return publisher.publish(topicTag[0], topicTag[1], key, initEasyTransRequestHeader(callSeq,logContext) ,serializer.serialization(request));
 	}
 	
 	private Map<String,Object> initEasyTransRequestHeader(Integer callSeq, LogProcessContext logContext){

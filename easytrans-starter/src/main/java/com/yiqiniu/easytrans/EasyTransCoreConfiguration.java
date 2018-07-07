@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
@@ -48,6 +49,8 @@ import com.yiqiniu.easytrans.protocol.MessageBusinessProvider;
 import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
 import com.yiqiniu.easytrans.provider.factory.DefaultListableProviderFactory;
 import com.yiqiniu.easytrans.provider.factory.ListableProviderFactory;
+import com.yiqiniu.easytrans.queue.IdenticalQueueTopicMapper;
+import com.yiqiniu.easytrans.queue.QueueTopicMapper;
 import com.yiqiniu.easytrans.queue.consumer.EasyTransMsgConsumer;
 import com.yiqiniu.easytrans.queue.consumer.EasyTransMsgInitializer;
 import com.yiqiniu.easytrans.queue.consumer.EasyTransMsgListener;
@@ -65,6 +68,7 @@ import com.yiqiniu.easytrans.serialization.impl.SpringObjectSerialization;
 * @author xudeyou 
 */
 @Configuration
+@ConditionalOnBean(EasyTransactionTrrigerConfiguration.class)
 public class EasyTransCoreConfiguration {
 	
 	@Value("${spring.application.name}")
@@ -102,8 +106,8 @@ public class EasyTransCoreConfiguration {
 	 */
 	@Bean
 	public RemoteServiceCaller remoteServiceCaller(@Lazy EasyTransRpcConsumer consumer, @Lazy EasyTransMsgPublisher publisher,
-			ObjectSerializer serializer){
-		return new RemoteServiceCaller(consumer, publisher, serializer);
+			ObjectSerializer serializer, QueueTopicMapper queueTopicMapper){
+		return new RemoteServiceCaller(consumer, publisher, serializer,queueTopicMapper);
 	}
 	
 	@Bean
@@ -134,8 +138,8 @@ public class EasyTransCoreConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(EasyTransMsgListener.class)
 	public EasyTransMsgInitializer easyTransMsgInitializer(ListableProviderFactory serviceWareHouse, EasyTransMsgConsumer consumer,
-			EasyTransFilterChainFactory filterChainFactory){
-		return new EasyTransMsgInitializer(serviceWareHouse, consumer, filterChainFactory, applicationName);
+			EasyTransFilterChainFactory filterChainFactory,QueueTopicMapper queueTopicMapper){
+		return new EasyTransMsgInitializer(serviceWareHouse, consumer, filterChainFactory, queueTopicMapper);
 	}
 	
 	@Bean
@@ -227,4 +231,11 @@ public class EasyTransCoreConfiguration {
 	public DefaultTransStatusLoggerImpl DefaultTransStatusLoggerImpl(DataSourceSelector selctor) {
 		return new DefaultTransStatusLoggerImpl(selctor);
 	}
+	
+	@Bean
+	@ConditionalOnMissingBean(QueueTopicMapper.class)
+	public QueueTopicMapper queueTopicMapper(){
+		return new IdenticalQueueTopicMapper();
+	}
+	
 }
