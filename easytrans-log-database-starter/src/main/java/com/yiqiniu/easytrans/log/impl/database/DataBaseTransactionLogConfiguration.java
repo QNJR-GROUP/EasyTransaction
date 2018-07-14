@@ -41,7 +41,7 @@ public class DataBaseTransactionLogConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(TransactionLogReader.class)
 	public DataBaseTransactionLogReaderImpl dataBaseTransactionLogReaderImpl(ObjectSerializer serializer,DataBaseForLog dataBaseWrap){
-		return new DataBaseTransactionLogReaderImpl(serializer,dataBaseWrap.getDataSource());
+		return new DataBaseTransactionLogReaderImpl(applicationName, serializer,dataBaseWrap.getDataSource());
 	}
 	
 	@Bean
