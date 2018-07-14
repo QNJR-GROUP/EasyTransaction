@@ -39,8 +39,10 @@ import com.yiqiniu.easytrans.filter.EasyTransFilterChainFactory;
 import com.yiqiniu.easytrans.filter.MetaDataFilter;
 import com.yiqiniu.easytrans.filter.ParentTrxStatusUpdateFilter;
 import com.yiqiniu.easytrans.idempotent.DefaultIdempotentHandlerFilter;
+import com.yiqiniu.easytrans.idempotent.DefaultIdempotentTransactionDefinition;
 import com.yiqiniu.easytrans.idempotent.IdempotentHandlerFilter;
 import com.yiqiniu.easytrans.idempotent.IdempotentHelper;
+import com.yiqiniu.easytrans.idempotent.IdempotentTransactionDefinition;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
 import com.yiqiniu.easytrans.log.impl.kafka.EnableLogKafkaImpl;
 import com.yiqiniu.easytrans.master.impl.EnableMasterZookeeperImpl;
@@ -161,9 +163,15 @@ public class EasyTransCoreConfiguration {
 	}
 	
 	@Bean
+	@ConditionalOnMissingBean(IdempotentTransactionDefinition.class)
+	public IdempotentTransactionDefinition idempotentTransactionDefinition(){
+		return new DefaultIdempotentTransactionDefinition();
+	}
+	
+	@Bean
 	@ConditionalOnMissingBean(IdempotentHandlerFilter.class)
-	public DefaultIdempotentHandlerFilter idempotentHandlerFilter(IdempotentHelper helper, ObjectSerializer serializer){
-		return new DefaultIdempotentHandlerFilter(applicationName, helper, serializer);
+	public DefaultIdempotentHandlerFilter idempotentHandlerFilter(IdempotentHelper helper, ObjectSerializer serializer,IdempotentTransactionDefinition idempotentTransactionDefinition){
+		return new DefaultIdempotentHandlerFilter(applicationName, helper, serializer, idempotentTransactionDefinition);
 	}
 	
 	@Bean

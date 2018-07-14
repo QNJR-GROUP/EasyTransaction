@@ -8,9 +8,7 @@ import java.util.Map;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -36,12 +34,14 @@ public class DefaultIdempotentHandlerFilter implements IdempotentHandlerFilter {
 	private IdempotentHelper helper;
 	private ObjectSerializer serializer;
 	private String appId;
+	private IdempotentTransactionDefinition transactionDefinition;
 	
-	public DefaultIdempotentHandlerFilter(String appId, IdempotentHelper helper, ObjectSerializer serializer) {
+	public DefaultIdempotentHandlerFilter(String appId, IdempotentHelper helper, ObjectSerializer serializer, IdempotentTransactionDefinition transactionDefinition) {
 		super();
 		this.helper = helper;
 		this.serializer = serializer;
 		this.appId = appId;
+		this.transactionDefinition = transactionDefinition;
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class DefaultIdempotentHandlerFilter implements IdempotentHandlerFilter {
 			
 			//start transaction，require
 			PlatformTransactionManager transactionManager = helper.getTransactionManager(filterChain,request);
-			TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
+			TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition.getTransactionDefinition(filterChain, header, request));
 			EasyTransResult result = null;
 			try {
 				result = transactionTemplate.execute(new TransactionCallback<EasyTransResult>() {
