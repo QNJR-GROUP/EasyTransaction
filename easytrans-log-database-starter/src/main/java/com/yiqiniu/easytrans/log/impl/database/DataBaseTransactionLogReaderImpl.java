@@ -17,17 +17,23 @@ import com.yiqiniu.easytrans.log.vo.Content;
 import com.yiqiniu.easytrans.log.vo.LogCollection;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
 
+import static com.yiqiniu.easytrans.core.EasytransConstant.EscapeChar;
+
+
 public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 	
-	public DataBaseTransactionLogReaderImpl(ObjectSerializer serializer,DataSource dataSource) {
+	
+	
+	public DataBaseTransactionLogReaderImpl(String appId, ObjectSerializer serializer,DataSource dataSource) {
 		super();
 		this.serializer = serializer;
 		this.dataSource = dataSource;
+		this.appId = appId;
 	}
 	
 	private DataSource dataSource;
-	
 	private ObjectSerializer serializer;
+	private String appId;
 	
 	private JdbcTemplate jdbcTemplate;
 	private JdbcTemplate getJdbcTemplate(){
@@ -47,9 +53,9 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 		List<String> transIdList = null;
 		if(locationId != null){
 			String transIdLocation = EasyTransStaticHelper.getTransId(locationId.getAppId(), locationId.getBusCode(), locationId.getTrxId());
-			transIdList = localJdbcTemplate.queryForList("select trans_log_id from trans_log_unfinished where create_time <= ? and trans_log_id > ? ORDER BY trans_log_id LIMIT ?", new Object[]{createTimeFloor,transIdLocation,pageSize},String.class);
+			transIdList = localJdbcTemplate.queryForList("select trans_log_id from trans_log_unfinished where trans_log_id like ? and create_time <= ? and trans_log_id > ? ORDER BY trans_log_id LIMIT ?", new Object[]{appId + EscapeChar +"%" ,createTimeFloor,transIdLocation,pageSize},String.class);
 		}else{
-			transIdList = localJdbcTemplate.queryForList("select trans_log_id from trans_log_unfinished where create_time <= ? ORDER BY trans_log_id LIMIT ?", new Object[]{createTimeFloor,pageSize},String.class);
+			transIdList = localJdbcTemplate.queryForList("select trans_log_id from trans_log_unfinished where trans_log_id like ? and create_time <= ? ORDER BY trans_log_id LIMIT ?", new Object[]{appId + EscapeChar +"%" ,createTimeFloor,pageSize},String.class);
 		}
 		
 		if(transIdList == null || transIdList.size() ==0){

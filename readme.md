@@ -227,14 +227,15 @@
 	  `app_id` varchar(32) NOT NULL COMMENT '调用APPID',
 	  `bus_code` varchar(128) NOT NULL COMMENT '调用的业务代码',
 	  `call_seq` int(11) NOT NULL COMMENT '同一事务同一方法内调用的次数',
+	  `handler` varchar(32) NOT NULL COMMENT '处理者appid',
 	  `called_methods` varchar(128) NOT NULL COMMENT '被调用过的方法名',
 	  `md5` char(32) NOT NULL COMMENT '参数摘要',
 	  `sync_method_result` blob COMMENT '同步方法的返回结果',
 	  `create_time` datetime NOT NULL COMMENT '执行时间',
 	  `update_time` datetime NOT NULL,
 	  `lock_version` int(11) NOT NULL COMMENT '乐观锁版本号',
-	  PRIMARY KEY (`src_app_id`,`src_bus_code`,`src_trx_id`,`app_id`,`bus_code`,`call_seq`)
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	  PRIMARY KEY (`src_app_id`,`src_bus_code`,`src_trx_id`,`app_id`,`bus_code`,`call_seq`,`handler`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 
 （基于数据库实现的事物日志）需要有一个记录事务日志的数据库，并为其创建两张表。每个业务服务都必须有对应的事务日志数据库。可多个服务共用一个，也可以一个服务单独一个事务日志。
@@ -277,7 +278,7 @@
     * 目前提供单数据源选择器
     * 若服务有多个数据源，需自行实现业务相关的数据源选择器，根据请求选择数据源
 * 事务执行日志的实现
-    * 目前提供基于数据库的执行日志读写实现,正在开发KAFKA事物执行日志的支持
+    * 目前提供基于数据库的执行日志读写实现
     * 为提高效率，可自行实现基于其他形式的事务日志，如文件系统，HBASE等，欢迎PR
 * 主从选择器
     * 目前基于ZK实现了主从选择
@@ -310,10 +311,11 @@
 * 使用spring boot风格改造代码，配置及使用更加方便（已完成）
 * 事务级联功能（已完成，在事务模式里，除了传统补偿模式CompensableMethod不能进行事务级联，其他都可以进行事务级联）
 * restful rpc（Spring MVC/RestTemplate/Ribbon/Eureka）实现（已完成）
-* 整合2PC，完成分布式事务各种主流场景的完整解决方案（开发中）
+* HBASE事务日志库（进行中，HBASE是可选项，可能改成其他水平可扩展的数据库）
+* 整合2PC，完成分布式事务各种主流场景的完整解决方案（尚未开始）
 * 同库短路设计（尚未开始）
 * 独立完成的DEMO（尚未开始）
-* kafka事务日志库（尚未开始）
+
 
 
 

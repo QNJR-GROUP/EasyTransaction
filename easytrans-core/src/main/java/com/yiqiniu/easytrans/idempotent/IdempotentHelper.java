@@ -28,11 +28,13 @@ public class IdempotentHelper {
 	
 	private DataSourceSelector selector;
 	private ListableProviderFactory providerFactory;
+	private String appId;
 	
-	public IdempotentHelper(DataSourceSelector selector, ListableProviderFactory providerFactory) {
+	public IdempotentHelper(String appId, DataSourceSelector selector, ListableProviderFactory providerFactory) {
 		super();
 		this.selector = selector;
 		this.providerFactory = providerFactory;
+		this.appId = appId;
 	}
 
 	private static final String TRANSACTION_MANAGER = "TRANSACTION_MANAGER";
@@ -88,14 +90,15 @@ public class IdempotentHelper {
 		Integer callSeq = Integer.parseInt(header.get(EasytransConstant.CallHeadKeys.CALL_SEQ).toString());
 		JdbcTemplate jdbcTemplate = getJdbcTemplate(filterChain, reqest);
 		 List<IdempotentPo> listQuery = jdbcTemplate.query(
-				"select * from idempotent where src_app_id = ? and src_bus_code = ? and src_trx_id = ? and app_id = ? and bus_code = ? and call_seq = ?", 
+				"select * from idempotent where src_app_id = ? and src_bus_code = ? and src_trx_id = ? and app_id = ? and bus_code = ? and call_seq = ? and handler = ?", 
 				new Object[]{
 						transactionId.getAppId(),
 						transactionId.getBusCode(),
 						transactionId.getTrxId(),
 						businessType.appId(),
 						businessType.busCode(),
-						callSeq},
+						callSeq,
+						appId},
 				beanPropertyRowMapper
 				);
 		 
@@ -154,6 +157,7 @@ public class IdempotentHelper {
 		private String appId;
 		private String busCode;
 		private Integer callSeq;
+		private String handler;
 		private String calledMethods;
 		private String md5;
 		private byte[] syncMethodResult;
@@ -197,6 +201,13 @@ public class IdempotentHelper {
 		public void setCallSeq(Integer callSeq) {
 			this.callSeq = callSeq;
 		}
+		
+		public String getHandler() {
+			return handler;
+		}
+		public void setHandler(String handler) {
+			this.handler = handler;
+		}
 		public String getCalledMethods() {
 			return calledMethods;
 		}
@@ -235,12 +246,10 @@ public class IdempotentHelper {
 		}
 		@Override
 		public String toString() {
-			return "IdempotentPo [srcAppId=" + srcAppId + ", srcBusCode="
-					+ srcBusCode + ", srcTrxId=" + srcTrxId + ", appId="
-					+ appId + ", busCode=" + busCode + ", calledMethods="
-					+ calledMethods + ", md5=" + md5 + ", syncMethodResult="
-					+ Arrays.toString(syncMethodResult) + ", createTime="
-					+ createTime + ", updateTime=" + updateTime
+			return "IdempotentPo [srcAppId=" + srcAppId + ", srcBusCode=" + srcBusCode + ", srcTrxId=" + srcTrxId
+					+ ", appId=" + appId + ", busCode=" + busCode + ", callSeq=" + callSeq + ", handler=" + handler
+					+ ", calledMethods=" + calledMethods + ", md5=" + md5 + ", syncMethodResult="
+					+ Arrays.toString(syncMethodResult) + ", createTime=" + createTime + ", updateTime=" + updateTime
 					+ ", lockVersion=" + lockVersion + "]";
 		}
 	}
@@ -248,13 +257,14 @@ public class IdempotentHelper {
 	public void saveIdempotentPo(EasyTransFilterChain filterChain, IdempotentPo idempotentPo) {
 		JdbcTemplate jdbcTemplate = filterChain.getResource(JDBC_TEMPLATE);
 		int update = jdbcTemplate.update(
-				"INSERT INTO `idempotent` (`src_app_id`, `src_bus_code`, `src_trx_id`, `app_id`, `bus_code`, `call_seq` ,`called_methods`, `md5`, `sync_method_result`, `create_time`, `update_time` , `lock_version`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", 
+				"INSERT INTO `idempotent` (`src_app_id`, `src_bus_code`, `src_trx_id`, `app_id`, `bus_code`, `call_seq` , `handler` ,`called_methods`, `md5`, `sync_method_result`, `create_time`, `update_time` , `lock_version`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", 
 				idempotentPo.getSrcAppId(),
 				idempotentPo.getSrcBusCode(),
 				idempotentPo.getSrcTrxId(),
 				idempotentPo.getAppId(),
 				idempotentPo.getBusCode(),
 				idempotentPo.getCallSeq(),
+				idempotentPo.getHandler(),
 				idempotentPo.getCalledMethods(),
 				idempotentPo.getMd5(),
 				idempotentPo.getSyncMethodResult(),
@@ -272,7 +282,7 @@ public class IdempotentHelper {
 
 		JdbcTemplate jdbcTemplate = filterChain.getResource(JDBC_TEMPLATE);
 		int update = jdbcTemplate.update(
-				"UPDATE `idempotent` SET `called_methods` = ?, `md5` = ?, `sync_method_result` = ?, `create_time` = ?, `update_time`  = ?, `lock_version` = `lock_version` + 1 WHERE `src_app_id` = ? AND `src_bus_code` = ? AND `src_trx_id` = ? AND `app_id` = ? AND `bus_code` = ?  AND `call_seq` = ? AND `lock_version` = ?;", 
+				"UPDATE `idempotent` SET `called_methods` = ?, `md5` = ?, `sync_method_result` = ?, `create_time` = ?, `update_time`  = ?, `lock_version` = `lock_version` + 1 WHERE `src_app_id` = ? AND `src_bus_code` = ? AND `src_trx_id` = ? AND `app_id` = ? AND `bus_code` = ?  AND `call_seq` = ? AND `handler` = ? AND `lock_version` = ?;", 
 				idempotentPo.getCalledMethods(),
 				idempotentPo.getMd5(),
 				idempotentPo.getSyncMethodResult(),
@@ -284,6 +294,7 @@ public class IdempotentHelper {
 				idempotentPo.getAppId(),
 				idempotentPo.getBusCode(),
 				idempotentPo.getCallSeq(),
+				idempotentPo.getHandler(),
 				idempotentPo.getLockVersion()
 				);
 		
