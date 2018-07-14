@@ -163,7 +163,7 @@ public class EasyTransCoreConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(IdempotentHandlerFilter.class)
 	public DefaultIdempotentHandlerFilter idempotentHandlerFilter(IdempotentHelper helper, ObjectSerializer serializer){
-		return new DefaultIdempotentHandlerFilter(helper, serializer);
+		return new DefaultIdempotentHandlerFilter(applicationName, helper, serializer);
 	}
 	
 	@Bean
@@ -178,7 +178,7 @@ public class EasyTransCoreConfiguration {
 	
 	@Bean
 	public IdempotentHelper idempotentHelper(DataSourceSelector selector, ListableProviderFactory providerFactory){
-		return new IdempotentHelper(selector, providerFactory);
+		return new IdempotentHelper(applicationName,selector, providerFactory);
 	}
 	
 	@Bean

@@ -35,11 +35,13 @@ public class DefaultIdempotentHandlerFilter implements IdempotentHandlerFilter {
 	
 	private IdempotentHelper helper;
 	private ObjectSerializer serializer;
+	private String appId;
 	
-	public DefaultIdempotentHandlerFilter(IdempotentHelper helper, ObjectSerializer serializer) {
+	public DefaultIdempotentHandlerFilter(String appId, IdempotentHelper helper, ObjectSerializer serializer) {
 		super();
 		this.helper = helper;
 		this.serializer = serializer;
+		this.appId = appId;
 	}
 
 	@Override
@@ -91,6 +93,7 @@ public class DefaultIdempotentHandlerFilter implements IdempotentHandlerFilter {
 									idempotentPo.setAppId(filterChain.getAppId());
 									idempotentPo.setBusCode(filterChain.getBusCode());
 									idempotentPo.setCallSeq(callSeq);
+									idempotentPo.setHandler(appId);
 									
 									idempotentPo.setCalledMethods(filterChain.getInnerMethodName());
 									idempotentPo.setMd5(objectMD5);
