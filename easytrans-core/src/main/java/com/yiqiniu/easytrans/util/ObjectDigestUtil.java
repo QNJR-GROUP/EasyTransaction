@@ -95,7 +95,7 @@ public class ObjectDigestUtil {
 		} else if (o instanceof Map) {
 			return getOrderedMapString((Map) o);
 		} else if (o instanceof Date) {
-			return o.toString();
+			return getTimestampValue((Date)o);
 		} else {
 			return getComlpexObjectOrderedString(o);
 		}
@@ -218,6 +218,10 @@ public class ObjectDigestUtil {
 			return true;
 		}
 		return false;
+	}
+
+	private static String getTimestampValue(Date o) {
+		return String.valueOf(o.getTime());
 	}
 
 }
