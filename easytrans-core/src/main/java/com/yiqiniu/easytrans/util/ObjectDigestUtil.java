@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Date;
 
 import org.springframework.util.StringUtils;
 
@@ -93,6 +94,8 @@ public class ObjectDigestUtil {
 			return getItrValue(itrPropertie);
 		} else if (o instanceof Map) {
 			return getOrderedMapString((Map) o);
+		} else if (o instanceof Date) {
+			return getTimestampValue((Date)o);
 		} else {
 			return getComlpexObjectOrderedString(o);
 		}
@@ -215,6 +218,10 @@ public class ObjectDigestUtil {
 			return true;
 		}
 		return false;
+	}
+
+	private static String getTimestampValue(Date o) {
+		return String.valueOf(o.getTime());
 	}
 
 }
