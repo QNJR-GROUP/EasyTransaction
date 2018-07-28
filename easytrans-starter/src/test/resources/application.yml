@@ -20,6 +20,10 @@ easytrans:
   log:
     kafka:
       enabled: false
+    redis:
+      enabled: true
+      keyPrefix: "et:"
+      redisUri: redis://localhost/ # 具体格式请参考 https://lettuce.io/core/release/reference/#redisuri.uri-syntax
     database:
       enabled: true
       logCleanEnabled: true

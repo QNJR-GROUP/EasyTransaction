@@ -1,4 +1,4 @@
-package com.yiqiniu.easytrans.log.impl.kafka;
+package com.yiqiniu.easytrans.log.impl.redis;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(KafkaTransactionLogConfiguration.class)
-public @interface EnableLogKafkaImpl {
+@Import(RedisTransactionLogConfiguration.class)
+public @interface EnableLogRedisImpl {
 
 }

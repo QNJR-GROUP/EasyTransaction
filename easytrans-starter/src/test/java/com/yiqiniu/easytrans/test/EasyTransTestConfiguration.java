@@ -15,15 +15,17 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.yiqiniu.easytrans.EnableEasyTransaction;
-import com.yiqiniu.easytrans.log.impl.database.EnableLogDatabaseImpl;
 import com.yiqiniu.easytrans.queue.QueueTopicMapper;
 
 @SpringBootApplication
 @EnableEasyTransaction
 @ComponentScan(basePackages={"com.yiqiniu.easytrans.test.mockservice"})
+//@EnableRpcRestRibbonImpl default
+//@EnableLogDatabaseImpl default
+//@EnableQueueKafkaImpl default
 //@EnableQueueOnsImpl
 //@EnableRpcDubboImpl
-@EnableLogDatabaseImpl
+//@EnableLogRedisImpl
 @EnableTransactionManagement
 @EnableAutoConfiguration(exclude=DataSourceAutoConfiguration.class)
 public class EasyTransTestConfiguration {

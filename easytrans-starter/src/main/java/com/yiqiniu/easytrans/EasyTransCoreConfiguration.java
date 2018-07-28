@@ -44,7 +44,7 @@ import com.yiqiniu.easytrans.idempotent.IdempotentHandlerFilter;
 import com.yiqiniu.easytrans.idempotent.IdempotentHelper;
 import com.yiqiniu.easytrans.idempotent.IdempotentTransactionDefinition;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
-import com.yiqiniu.easytrans.log.impl.kafka.EnableLogKafkaImpl;
+import com.yiqiniu.easytrans.log.impl.database.EnableLogDatabaseImpl;
 import com.yiqiniu.easytrans.master.impl.EnableMasterZookeeperImpl;
 import com.yiqiniu.easytrans.protocol.BusinessProvider;
 import com.yiqiniu.easytrans.protocol.MessageBusinessProvider;
@@ -202,8 +202,8 @@ public class EasyTransCoreConfiguration {
 		return new DefaultListableProviderFactory(mapProviderTypeBeans);
 	}
 	
-	@ConditionalOnClass(EnableLogKafkaImpl.class)
-	@EnableLogKafkaImpl
+	@ConditionalOnClass(EnableLogDatabaseImpl.class)
+	@EnableLogDatabaseImpl
 	public static class EnableDefaultLogImpl {
 	}
 	

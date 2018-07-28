@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
-  <artifactId>easytrans-log-kafka-starter</artifactId>
+  <artifactId>easytrans-log-redis-starter</artifactId>
 
   	<parent>
 		  <groupId>com.yiqiniu.easytrans</groupId>
@@ -15,11 +15,21 @@
 	</properties>
 
 <dependencies>
+
+<dependency>
+    <groupId>biz.paluch.redis</groupId>
+    <artifactId>lettuce</artifactId>
+    <version>4.4.5.Final</version>
+</dependency>
+	
+
 	<dependency>
 		<groupId>com.yiqiniu.easytrans</groupId>
 		<artifactId>easytrans-core</artifactId>
 		<version>${easytrans.version}</version>
 	</dependency>
+	
+	
 
 
 </dependencies>
