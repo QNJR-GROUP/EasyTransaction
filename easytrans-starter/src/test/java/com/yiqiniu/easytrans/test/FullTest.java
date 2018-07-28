@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -73,7 +74,7 @@ public class FullTest {
 	private PointService pointService;
 	@Resource
 	private WalletService walletService;
-	@Resource
+	@Autowired(required=false)
 	private DataBaseForLog dbForLog;
 
 	private ExecutorService executor = Executors.newFixedThreadPool(4);
@@ -435,9 +436,11 @@ public class FullTest {
 				"INSERT INTO `wallet` (`user_id`, `total_amount`, `freeze_amount`) VALUES ('1', '10000', '0')",
 				"INSERT INTO `point` (`user_id`, `point`) VALUES ('1', '0')" });
 
-		JdbcTemplate transLogJdbcTemplate = new JdbcTemplate(dbForLog.getDataSource());
-		transLogJdbcTemplate
-				.batchUpdate(new String[] { "TRUNCATE `trans_log_unfinished`", "TRUNCATE `trans_log_detail`", });
+		if(dbForLog != null){
+			JdbcTemplate transLogJdbcTemplate = new JdbcTemplate(dbForLog.getDataSource());
+			transLogJdbcTemplate
+			.batchUpdate(new String[] { "TRUNCATE `trans_log_unfinished`", "TRUNCATE `trans_log_detail`", });
+		}
 
 	}
 

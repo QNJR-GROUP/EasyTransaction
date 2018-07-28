@@ -23,6 +23,7 @@
         <module>easytrans-rpc-dubbo-starter</module>
         <module>easytrans-rpc-feign-starter</module>
         <module>easytrans-log-database-starter</module>
+        <module>easytrans-log-redis-starter</module>
         <module>easytrans-log-kafka-starter</module>
     </modules>
 

@@ -22,7 +22,7 @@
 
 	<dependency>
 		<groupId>com.yiqiniu.easytrans</groupId>
-		<artifactId>easytrans-log-kafka-starter</artifactId>
+		<artifactId>easytrans-log-database-starter</artifactId>
 		<version>${easytrans.version}</version>
 	</dependency>
 	
@@ -52,12 +52,13 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+<!--  		<dependency>
 			<groupId>com.yiqiniu.easytrans</groupId>
-			<artifactId>easytrans-log-database-starter</artifactId>
+			<artifactId>easytrans-log-redis-starter</artifactId>
 			<version>${easytrans.version}</version>
-			<scope>test</scope>
-		</dependency>
+			<scope>test</scope>	
+		</dependency>  -->
+
 		
 <!-- 		<dependency>
 			<groupId>com.yiqiniu.easytrans</groupId>
