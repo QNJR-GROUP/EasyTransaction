@@ -61,18 +61,20 @@ public class DataBaseTransactionLogWritterImpl implements TransactionLogWritter 
 				//unfinished tag
 				localJdbcTemplate.update("insert into `trans_log_unfinished` VALUES(?,?) on DUPLICATE KEY UPDATE create_time = create_time;", EasyTransStaticHelper.getTransId(appId, busCode, trxId),new Date());
 				
-				//concrete log
-				int logUpdateConut = localJdbcTemplate.update("INSERT INTO `trans_log_detail` (`log_detail_id`, `trans_log_id`, `log_detail`, `create_time`) VALUES (NULL, ?, ?, ?);",
-						EasyTransStaticHelper.getTransId(appId, busCode, trxId),
-						objectSerializer.serialization(newOrderedContent),
-						new Date()
-						);
-				if(logUpdateConut != 1){
-					throw new RuntimeException("write log error!");
-				}
-				
-				if(LOG.isDebugEnabled()){
-					LOG.debug(newOrderedContent.toString());
+				if(newOrderedContent != null && newOrderedContent.size() != 0){
+					//concrete log
+					int logUpdateConut = localJdbcTemplate.update("INSERT INTO `trans_log_detail` (`log_detail_id`, `trans_log_id`, `log_detail`, `create_time`) VALUES (NULL, ?, ?, ?);",
+							EasyTransStaticHelper.getTransId(appId, busCode, trxId),
+							objectSerializer.serialization(newOrderedContent),
+							new Date()
+							);
+					if(logUpdateConut != 1){
+						throw new RuntimeException("write log error!");
+					}
+					
+					if(LOG.isDebugEnabled()){
+						LOG.debug(newOrderedContent.toString());
+					}
 				}
 				
 				if(finished){

@@ -29,13 +29,16 @@ public class ConsistentGuardian {
 	
 	private TransactionLogWritter writer;
 	
+	private boolean leastLogModel;
+	
 	
 	public ConsistentGuardian(TransStatusLogger transChecker, Map<Class<?>,? extends LogProcessor> proccessorMap,
-			TransactionLogWritter writer) {
+			TransactionLogWritter writer,boolean leastLogModel) {
 		super();
 		this.transChecker = transChecker;
 		this.proccessorMap = proccessorMap;
 		this.writer = writer;
+		this.leastLogModel = leastLogModel;
 	}
 
 	/**
@@ -47,7 +50,7 @@ public class ConsistentGuardian {
 	}
 
 	public LogProcessContext buldLogContextFromLog(LogCollection logCollection) {
-		return new LogProcessContext(logCollection,writer,transChecker);
+		return new LogProcessContext(logCollection,writer,transChecker,leastLogModel);
 	}
 	
 	/**
@@ -98,6 +101,9 @@ public class ConsistentGuardian {
 		}
 		
 		//end and flush log
+		if(leastLogModel){
+			logCtx.getLogCache().clearCacheLogs();
+		}
 		logCtx.getLogCache().flush(true);
 		return true;
 	}
