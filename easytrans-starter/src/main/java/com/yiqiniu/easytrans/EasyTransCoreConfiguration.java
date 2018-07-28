@@ -76,6 +76,9 @@ public class EasyTransCoreConfiguration {
 	@Value("${spring.application.name}")
 	private String applicationName;
 	
+	@Value("${easytrans.common.leastLogModel:true}")
+	private boolean leastLogModel;
+	
 	@Bean
 	public ConsistentGuardian consistentGuardian(TransStatusLogger transChecker, List<LogProcessor> logProcessors,
 			TransactionLogWritter writer){
@@ -85,7 +88,7 @@ public class EasyTransCoreConfiguration {
 			map.put(p.getClass(), p);
 		}
 		
-		return new ConsistentGuardian(transChecker, map, writer);
+		return new ConsistentGuardian(transChecker, map, writer,leastLogModel);
 	}
 	
 	@Bean
@@ -97,7 +100,7 @@ public class EasyTransCoreConfiguration {
 	@Bean
 	public EasyTransSynchronizer easyTransSynchronizer(TransactionLogWritter writer, ConsistentGuardian consistentGuardian,
 			TransStatusLogger transStatusLogger){
-		return new EasyTransSynchronizer(writer, consistentGuardian, transStatusLogger, applicationName);
+		return new EasyTransSynchronizer(writer, consistentGuardian, transStatusLogger, applicationName, leastLogModel);
 	}
 	/**
 	 * 不知道为何，不在两个入参上加上lazy就无法成功启动spring,会报找不到对应的bean。于是加上了lazy标签
