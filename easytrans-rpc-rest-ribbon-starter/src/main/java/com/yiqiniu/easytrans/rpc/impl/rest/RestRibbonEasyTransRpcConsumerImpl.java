@@ -30,6 +30,7 @@ import com.netflix.loadbalancer.IRule;
 import com.netflix.loadbalancer.Server;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcConsumer;
+import com.yiqiniu.easytrans.rpc.impl.rest.RestRibbonEasyTransRpcProperties.RestConsumerProperties;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
@@ -111,9 +112,10 @@ public class RestRibbonEasyTransRpcConsumerImpl implements EasyTransRpcConsumer{
 	@Override
 	public <P extends EasyTransRequest<R, ?>, R extends Serializable> R call(String appId, String busCode, String innerMethod, Map<String,Object> header, P params) {
 		
-		String context = properties.getConsumer().get(appId).getContext();
-		if(context == null){
-			context = "";
+		RestConsumerProperties restConsumerProperties = properties.getConsumer().get(appId);
+		String context = RestRibbonEasyTransConstants.DEFAULT_URL_CONTEXT;
+		if(restConsumerProperties!= null && restConsumerProperties.getContext() != null){
+			context = restConsumerProperties.getContext();
 		}
 		
 		Class<? extends EasyTransRequest> paramsClass = params.getClass();

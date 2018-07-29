@@ -1,5 +1,6 @@
 package com.yiqiniu.easytrans.rpc.impl.rest;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,8 +12,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix="easytrans.rpc.rest-ribbon")
 public class RestRibbonEasyTransRpcProperties {
 	private Boolean enabled;
-	private RestProviderProperties provider;
-	private Map<String,RestConsumerProperties> consumer;
+	private RestProviderProperties provider = new RestProviderProperties();
+	private Map<String,RestConsumerProperties> consumer = new HashMap<>();
 	
 	public RestProviderProperties getProvider() {
 		return provider;
@@ -31,7 +32,7 @@ public class RestRibbonEasyTransRpcProperties {
 	}
 
 	public static class RestProviderProperties{
-		private String context;
+		private String context = RestRibbonEasyTransConstants.DEFAULT_URL_CONTEXT;
 
 		public String getContext() {
 			return context;
@@ -45,7 +46,7 @@ public class RestRibbonEasyTransRpcProperties {
 
 	public static class RestConsumerProperties {
 
-		private String context;
+		private String context= "/easytrans";
 
 		public String getContext() {
 			return context;
