@@ -35,7 +35,7 @@ import com.yiqiniu.easytrans.serialization.ObjectSerializer;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
 @RestController
-@RequestMapping("${easytrans.rpc.rest-ribbon.provider.context}")
+@RequestMapping("${easytrans.rpc.rest-ribbon.provider.context:" + RestRibbonEasyTransConstants.DEFAULT_URL_CONTEXT + "}")
 public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 
 	private EasyTransFilterChainFactory filterChainFactory;

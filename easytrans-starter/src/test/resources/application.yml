@@ -20,8 +20,6 @@ easytrans:
     zk:
       zooKeeperUrl: localhost:2181
   log:
-    kafka:
-      enabled: false
     redis:
       enabled: false
       keyPrefix: "et:"
