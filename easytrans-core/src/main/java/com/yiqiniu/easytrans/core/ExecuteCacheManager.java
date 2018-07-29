@@ -32,7 +32,6 @@ public class ExecuteCacheManager {
 	private ConcurrentHashMap<Callable<?>,Object[]/*0 Result,1 Exception,2 Boolean(Executed?)*/> mapCallable = new ConcurrentHashMap<Callable<?>,Object[]/*1 Result,2 Exception*/>();
 	
 	private LogProcessContext logCtx;
-	private boolean leastLogModel;
 	
 	private Map<Callable<?>,Exception> mapErrorCalls = new HashMap<Callable<?>, Exception>();
 	
@@ -40,7 +39,7 @@ public class ExecuteCacheManager {
 		return new HashMap<Callable<?>, Exception>(mapErrorCalls);//copy to protect orign data
 	}
 	
-	public ExecuteCacheManager(LogProcessContext logCtx, boolean leastLogModel){
+	public ExecuteCacheManager(LogProcessContext logCtx){
 		this.logCtx = logCtx;
 	}
 	
@@ -121,9 +120,7 @@ public class ExecuteCacheManager {
 			Assert.isTrue(objCreateThread == Thread.currentThread().getId(),"It's not thread safe,do not run in other threads");
 			
 			//before compensable methods call,flush all the logs
-			if(!leastLogModel){
-				logCtx.getLogCache().flush(false);
-			}
+			logCtx.getLogCache().flush(false);
 			//batch execute all the cached compensable methods
 			excuteCahcheMehods();
 			//get the specific result of compensableCall 
