@@ -37,7 +37,6 @@ public class EasyTransSynchronizer {
 	private ConsistentGuardian consistentGuardian;
 	private TransStatusLogger transStatusLogger;
 	private String applicationName;
-	private boolean leastLogModel;
 	
 	private final Cache<TransactionId, ConcurrentLinkedQueue<LogProcessContext>> compensationLogContextCache = CacheBuilder.newBuilder()  
 	        .initialCapacity(10)  
@@ -46,13 +45,12 @@ public class EasyTransSynchronizer {
 	        .build();  
 	
 	public EasyTransSynchronizer(TransactionLogWritter writer, ConsistentGuardian consistentGuardian,
-			TransStatusLogger transStatusLogger, String applicationName,boolean leastLogModel) {
+			TransStatusLogger transStatusLogger, String applicationName) {
 		super();
 		this.writer = writer;
 		this.consistentGuardian = consistentGuardian;
 		this.transStatusLogger = transStatusLogger;
 		this.applicationName = applicationName;
-		this.leastLogModel = leastLogModel;
 	}
 
 	private ExecutorService executor = Executors.newCachedThreadPool();
@@ -81,7 +79,7 @@ public class EasyTransSynchronizer {
 		
 		//hook to TransactionSynchronizer
 		TransactionSynchronizationManager.registerSynchronization(new TransactionHook());
-		LogProcessContext logProcessContext = new LogProcessContext(applicationName, busCode, trxId, writer,transStatusLogger, leastLogModel);
+		LogProcessContext logProcessContext = new LogProcessContext(applicationName, busCode, trxId, writer,transStatusLogger);
 		TransactionSynchronizationManager.bindResource(LOG_PROCESS_CONTEXT,logProcessContext);
 		
 		//check whether is a parent transaction

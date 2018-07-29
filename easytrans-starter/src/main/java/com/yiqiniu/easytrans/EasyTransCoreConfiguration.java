@@ -100,7 +100,7 @@ public class EasyTransCoreConfiguration {
 	@Bean
 	public EasyTransSynchronizer easyTransSynchronizer(TransactionLogWritter writer, ConsistentGuardian consistentGuardian,
 			TransStatusLogger transStatusLogger){
-		return new EasyTransSynchronizer(writer, consistentGuardian, transStatusLogger, applicationName, leastLogModel);
+		return new EasyTransSynchronizer(writer, consistentGuardian, transStatusLogger, applicationName);
 	}
 	/**
 	 * 不知道为何，不在两个入参上加上lazy就无法成功启动spring,会报找不到对应的bean。于是加上了lazy标签

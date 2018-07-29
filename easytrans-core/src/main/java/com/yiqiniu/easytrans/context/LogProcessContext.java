@@ -64,11 +64,11 @@ public class LogProcessContext{
 	 * for normal processing
 	 * @param transStatusChecker 
 	 */
-	public LogProcessContext(String appId,String busCode,String trxId,TransactionLogWritter writer, TransStatusLogger transStatusChecker,boolean leastLogModel) {
+	public LogProcessContext(String appId,String busCode,String trxId,TransactionLogWritter writer, TransStatusLogger transStatusChecker) {
 		super();
 		this.logCollection = new LogCollection(appId, busCode, trxId, new ArrayList<Content>(), new Date());
 		transactionId = new TransactionId(appId, busCode, trxId);
-		init(false, writer,transStatusChecker,leastLogModel);
+		init(false, writer,transStatusChecker);
 	}
 	
 	/**
@@ -77,19 +77,19 @@ public class LogProcessContext{
 	 * @param logCollection
 	 * @param writer
 	 */
-	public LogProcessContext(LogCollection logCollection,TransactionLogWritter writer, TransStatusLogger transStatusChecker,boolean leastLogModel) {
+	public LogProcessContext(LogCollection logCollection,TransactionLogWritter writer, TransStatusLogger transStatusChecker) {
 		super();
 		this.logCollection = logCollection;
 		transactionId = new TransactionId(logCollection.getAppId(), logCollection.getBusCode(), logCollection.getTrxId());
-		init(null, writer, transStatusChecker,leastLogModel);
+		init(null, writer, transStatusChecker);
 	}
 
-	private void init(Boolean masterTransCommited, TransactionLogWritter writer, TransStatusLogger transStatusChecker,boolean leastLogModel) {
+	private void init(Boolean masterTransCommited, TransactionLogWritter writer, TransStatusLogger transStatusChecker) {
 		this.finalMasterTransStatus = masterTransCommited;
 		this.writer = writer;
 		demiLogManager = new DemiLogEventManager(this);
 		processEndManager = new GuardianProcessEndEventManager(this);
-		executeManager = new ExecuteCacheManager(this,leastLogModel);
+		executeManager = new ExecuteCacheManager(this);
 		logCache = new LogCache(this);
 		this.transStatusChecker = transStatusChecker;
 	}

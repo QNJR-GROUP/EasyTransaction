@@ -50,7 +50,7 @@ public class ConsistentGuardian {
 	}
 
 	public LogProcessContext buldLogContextFromLog(LogCollection logCollection) {
-		return new LogProcessContext(logCollection,writer,transChecker,leastLogModel);
+		return new LogProcessContext(logCollection,writer,transChecker);
 	}
 	
 	/**
