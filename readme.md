@@ -3,12 +3,23 @@
 
 本框架可一站式解决分布式SOA（包括微服务等）的事务问题。
 
-## 一、由来
+## 一、由来 及 特性
 这个框架是结合公司之前遇到的分布式事务场景以及 支付宝程立分享的一个PPT<大规模SOA系统的分布式事务处理>而设计实现。
 
 本框架意在解决之前公司对于每个分布式事务场景中都自行重复设计 中间状态、幂等实现及重试逻辑 的状况。
 
 采纳本框架后能解决现有已发现的所有分布式事务场景，减少设计开发设计工作量，提高开发效率，并统一保证事务实现的可靠性。
+
+特性：
+
+* 一个框架包含多种事务形态，一个框架搞定所有类型的事务
+* 多种事务形态可混合使用
+* 高性能（后续会出评测对比）
+* 业务代码可实现完全无入侵
+* 支持递归事务
+* 无需额外部署协调者，不同APP的服务协调自身发起的事务，也避免了单点故障
+* 分布式事务ID可关联业务ID，业务类型，APPID，便于监控各个业务的分布式事务执行情况
+
 
 ## 二、分布式事务场景及框架对应实现
 
@@ -30,9 +41,11 @@
     * 适用于需要获取远程执行结果来决定逻辑事务走向 且 不可以进行补偿的业务
     * 最不常见
     * 最终解决办法，囊括所有必须使用2PC实现的场景。编码量最大，性能消耗最大，应尽量避免使用本类型的事务
+* SAGE
+	* 与传统补偿相似，但其不要求同步与其他服务交互，性能会更高。（暂未实现）
 
 ### 框架对应实现及基本原理
-框架实现了上述所有事务场景的解决方案，并提供了统一易用的接口。以下介绍基本实现原理
+框架实现了上述所有（暂时除了SAGE）事务场景的解决方案，并提供了统一易用的接口。以下介绍基本实现原理
 
 #### 无需分布式事务
 对于此类事务，框架完全不介入，不执行一行额外代码
@@ -192,13 +205,35 @@
 		}
 	}
 
+以上的示例是传统的调用形式，无业务代码入侵的使用形式如下,更具体的使用请参考demo：
+
+
+	@Transactional
+	public String buySomething(int userId,long money){
+		
+		int id = saveOrderRecord(jdbcTemplate,userId,money);
+		
+		//WalletPayRequestVO 是一个VO，无任何继承及注解，只有相关的属性及GETTER,SETTER
+		WalletPayRequestVO request = new WalletPayRequestVO();
+		request.setUserId(userId);
+		request.setPayAmount(money);
+		
+		//payService是通过框架生成的一个PayService接口实例，调用该实例的方法即完成了分布式事务调用
+		WalletPayResponseVO pay = payService.pay(request);
+		
+		//这里与上面不一样，没有声明分布式事务ID，是因为这里默认给了一个busCode以及默认生成了一个trxId
+		//好处少写一行代码，减少入侵，缺点是，分布式事务ID难以直接对应到具体的哪一次业务操作
+		//不过这个可以通过自定义BusinessCodeGenerator及TrxIdGenerator来产生关联
+					return "id:" + id + " freeze:" + pay.getFreezeAmount();
+		}
+
 #### 更多例子
 请参考easytrans-demos里面的代码，这里提供了一个简明的代码。
 更完整的配置及相关用例请参考easytrans-starter里的UT案例，UT中有一个MockSerivice,使用了各种场景的事务。并对事务的各种异常场景做了测试。
 
 ### 运行配置
 
-每个运行业务的库都需要新增两张表
+每个运行业务的库都需要新增两张表,表的字段类型经过了修改，若之前建了表，需要重建
 
     -- 用于记录业务发起方的最终业务有没有执行
     -- p_开头的，代表本事务对应的父事务id
@@ -206,55 +241,53 @@
     -- 记录存在，但status为0表示事务成功,为1表示事务失败（包含父事务和本事务）
     -- 记录存在，但status为2表示本方法存在父事务，且父事务的最终状态未知
     -- 父事务的状态将由发起方通过 优先同步告知 失败则 消息形式告知
-    CREATE TABLE `executed_trans` (
-      `app_id` varchar(32) CHARACTER SET utf8 NOT NULL,
-      `bus_code` varchar(128) CHARACTER SET utf8 NOT NULL,
-      `trx_id` varchar(64) CHARACTER SET utf8 NOT NULL,
-      `p_app_id` varchar(32) CHARACTER SET utf8,
-      `p_bus_code` varchar(128) CHARACTER SET utf8,
-      `p_trx_id` varchar(64) CHARACTER SET utf8,
-      `status` tinyint(1) NOT NULL,
-      PRIMARY KEY (`app_id`,`bus_code`,`trx_id`),
-      KEY `parent` (`p_app_id`,`p_bus_code`,`p_trx_id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-    
-    -- 记录方法调用信息，用于处理幂等
+	CREATE TABLE `executed_trans` (
+	  `app_id` smallint(5) unsigned NOT NULL,
+	  `bus_code` smallint(5) unsigned NOT NULL,
+	  `trx_id` bigint(20) unsigned NOT NULL,
+	  `p_app_id` smallint(5) unsigned DEFAULT NULL,
+	  `p_bus_code` smallint(5) unsigned DEFAULT NULL,
+	  `p_trx_id` bigint(20) unsigned DEFAULT NULL,
+	  `status` tinyint(1) NOT NULL,
+	  PRIMARY KEY (`app_id`,`bus_code`,`trx_id`),
+	  KEY `parent` (`p_app_id`,`p_bus_code`,`p_trx_id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+	
 	CREATE TABLE `idempotent` (
-	  `src_app_id` varchar(32) NOT NULL COMMENT '来源AppID',
-	  `src_bus_code` varchar(128) NOT NULL COMMENT '来源业务类型',
-	  `src_trx_id` varchar(64) NOT NULL COMMENT '来源交易ID',
-	  `app_id` varchar(32) NOT NULL COMMENT '调用APPID',
-	  `bus_code` varchar(128) NOT NULL COMMENT '调用的业务代码',
-	  `call_seq` int(11) NOT NULL COMMENT '同一事务同一方法内调用的次数',
-	  `handler` varchar(32) NOT NULL COMMENT '处理者appid',
-	  `called_methods` varchar(128) NOT NULL COMMENT '被调用过的方法名',
-	  `md5` char(32) NOT NULL COMMENT '参数摘要',
+	  `src_app_id` smallint(5) unsigned NOT NULL COMMENT '来源AppID',
+	  `src_bus_code` smallint(5) unsigned NOT NULL COMMENT '来源业务类型',
+	  `src_trx_id` bigint(20) unsigned NOT NULL COMMENT '来源交易ID',
+	  `app_id` smallint(5) NOT NULL COMMENT '调用APPID',
+	  `bus_code` smallint(5) NOT NULL COMMENT '调用的业务代码',
+	  `call_seq` smallint(5) NOT NULL COMMENT '同一事务同一方法内调用的次数',
+	  `handler` smallint(5) NOT NULL COMMENT '处理者appid',
+	  `called_methods` varchar(64) NOT NULL COMMENT '被调用过的方法名',
+	  `md5` binary(16) NOT NULL COMMENT '参数摘要',
 	  `sync_method_result` blob COMMENT '同步方法的返回结果',
 	  `create_time` datetime NOT NULL COMMENT '执行时间',
 	  `update_time` datetime NOT NULL,
-	  `lock_version` int(11) NOT NULL COMMENT '乐观锁版本号',
+	  `lock_version` smallint(32) NOT NULL COMMENT '乐观锁版本号',
 	  PRIMARY KEY (`src_app_id`,`src_bus_code`,`src_trx_id`,`app_id`,`bus_code`,`call_seq`,`handler`)
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 （基于数据库实现的事物日志，若使用REDIS记录事务日志则无需以下表）需要有一个记录事务日志的数据库，并为其创建两张表。每个业务服务都必须有对应的事务日志数据库。可多个服务共用一个，也可以一个服务单独一个事务日志。
 
-    -- 记录未处理完成的事务
-    CREATE TABLE `trans_log_unfinished` (
-      `trans_log_id` varchar(160) NOT NULL,
-      `create_time` datetime NOT NULL,
-      PRIMARY KEY (`trans_log_id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-    
-    -- 记录详细的事务日志
-    CREATE TABLE `trans_log_detail` (
-      `log_detail_id` int(11) NOT NULL AUTO_INCREMENT,
-      `trans_log_id` varchar(160) NOT NULL,
-      `log_detail` blob,
-      `create_time` datetime NOT NULL,
-      PRIMARY KEY (`log_detail_id`),
-      KEY `app_id` (`trans_log_id`)
-    ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8;
+	CREATE TABLE `trans_log_detail` (
+	  `log_detail_id` int(11) NOT NULL AUTO_INCREMENT,
+	  `trans_log_id` binary(12) NOT NULL,
+	  `log_detail` blob,
+	  `create_time` datetime NOT NULL,
+	  PRIMARY KEY (`log_detail_id`),
+	  KEY `app_id` (`trans_log_id`)
+	) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+	
+	CREATE TABLE `trans_log_unfinished` (
+	  `trans_log_id` binary(12) NOT NULL,
+	  `create_time` datetime NOT NULL,
+	  PRIMARY KEY (`trans_log_id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	SELECT * FROM translog.trans_log_detail;
 
 详细的配置会后续作出手册，但在此之前各位可以参考easytrans-starter里的UT案例进行
 
@@ -313,7 +346,7 @@
 * REDIS事务日志库（已完成）
 * 半写日志开关，牺牲异常情况恢复的性能来提高正常流程的处理速度（已完成）
 * 独立完成的DEMO（已完成，后面会追加其他的DEMO，但是最详尽的DEMO请参考easytrans-starter里面的测试案例！） 
-* 增加声明式调用（开发中）
+* 增加声明式调用（已完成）
 * 整合2PC，完成分布式事务各种主流场景的完整解决方案（尚未开始）
 * 同库短路设计（尚未开始）
 

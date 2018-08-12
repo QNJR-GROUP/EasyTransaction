@@ -22,7 +22,7 @@ public class ZookeeperMasterSelectorConfiguration {
 	
 	@Bean
 	@ConditionalOnMissingBean(EasyTransMasterSelector.class)
-	public ZooKeeperMasterSelectorImpl zooKeeperMasterSelectorImpl(ZookeeperMasterSelectorProperties properties){
+	public EasyTransMasterSelector zooKeeperMasterSelectorImpl(ZookeeperMasterSelectorProperties properties){
 		return new ZooKeeperMasterSelectorImpl(properties.getZooKeeperUrl(), applicationName);
 	}
 	

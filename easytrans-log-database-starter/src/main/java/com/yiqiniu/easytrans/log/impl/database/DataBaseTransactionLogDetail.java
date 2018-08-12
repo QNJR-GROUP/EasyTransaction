@@ -10,7 +10,7 @@ public class DataBaseTransactionLogDetail implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private Integer logDetailId;
-	private String transLogId;
+	private byte[] transLogId;
 	private byte[] logDetail;
 	private Date createTime;
 
@@ -20,13 +20,13 @@ public class DataBaseTransactionLogDetail implements Serializable {
 	public void setLogDetailId(Integer logDetailId) {
 		this.logDetailId = logDetailId;
 	}
-	public String getTransLogId() {
+	
+	public byte[] getTransLogId() {
 		return transLogId;
 	}
-	public void setTransLogId(String transLogId) {
+	public void setTransLogId(byte[] transLogId) {
 		this.transLogId = transLogId;
 	}
-
 	public byte[] getLogDetail() {
 		return logDetail;
 	}

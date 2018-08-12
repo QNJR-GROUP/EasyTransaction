@@ -10,12 +10,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class OrderController {
 	
 	@Autowired
-	private OrderService orderService;
+	private OrderServiceTraditional orderService;
+	
+	@Autowired
+	private OrderServiceProxyForm orderServiceProxyForm;
 	
 	@RequestMapping("/buySth")
 	@ResponseBody
 	public Integer buySomething(@RequestParam int userId,@RequestParam int money){
 		return orderService.buySomething(userId, money);
+	}
+	
+	@RequestMapping("/buySthProxy")
+	@ResponseBody
+	public String buySomethingProxy(@RequestParam int userId,@RequestParam int money){
+		return orderServiceProxyForm.buySomething(userId, money);
 	}
 	
 }

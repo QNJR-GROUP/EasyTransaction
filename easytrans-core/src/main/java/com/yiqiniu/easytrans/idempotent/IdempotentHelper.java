@@ -1,6 +1,14 @@
 package com.yiqiniu.easytrans.idempotent;
 
+import static com.yiqiniu.easytrans.core.EasytransConstant.StringCodecKeys.APP_ID;
+import static com.yiqiniu.easytrans.core.EasytransConstant.StringCodecKeys.BUSINESS_CODE;
+import static com.yiqiniu.easytrans.core.EasytransConstant.StringCodecKeys.METHOD_NAME;
+
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -11,7 +19,9 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.util.StringUtils;
 
 import com.yiqiniu.easytrans.core.EasytransConstant;
 import com.yiqiniu.easytrans.datasource.DataSourceSelector;
@@ -22,19 +32,35 @@ import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.ExecuteOrder;
 import com.yiqiniu.easytrans.protocol.TransactionId;
 import com.yiqiniu.easytrans.provider.factory.ListableProviderFactory;
+import com.yiqiniu.easytrans.stringcodec.StringCodec;
+import com.yiqiniu.easytrans.util.ObjectDigestUtil;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
 public class IdempotentHelper {
 	
+	private String updateSql = "UPDATE `idempotent` SET `called_methods` = ?, `md5` = ?, `sync_method_result` = ?, `create_time` = ?, `update_time`  = ?, `lock_version` = `lock_version` + 1 WHERE `src_app_id` = ? AND `src_bus_code` = ? AND `src_trx_id` = ? AND `app_id` = ? AND `bus_code` = ?  AND `call_seq` = ? AND `handler` = ? AND `lock_version` = ?;";
+	private String insertSql = "INSERT INTO `idempotent` (`src_app_id`, `src_bus_code`, `src_trx_id`, `app_id`, `bus_code`, `call_seq` , `handler` ,`called_methods`, `md5`, `sync_method_result`, `create_time`, `update_time` , `lock_version`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	private String selectSql = "select * from idempotent where src_app_id = ? and src_bus_code = ? and src_trx_id = ? and app_id = ? and bus_code = ? and call_seq = ? and handler = ?";
+	
 	private DataSourceSelector selector;
 	private ListableProviderFactory providerFactory;
 	private String appId;
+	private StringCodec stringCodecer;
 	
-	public IdempotentHelper(String appId, DataSourceSelector selector, ListableProviderFactory providerFactory) {
+	public IdempotentHelper(String appId, DataSourceSelector selector, ListableProviderFactory providerFactory, StringCodec stringCodecer, String tablePrefix) {
 		super();
 		this.selector = selector;
 		this.providerFactory = providerFactory;
 		this.appId = appId;
+		this.stringCodecer = stringCodecer;
+		
+		if(!StringUtils.isEmpty(tablePrefix)) {
+			tablePrefix = tablePrefix.trim();
+			updateSql = updateSql.replace("idempotent", tablePrefix + "idempotent");
+			insertSql = insertSql.replace("idempotent", tablePrefix + "idempotent");
+			selectSql = selectSql.replace("idempotent", tablePrefix + "idempotent");
+		}
+		
 	}
 
 	private static final String TRANSACTION_MANAGER = "TRANSACTION_MANAGER";
@@ -75,8 +101,38 @@ public class IdempotentHelper {
 		}
 		return jdbcTemplate;
 	}
+	
 
-	private BeanPropertyRowMapper<IdempotentPo> beanPropertyRowMapper = new BeanPropertyRowMapper<IdempotentPo>(IdempotentPo.class);
+	private BeanPropertyRowMapper<IdempotentPo> beanPropertyRowMapper = new BeanPropertyRowMapper<IdempotentPo>(IdempotentPo.class) {
+		
+		private String transform(ResultSet rs,int index, String strType) throws SQLException {
+			Integer intermediateObj = (Integer) JdbcUtils.getResultSetValue(rs, index, Integer.class);
+			return stringCodecer.findString(strType, intermediateObj);
+		}
+		
+		@Override
+		protected Object getColumnValue(ResultSet rs, int index, PropertyDescriptor pd) throws java.sql.SQLException {
+
+			ResultSetMetaData metaData = rs.getMetaData();
+			String columnName = metaData.getColumnName(index).toLowerCase();
+			switch(columnName) {
+				case "src_app_id":
+				case "app_id":
+				case "handler":
+					return transform(rs, index, APP_ID);
+				case "src_bus_code":
+				case "bus_code":
+					return transform(rs, index, BUSINESS_CODE);
+				case "called_methods":
+					return id2callMethodsString((String) JdbcUtils.getResultSetValue(rs, index, String.class));
+				case "md5":
+					byte[] md5Bytes = (byte[]) JdbcUtils.getResultSetValue(rs, index, byte[].class);
+					return ObjectDigestUtil.byteArrayToHexString(md5Bytes);
+				default:
+					return JdbcUtils.getResultSetValue(rs, index, pd.getPropertyType());
+			}
+		};
+	};
 	/**
 	 * get execute result from database
 	 * @param filterChain
@@ -90,15 +146,15 @@ public class IdempotentHelper {
 		Integer callSeq = Integer.parseInt(header.get(EasytransConstant.CallHeadKeys.CALL_SEQ).toString());
 		JdbcTemplate jdbcTemplate = getJdbcTemplate(filterChain, reqest);
 		 List<IdempotentPo> listQuery = jdbcTemplate.query(
-				"select * from idempotent where src_app_id = ? and src_bus_code = ? and src_trx_id = ? and app_id = ? and bus_code = ? and call_seq = ? and handler = ?", 
+				selectSql, 
 				new Object[]{
-						transactionId.getAppId(),
-						transactionId.getBusCode(),
+						stringCodecer.findId(APP_ID, transactionId.getAppId()),
+						stringCodecer.findId(BUSINESS_CODE,transactionId.getBusCode()),
 						transactionId.getTrxId(),
-						businessType.appId(),
-						businessType.busCode(),
+						stringCodecer.findId(APP_ID, businessType.appId()),
+						stringCodecer.findId(BUSINESS_CODE,businessType.busCode()),
 						callSeq,
-						appId},
+						stringCodecer.findId(APP_ID,appId)},
 				beanPropertyRowMapper
 				);
 		 
@@ -153,7 +209,7 @@ public class IdempotentHelper {
 	public static class IdempotentPo{
 		private String srcAppId;
 		private String srcBusCode;
-		private String srcTrxId;
+		private Long srcTrxId;
 		private String appId;
 		private String busCode;
 		private Integer callSeq;
@@ -176,10 +232,10 @@ public class IdempotentHelper {
 		public void setSrcBusCode(String srcBusCode) {
 			this.srcBusCode = srcBusCode;
 		}
-		public String getSrcTrxId() {
+		public Long getSrcTrxId() {
 			return srcTrxId;
 		}
-		public void setSrcTrxId(String srcTrxId) {
+		public void setSrcTrxId(Long srcTrxId) {
 			this.srcTrxId = srcTrxId;
 		}
 		public String getAppId() {
@@ -257,16 +313,16 @@ public class IdempotentHelper {
 	public void saveIdempotentPo(EasyTransFilterChain filterChain, IdempotentPo idempotentPo) {
 		JdbcTemplate jdbcTemplate = filterChain.getResource(JDBC_TEMPLATE);
 		int update = jdbcTemplate.update(
-				"INSERT INTO `idempotent` (`src_app_id`, `src_bus_code`, `src_trx_id`, `app_id`, `bus_code`, `call_seq` , `handler` ,`called_methods`, `md5`, `sync_method_result`, `create_time`, `update_time` , `lock_version`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", 
-				idempotentPo.getSrcAppId(),
-				idempotentPo.getSrcBusCode(),
+				insertSql, 
+				stringCodecer.findId(APP_ID, idempotentPo.getSrcAppId()),
+				stringCodecer.findId(BUSINESS_CODE,idempotentPo.getSrcBusCode()),
 				idempotentPo.getSrcTrxId(),
-				idempotentPo.getAppId(),
-				idempotentPo.getBusCode(),
+				stringCodecer.findId(APP_ID,idempotentPo.getAppId()),
+				stringCodecer.findId(BUSINESS_CODE,idempotentPo.getBusCode()),
 				idempotentPo.getCallSeq(),
-				idempotentPo.getHandler(),
-				idempotentPo.getCalledMethods(),
-				idempotentPo.getMd5(),
+				stringCodecer.findId(APP_ID,idempotentPo.getHandler()),
+				callMethodsString2Id(idempotentPo.getCalledMethods()),
+				ObjectDigestUtil.hexStringToByteArray(idempotentPo.getMd5()),
 				idempotentPo.getSyncMethodResult(),
 				idempotentPo.getCreateTime(),
 				idempotentPo.getUpdateTime(),
@@ -278,23 +334,35 @@ public class IdempotentHelper {
 		}
 	}
 	
+	private String callMethodsString2Id(String stringFormat) {
+		String[] strMethods = stringFormat.split(",");
+		String[] idMethods = Arrays.stream(strMethods).map(str-> stringCodecer.findId(METHOD_NAME, str)).map(i->i.toString()).toArray(String[]::new);
+		return String.join(",", idMethods);
+	}
+	
+	private String id2callMethodsString(String id) {
+		String[] strMethods = id.split(",");
+		String[] idMethods = Arrays.stream(strMethods).map(str-> stringCodecer.findString(METHOD_NAME, Integer.parseInt(str))).toArray(String[]::new);
+		return String.join(",", idMethods);
+	}
+	
 	public void updateIdempotentPo(EasyTransFilterChain filterChain, IdempotentPo idempotentPo) {
 
 		JdbcTemplate jdbcTemplate = filterChain.getResource(JDBC_TEMPLATE);
 		int update = jdbcTemplate.update(
-				"UPDATE `idempotent` SET `called_methods` = ?, `md5` = ?, `sync_method_result` = ?, `create_time` = ?, `update_time`  = ?, `lock_version` = `lock_version` + 1 WHERE `src_app_id` = ? AND `src_bus_code` = ? AND `src_trx_id` = ? AND `app_id` = ? AND `bus_code` = ?  AND `call_seq` = ? AND `handler` = ? AND `lock_version` = ?;", 
-				idempotentPo.getCalledMethods(),
-				idempotentPo.getMd5(),
+				updateSql, 
+				callMethodsString2Id(idempotentPo.getCalledMethods()),
+				ObjectDigestUtil.hexStringToByteArray(idempotentPo.getMd5()),
 				idempotentPo.getSyncMethodResult(),
 				idempotentPo.getCreateTime(),
 				idempotentPo.getUpdateTime(),
-				idempotentPo.getSrcAppId(),
-				idempotentPo.getSrcBusCode(),
+				stringCodecer.findId(APP_ID, idempotentPo.getSrcAppId()),
+				stringCodecer.findId(BUSINESS_CODE,idempotentPo.getSrcBusCode()),
 				idempotentPo.getSrcTrxId(),
-				idempotentPo.getAppId(),
-				idempotentPo.getBusCode(),
+				stringCodecer.findId(APP_ID,idempotentPo.getAppId()),
+				stringCodecer.findId(BUSINESS_CODE,idempotentPo.getBusCode()),
 				idempotentPo.getCallSeq(),
-				idempotentPo.getHandler(),
+				stringCodecer.findId(APP_ID,idempotentPo.getHandler()),
 				idempotentPo.getLockVersion()
 				);
 		

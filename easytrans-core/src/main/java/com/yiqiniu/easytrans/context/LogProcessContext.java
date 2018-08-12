@@ -64,7 +64,7 @@ public class LogProcessContext{
 	 * for normal processing
 	 * @param transStatusChecker 
 	 */
-	public LogProcessContext(String appId,String busCode,String trxId,TransactionLogWritter writer, TransStatusLogger transStatusChecker) {
+	public LogProcessContext(String appId,String busCode,long trxId,TransactionLogWritter writer, TransStatusLogger transStatusChecker) {
 		super();
 		this.logCollection = new LogCollection(appId, busCode, trxId, new ArrayList<Content>(), new Date());
 		transactionId = new TransactionId(appId, busCode, trxId);

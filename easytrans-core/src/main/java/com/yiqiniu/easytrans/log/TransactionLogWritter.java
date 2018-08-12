@@ -18,6 +18,6 @@ public interface TransactionLogWritter {
 	 * @param newOrderedContent appending logs
 	 * @param finished is the transaction log complete.
 	 */
-	void appendTransLog(String appId,String busCode,String trxId,List<Content> newOrderedContent,boolean finished);
+	void appendTransLog(String appId,String busCode,long trxId,List<Content> newOrderedContent,boolean finished);
 
 }

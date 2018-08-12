@@ -17,7 +17,10 @@ public class TestBusinessDataSourceSelector implements DataSourceSelector {
 	private ApplicationContext ctx;
 	
 	@Override
-	public DataSource selectDataSource(String appId, String busCode, String trxId) {
+	public DataSource selectDataSource(String appId, String busCode, long trxId) {
+		if(busCode.equals("default")) {
+			busCode = "whole";
+		}
 		if(appId != null){
 			//无论是否递归的业务都是同一个数据源
 			busCode = busCode.replace("Cascade", "");
@@ -30,6 +33,11 @@ public class TestBusinessDataSourceSelector implements DataSourceSelector {
 	@Override
 	public DataSource selectDataSource(String appId, String busCode,
 			EasyTransRequest<?, ?> request) {
+		
+		if(busCode.equals("default")) {
+			busCode = "whole";
+		}
+		
 		if(appId != null){
 			busCode = busCode.replace("Cascade", "");
 			return ctx.getBean(busCode, DataSource.class);
@@ -39,7 +47,12 @@ public class TestBusinessDataSourceSelector implements DataSourceSelector {
 	}
 
 	@Override
-	public PlatformTransactionManager selectTransactionManager(String appId, String busCode, String trxId) {
+	public PlatformTransactionManager selectTransactionManager(String appId, String busCode, long trxId) {
+		
+		if(busCode.equals("default")) {
+			busCode = "whole";
+		}
+		
 		if(appId != null){
 			busCode = busCode.replace("Cascade", "");
 			return ctx.getBean(busCode+"TransactionManager", PlatformTransactionManager.class);

@@ -16,11 +16,13 @@ import com.lambdaworks.redis.Range.Boundary;
 import com.lambdaworks.redis.RedisFuture;
 import com.lambdaworks.redis.ScoredValue;
 import com.lambdaworks.redis.api.async.RedisAsyncCommands;
-import com.yiqiniu.easytrans.core.EasyTransStaticHelper;
 import com.yiqiniu.easytrans.log.TransactionLogReader;
 import com.yiqiniu.easytrans.log.vo.Content;
 import com.yiqiniu.easytrans.log.vo.LogCollection;
+import com.yiqiniu.easytrans.protocol.TransactionId;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
+import com.yiqiniu.easytrans.util.ByteFormIdCodec;
+import com.yiqiniu.easytrans.util.ObjectDigestUtil;
 
 public class RedisTransactionLogReaderImpl implements TransactionLogReader {
 
@@ -28,13 +30,15 @@ public class RedisTransactionLogReaderImpl implements TransactionLogReader {
 	private RedisAsyncCommands<String, byte[]> async;
 	private ObjectSerializer objectSerializer;
 	private String keyPrefix;
+	private ByteFormIdCodec idCodec;
 
 	public RedisTransactionLogReaderImpl(String appId, RedisAsyncCommanderProvider cmdProvider,
-			ObjectSerializer objectSerializer, String keyPrefix) {
+			ObjectSerializer objectSerializer, String keyPrefix, ByteFormIdCodec idCodec) {
 		this.async = cmdProvider.getAsyncCommand();
 		this.appId = appId;
 		this.objectSerializer = objectSerializer;
 		this.keyPrefix = keyPrefix;
+		this.idCodec = idCodec;
 	}
 
 	private static class Pair<K, V> {
@@ -93,12 +97,16 @@ public class RedisTransactionLogReaderImpl implements TransactionLogReader {
 
 			for (Entry<String, Pair<RedisFuture<List<byte[]>>, Double>> entry : collect.entrySet()) {
 
-				String[] splitTransId = EasyTransStaticHelper.getSplitTransId(entry.getKey().substring(keyPrefix.length()));
+				TransactionId splitTransId = idCodec.getTransIdFromByte(
+						ObjectDigestUtil.hexStringToByteArray(entry.getKey().substring(keyPrefix.length())));
 				Pair<RedisFuture<List<byte[]>>, Double> value = entry.getValue();
 				List<byte[]> byteArrayList = value.getKey().get();
 				List<Content> contentList = byteArrayList.stream().map(objectSerializer::<Content>deserialize)
 						.collect(Collectors.toList());
-				LogCollection log = new LogCollection(splitTransId[0], splitTransId[1], splitTransId[2],
+				LogCollection log = new LogCollection(
+						splitTransId.getAppId(),
+						splitTransId.getBusCode(),
+						splitTransId.getTrxId(),
 						new ArrayList(contentList), new Date(value.getValue().longValue()));
 
 				result.add(log);

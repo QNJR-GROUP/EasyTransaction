@@ -20,12 +20,12 @@ public class SingleDataSourceSelector implements DataSourceSelector {
 	}
 
 	@Override
-	public DataSource selectDataSource(String appId, String busCode, String  trxId) {
+	public DataSource selectDataSource(String appId, String busCode, long trxId) {
 		return dataSource;
 	}
 
 	@Override
-	public PlatformTransactionManager selectTransactionManager(String appId, String busCode, String trxId) {
+	public PlatformTransactionManager selectTransactionManager(String appId, String busCode, long trxId) {
 		return transactionManager;
 	}
 

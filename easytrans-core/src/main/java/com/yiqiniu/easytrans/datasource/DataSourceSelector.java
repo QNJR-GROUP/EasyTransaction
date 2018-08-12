@@ -26,7 +26,7 @@ public interface DataSourceSelector {
 	 * @param trxId
 	 * @return
 	 */
-	DataSource selectDataSource(String appId,String busCode,String trxId);
+	DataSource selectDataSource(String appId,String busCode,long trxId);
 	
 	/**
 	 * for the use of slave transaction
@@ -44,7 +44,7 @@ public interface DataSourceSelector {
 	 * @param trxId
 	 * @return
 	 */
-	PlatformTransactionManager selectTransactionManager(String appId,String busCode,String trxId);
+	PlatformTransactionManager selectTransactionManager(String appId,String busCode,long trxId);
 	
 	/**
 	 * for the use of master transaction

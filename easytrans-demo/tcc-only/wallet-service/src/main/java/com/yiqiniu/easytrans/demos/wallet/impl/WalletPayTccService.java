@@ -4,12 +4,12 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 
-import com.yiqiniu.easytrans.demos.wallet.api.vo.WalletPayVO.WalletPayRequestVO;
+import com.yiqiniu.easytrans.demos.wallet.api.etcfg.WalletPayCfg;
 import com.yiqiniu.easytrans.demos.wallet.api.vo.WalletPayVO.WalletPayResponseVO;
 import com.yiqiniu.easytrans.protocol.tcc.TccMethod;
 
 @Component
-public class WalletPayTccService implements TccMethod<WalletPayRequestVO, WalletPayResponseVO>{
+public class WalletPayTccService implements TccMethod<WalletPayCfg, WalletPayResponseVO>{
 
 	public static final String METHOD_NAME="pay";
 	
@@ -17,18 +17,18 @@ public class WalletPayTccService implements TccMethod<WalletPayRequestVO, Wallet
 	private WalletService wlletService;
 
 	@Override
-	public WalletPayResponseVO doTry(WalletPayRequestVO param) {
+	public WalletPayResponseVO doTry(WalletPayCfg param) {
 		return wlletService.doTryPay(param);
 	}
 
 	@Override
-	public void doConfirm(WalletPayRequestVO param) {
+	public void doConfirm(WalletPayCfg param) {
 		wlletService.doConfirmPay(param);
 	}
 
 
 	@Override
-	public void doCancel(WalletPayRequestVO param) {
+	public void doCancel(WalletPayCfg param) {
 		wlletService.doCancelPay(param);
 	}
 	

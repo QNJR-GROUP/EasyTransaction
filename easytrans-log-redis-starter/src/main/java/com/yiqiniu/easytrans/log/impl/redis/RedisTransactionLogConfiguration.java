@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import com.yiqiniu.easytrans.log.TransactionLogReader;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
+import com.yiqiniu.easytrans.util.ByteFormIdCodec;
 
 /** 
 * @author xudeyou 
@@ -30,14 +31,14 @@ public class RedisTransactionLogConfiguration {
 	
 	@Bean
 	@ConditionalOnMissingBean(TransactionLogReader.class)
-	public TransactionLogReader transactionLogReader(RedisAsyncCommanderProvider cmdProvider,ObjectSerializer serializer,RedisTransactionLogProperties properties){
-		return new RedisTransactionLogReaderImpl(applicationName,cmdProvider,serializer,properties.getKeyPrefix());
+	public TransactionLogReader transactionLogReader(RedisAsyncCommanderProvider cmdProvider,ObjectSerializer serializer,RedisTransactionLogProperties properties, ByteFormIdCodec idCodec){
+		return new RedisTransactionLogReaderImpl(applicationName,cmdProvider,serializer,properties.getKeyPrefix(),idCodec);
 	}
 	
 	@Bean
 	@ConditionalOnMissingBean(TransactionLogWritter.class)
-	public TransactionLogWritter transactionLogWritter(RedisAsyncCommanderProvider cmdProvider,ObjectSerializer serializer, RedisTransactionLogProperties properties){
-		return new RedisTransactionLogWritterImpl(cmdProvider,serializer,properties.getKeyPrefix());
+	public TransactionLogWritter transactionLogWritter(RedisAsyncCommanderProvider cmdProvider,ObjectSerializer serializer, RedisTransactionLogProperties properties, ByteFormIdCodec idCodec){
+		return new RedisTransactionLogWritterImpl(cmdProvider,serializer,properties.getKeyPrefix(), idCodec);
 	}
 	
 }
