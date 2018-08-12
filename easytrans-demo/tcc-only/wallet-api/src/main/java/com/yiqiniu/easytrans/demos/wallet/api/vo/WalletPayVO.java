@@ -1,20 +1,14 @@
 package com.yiqiniu.easytrans.demos.wallet.api.vo;
 
-import com.yiqiniu.easytrans.demos.wallet.api.WalletServiceApiConstant;
-import com.yiqiniu.easytrans.filter.EasyTransResult;
-import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
-import com.yiqiniu.easytrans.protocol.tcc.TccMethodRequest;
+import java.io.Serializable;
 
 public class WalletPayVO {
 
-	public static final String METHOD_NAME="pay";
 	
-	@BusinessIdentifer(appId=WalletServiceApiConstant.APPID,busCode=METHOD_NAME,rpcTimeOut=2000)
-	public static class WalletPayRequestVO implements TccMethodRequest<WalletPayResponseVO>{
+	public static class WalletPayRequestVO implements Serializable {
 
 		private static final long serialVersionUID = 1L;
-		
-		
+
 		private Integer userId;
 		
 		private Long payAmount;
@@ -36,7 +30,7 @@ public class WalletPayVO {
 		}
 	}
 	
-	public static class WalletPayResponseVO extends EasyTransResult{
+	public static class WalletPayResponseVO implements Serializable{
 		private static final long serialVersionUID = 1L;
 		private Long freezeAmount;
 		public Long getFreezeAmount() {

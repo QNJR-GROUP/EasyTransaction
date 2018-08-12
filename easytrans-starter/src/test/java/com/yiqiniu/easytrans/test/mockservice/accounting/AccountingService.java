@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.core.EasytransConstant;
 import com.yiqiniu.easytrans.filter.MetaDataFilter;
+import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.TransactionId;
 import com.yiqiniu.easytrans.test.Constant;
 import com.yiqiniu.easytrans.test.mockservice.TestUtil;
@@ -66,7 +67,7 @@ public class AccountingService {
 	}
 
 	private JdbcTemplate getJdbcTemplate(AccountingRequest param) {
-		return util.getJdbcTemplate(Constant.APPID,AccountingCpsMethod.METHOD_NAME,param);
+		return util.getJdbcTemplate(Constant.APPID,AccountingCpsMethod.METHOD_NAME,(EasyTransRequest<?, ?>) param);
 	}
 
 }

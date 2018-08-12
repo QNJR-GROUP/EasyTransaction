@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.yiqiniu.easytrans.EnableEasyTransaction;
 import com.yiqiniu.easytrans.queue.QueueTopicMapper;
+import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingApi;
+import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
+import com.yiqiniu.easytrans.util.CallWrappUtil;
 
 @SpringBootApplication
 @EnableEasyTransaction
@@ -29,6 +32,11 @@ import com.yiqiniu.easytrans.queue.QueueTopicMapper;
 @EnableTransactionManagement
 @EnableAutoConfiguration(exclude=DataSourceAutoConfiguration.class)
 public class EasyTransTestConfiguration {
+	
+	@Bean
+	public AccountingApi accountingApi(CallWrappUtil util) {
+		return util.createTransactionCallInstance(AccountingApi.class, AccountingRequestCfg.class);
+	}
 	
 	/**
 	 * 本BEAN用于配置appid+busCode的映射关系，如果不提供该bean则使用默认实现IdenticalQueueTopicMapper

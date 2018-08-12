@@ -27,7 +27,7 @@ public class ObjectDigestUtil {
     * @param b 字节数组
     * @return 16进制字串
     */
-   private static String byteArrayToHexString(byte[] b) {
+   public static String byteArrayToHexString(byte[] b) {
        StringBuilder resultSb = new StringBuilder();
        for (byte aB : b) {
            resultSb.append(byteToHexString(aB));
@@ -49,6 +49,18 @@ public class ObjectDigestUtil {
        int d2 = n % 16;
        return hexDigits[d1] + hexDigits[d2];
    }
+	
+   public static byte[] hexStringToByteArray(String s) {
+	    int len = s.length();
+	    byte[] data = new byte[len / 2];
+	    for (int i = 0; i < len; i += 2) {
+	        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+	                             + Character.digit(s.charAt(i+1), 16));
+	    }
+	    return data;
+	}
+   
+   
 	
 	public static String getObjectMD5(Object obj) {
 		return MD5Encode(getObjectString(obj));

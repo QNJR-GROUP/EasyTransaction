@@ -24,7 +24,7 @@ public class TestUtil {
 	}
 	
 	
-	public JdbcTemplate getJdbcTemplate(String appId,String methodName,String trxId) {
+	public JdbcTemplate getJdbcTemplate(String appId,String methodName,long trxId) {
 		DataSource selectDataSource = selector.selectDataSource(appId, methodName, trxId);
 		JdbcTemplate jdbcTemplate = new JdbcTemplate(selectDataSource);//for test,in real projects,should be cache
 		return jdbcTemplate;

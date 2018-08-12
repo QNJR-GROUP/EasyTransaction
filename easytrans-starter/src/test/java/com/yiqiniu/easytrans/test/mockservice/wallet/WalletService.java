@@ -92,7 +92,7 @@ public class WalletService {
 		}
 		
 		//start cascading transaction
-		transaction.startEasyTrans(WalletPayCascadeTccMethod.METHOD_NAME, String.valueOf(System.currentTimeMillis()));
+		transaction.startEasyTrans(WalletPayCascadeTccMethod.METHOD_NAME, System.currentTimeMillis());
 		//publish point message with an consumer cascading this transaction 
 		OrderMessageForCascadingTest msg = new OrderMessageForCascadingTest();
 		msg.setUserId(param.getUserId());

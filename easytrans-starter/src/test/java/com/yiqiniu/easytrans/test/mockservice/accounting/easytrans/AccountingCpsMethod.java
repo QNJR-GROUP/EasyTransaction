@@ -11,12 +11,12 @@ import com.yiqiniu.easytrans.protocol.cps.CompensableMethod;
 import com.yiqiniu.easytrans.protocol.cps.CompensableMethodRequest;
 import com.yiqiniu.easytrans.test.Constant;
 import com.yiqiniu.easytrans.test.mockservice.accounting.AccountingService;
-import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequest;
+import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingResponse;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderService;
 
 @Component
-public class AccountingCpsMethod implements CompensableMethod<AccountingRequest, AccountingResponse>{
+public class AccountingCpsMethod implements CompensableMethod<AccountingRequestCfg, AccountingResponse>{
 
 	
 	@Resource
@@ -25,23 +25,17 @@ public class AccountingCpsMethod implements CompensableMethod<AccountingRequest,
 	public static final String METHOD_NAME="accounting";
 
 	@Override
-	public AccountingResponse doCompensableBusiness(AccountingRequest param) {
+	public AccountingResponse doCompensableBusiness(AccountingRequestCfg param) {
 		return service.accounting(param);
 	}
 
 	@Override
-	public void compensation(AccountingRequest param) {
+	public void compensation(AccountingRequestCfg param) {
 		OrderService.checkThrowException(OrderService.EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_ROLLEDBACK_MASTER_TRANS);
 		service.reverseEntry(param);
 	}
 	
-	@BusinessIdentifer(appId=Constant.APPID,busCode=METHOD_NAME)
-	public static class AccountingRequest implements CompensableMethodRequest<AccountingResponse> {
-		
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
+	public static class AccountingRequest {
 		
 		private Integer userId;
 		
@@ -62,6 +56,11 @@ public class AccountingCpsMethod implements CompensableMethod<AccountingRequest,
 		public void setAmount(Long amount) {
 			this.amount = amount;
 		}
+	}
+	
+	@BusinessIdentifer(appId=Constant.APPID,busCode=METHOD_NAME)
+	public static class AccountingRequestCfg extends AccountingRequest implements CompensableMethodRequest<AccountingResponse> {
+		private static final long serialVersionUID = 1L;
 	}
 	
 	public static class AccountingResponse implements Serializable{

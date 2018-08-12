@@ -14,6 +14,12 @@ public class EasytransConstant {
 		public static final String PARENT_TRANSACTION_STATUS = "pTrxSts";
 	}
 	
+	public static class StringCodecKeys{
+		public static final String APP_ID = "APP_ID";
+		public static final String BUSINESS_CODE = "BUS_CODE";
+		public static final String METHOD_NAME = "METHOD_NAME";
+	}
+	
 	public final static String EscapeChar = "_";
 
 }

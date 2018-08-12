@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.yiqiniu.easytrans.core.EasyTransFacade;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.test.mockservice.TestUtil;
-import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequest;
+import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderMessage;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderMessageForCascadingTest;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderService.UtProgramedException;
@@ -102,9 +102,9 @@ public class PointService {
 		}
 		
 		// in real business case, transaction id prefer an id relate to this local transaction 
-		transaction.startEasyTrans(OrderMessageForCascadingTest.BUSINESS_CODE,String.valueOf(System.currentTimeMillis()));
+		transaction.startEasyTrans(OrderMessageForCascadingTest.BUSINESS_CODE,System.currentTimeMillis());
 		
-		AccountingRequest accountingRequest = new AccountingRequest();
+		AccountingRequestCfg accountingRequest = new AccountingRequestCfg();
 		accountingRequest.setUserId(msg.getUserId());
 		accountingRequest.setAmount(msg.getAmount());
 		transaction.execute(accountingRequest);

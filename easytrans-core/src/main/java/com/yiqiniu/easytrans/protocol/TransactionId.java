@@ -11,9 +11,9 @@ public class TransactionId implements Serializable {
 	
 	private String appId;
 	private String busCode;
-	private String trxId;
+	private long trxId;
 
-	public TransactionId(String appId, String busCode, String trxId) {
+	public TransactionId(String appId, String busCode, long trxId) {
 		super();
 		this.appId = appId;
 		this.busCode = busCode;
@@ -34,7 +34,7 @@ public class TransactionId implements Serializable {
 		return busCode;
 	}
 
-	public String getTrxId() {
+	public long getTrxId() {
 		return trxId;
 	}
 
@@ -43,9 +43,8 @@ public class TransactionId implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((appId == null) ? 0 : appId.hashCode());
-		result = prime * result
-				+ ((busCode == null) ? 0 : busCode.hashCode());
-		result = prime * result + ((trxId == null) ? 0 : trxId.hashCode());
+		result = prime * result + ((busCode == null) ? 0 : busCode.hashCode());
+		result = prime * result + (int) (trxId ^ (trxId >>> 32));
 		return result;
 	}
 
@@ -68,14 +67,12 @@ public class TransactionId implements Serializable {
 				return false;
 		} else if (!busCode.equals(other.busCode))
 			return false;
-		if (trxId == null) {
-			if (other.trxId != null)
-				return false;
-		} else if (!trxId.equals(other.trxId))
+		if (trxId != other.trxId)
 			return false;
 		return true;
 	}
-	
+
+
 
 	
 }

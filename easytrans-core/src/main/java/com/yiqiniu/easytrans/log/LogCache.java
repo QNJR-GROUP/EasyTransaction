@@ -53,7 +53,7 @@ public class LogCache {
 		LogCollection logCollection = logCtx.getLogCollection();
 		String appId = logCtx.getTransactionId().getAppId();
 		String busCode = logCtx.getTransactionId().getBusCode();
-		String trxId = logCtx.getTransactionId().getTrxId();
+		long trxId = logCtx.getTransactionId().getTrxId();
 		
 		logCtx.getWriter().appendTransLog(appId, busCode, trxId, cachedContentList, trxEnd);
 		logCollection.getOrderedContents().addAll(cachedContentList);

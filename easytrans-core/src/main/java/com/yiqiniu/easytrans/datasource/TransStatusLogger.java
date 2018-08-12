@@ -22,7 +22,7 @@ public interface TransStatusLogger {
 	 * @param trxId
 	 * @return null for processing/unknown,false for roll back,true for committed  
 	 */
-	Boolean checkTransactionStatus(String appId,String busCode,String trxId);
+	Boolean checkTransactionStatus(String appId,String busCode,long trxId);
 	
 	/**
 	 * invoke before RPC is executed,to help checkStatus() indicate the final status of a business transaction
@@ -30,7 +30,7 @@ public interface TransStatusLogger {
 	 * @param busCode
 	 * @param trxId
 	 */
-	void writeExecuteFlag(String appId, String busCode, String trxId, String pAppId, String pBusCode, String pTrxId,
+	void writeExecuteFlag(String appId, String busCode, long trxId, String pAppId, String pBusCode, Long pTrxId,
 			int status);
 
 	/**

@@ -16,11 +16,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.yiqiniu.easytrans.core.EasyTransFacade;
-import com.yiqiniu.easytrans.demos.wallet.api.vo.WalletPayVO.WalletPayRequestVO;
+import com.yiqiniu.easytrans.demos.wallet.api.etcfg.WalletPayCfg;
 import com.yiqiniu.easytrans.demos.wallet.api.vo.WalletPayVO.WalletPayResponseVO;
 
 @Component
-public class OrderService {
+public class OrderServiceTraditional {
 	
 	public static final String BUSINESS_CODE = "buySth";
 
@@ -48,7 +48,7 @@ public class OrderService {
 		 * 声明全局事务ID，其由appId,业务代码，业务代码内ID构成
 		 * 如果这个方法没有被调用，那么后续的EasyTransFacade.execute方法调用会抛异常
 		 */
-		transaction.startEasyTrans(BUSINESS_CODE, String.valueOf(id));
+		transaction.startEasyTrans(BUSINESS_CODE, id);
 		
 		/**
 		 * call remote service to deduct money, it's a TCC service,
@@ -57,7 +57,7 @@ public class OrderService {
 		 * 调用远程服务扣除所需的钱,这个远程服务实现了TCC接口,
 		 * 框架会根据buySomething方法的事务结果来维护远程服务的最终一致性
 		 */
-		WalletPayRequestVO deductRequest = new WalletPayRequestVO();
+		WalletPayCfg deductRequest = new WalletPayCfg();
 		deductRequest.setUserId(userId);
 		deductRequest.setPayAmount(money);
 		//return future for the benefits of performance enhance(batch write execute log and batch execute RPC)

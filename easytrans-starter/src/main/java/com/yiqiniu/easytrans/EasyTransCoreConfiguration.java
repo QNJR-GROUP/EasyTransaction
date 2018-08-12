@@ -45,6 +45,10 @@ import com.yiqiniu.easytrans.idempotent.DefaultIdempotentTransactionDefinition;
 import com.yiqiniu.easytrans.idempotent.IdempotentHandlerFilter;
 import com.yiqiniu.easytrans.idempotent.IdempotentHelper;
 import com.yiqiniu.easytrans.idempotent.IdempotentTransactionDefinition;
+import com.yiqiniu.easytrans.idgen.BusinessCodeGenerator;
+import com.yiqiniu.easytrans.idgen.TrxIdGenerator;
+import com.yiqiniu.easytrans.idgen.impl.ConstantBusinessCodeGenerator;
+import com.yiqiniu.easytrans.idgen.impl.ZkBasedSnowFlakeIdGenerator;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
 import com.yiqiniu.easytrans.log.impl.database.EnableLogDatabaseImpl;
 import com.yiqiniu.easytrans.master.impl.EnableMasterZookeeperImpl;
@@ -69,6 +73,11 @@ import com.yiqiniu.easytrans.rpc.EasyTransRpcProviderInitializer;
 import com.yiqiniu.easytrans.rpc.impl.rest.EnableRpcRestRibbonImpl;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
 import com.yiqiniu.easytrans.serialization.impl.SpringObjectSerialization;
+import com.yiqiniu.easytrans.stringcodec.StringCodec;
+import com.yiqiniu.easytrans.stringcodec.impl.EnableStringCodecZookeeperImpl;
+import com.yiqiniu.easytrans.util.ByteFormIdCodec;
+import com.yiqiniu.easytrans.util.CallWrappUtil;
+import com.yiqiniu.easytrans.util.DeafultByteFormIdCodec;
 
 /**
  * @author xudeyou
@@ -82,7 +91,13 @@ public class EasyTransCoreConfiguration {
 
 	@Value("${easytrans.common.leastLogModel:true}")
 	private boolean leastLogModel;
-
+	
+	@Value("${easytrans.common.tablePrefix:}")
+	private String tablePrefix;
+	
+	@Value("${easytrans.idgen.trxId.zkSnow.zooKeeperUrl:}")
+	private String zkBasedIdGenUrl;
+	
 	@Bean
 	public ConsistentGuardian consistentGuardian(TransStatusLogger transChecker, List<LogProcessor> logProcessors,
 			TransactionLogWritter writer) {
@@ -97,8 +112,20 @@ public class EasyTransCoreConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(EasyTransFacade.class)
-	public EasyTransFacadeImpl easyTransFacadeImpl(ApplicationContext ctx, EasyTransSynchronizer synchronizer) {
-		return new EasyTransFacadeImpl(ctx, synchronizer);
+	public EasyTransFacadeImpl easyTransFacadeImpl(ApplicationContext ctx, EasyTransSynchronizer synchronizer, BusinessCodeGenerator busCodeGen, TrxIdGenerator idGen) {
+		return new EasyTransFacadeImpl(ctx, synchronizer, busCodeGen, idGen);
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean(BusinessCodeGenerator.class)
+	public BusinessCodeGenerator businessCodeGenerator() {
+		return new ConstantBusinessCodeGenerator();
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean(TrxIdGenerator.class)
+	public TrxIdGenerator trxIdGenerator() {
+		return new ZkBasedSnowFlakeIdGenerator(zkBasedIdGenUrl,applicationName);
 	}
 
 	@Bean
@@ -250,8 +277,8 @@ public class EasyTransCoreConfiguration {
 	}
 
 	@Bean
-	public IdempotentHelper idempotentHelper(DataSourceSelector selector, ListableProviderFactory providerFactory) {
-		return new IdempotentHelper(applicationName, selector, providerFactory);
+	public IdempotentHelper idempotentHelper(DataSourceSelector selector, ListableProviderFactory providerFactory, StringCodec stringCodecer) {
+		return new IdempotentHelper(applicationName, selector, providerFactory, stringCodecer, tablePrefix);
 	}
 
 	@Bean
@@ -270,6 +297,11 @@ public class EasyTransCoreConfiguration {
 		return new DefaultListableProviderFactory(mapProviderTypeBeans);
 	}
 
+	@ConditionalOnClass(EnableStringCodecZookeeperImpl.class)
+	@EnableStringCodecZookeeperImpl
+	public static class EnableDefaultStringCodecImpl {
+	}
+	
 	@ConditionalOnClass(EnableLogDatabaseImpl.class)
 	@EnableLogDatabaseImpl
 	public static class EnableDefaultLogImpl {
@@ -303,8 +335,8 @@ public class EasyTransCoreConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(TransStatusLogger.class)
-	public DefaultTransStatusLoggerImpl DefaultTransStatusLoggerImpl(DataSourceSelector selctor) {
-		return new DefaultTransStatusLoggerImpl(selctor);
+	public DefaultTransStatusLoggerImpl DefaultTransStatusLoggerImpl(DataSourceSelector selctor, StringCodec codec) {
+		return new DefaultTransStatusLoggerImpl(selctor, codec, tablePrefix);
 	}
 
 	@Bean
@@ -313,4 +345,15 @@ public class EasyTransCoreConfiguration {
 		return new IdenticalQueueTopicMapper();
 	}
 
+	@Bean
+	@ConditionalOnMissingBean(ByteFormIdCodec.class)
+	public ByteFormIdCodec byteFormIdCodec(StringCodec codecer) {
+		return new DeafultByteFormIdCodec(codecer);
+	}
+	
+	@Bean
+	public CallWrappUtil callWrappUtil(EasyTransFacade facade) {
+		return new CallWrappUtil(facade);
+	}
+	
 }

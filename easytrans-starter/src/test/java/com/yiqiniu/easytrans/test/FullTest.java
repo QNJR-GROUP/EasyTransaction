@@ -34,6 +34,7 @@ import com.yiqiniu.easytrans.protocol.TransactionId;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcConsumer;
 import com.yiqiniu.easytrans.test.mockservice.accounting.AccountingService;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequest;
+import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
 import com.yiqiniu.easytrans.test.mockservice.express.ExpressService;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.ExpressDeliverAfterTransMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.order.NotReliableOrderMessage;
@@ -165,6 +166,9 @@ public class FullTest {
 			orderService.setCascadeTrxFinishedSleepMills(10000);
 			orderService.buySomethingCascading(1, 1000);//wallet 5000,account waste 5000,express count 5, point 7000
 			orderService.setCascadeTrxFinishedSleepMills(0);
+			
+			//测试自动开启事务
+			orderService.buySomethingWithAutoGenId(1, 1000);//wallet 4000,account waste 5000,express count 5, point 7000
 
 			
 		} catch (Exception e) {
@@ -181,7 +185,7 @@ public class FullTest {
 		
 		sleep(20000);// wait for msg queue retry test finished
 		
-		Assert.assertTrue(walletService.getUserTotalAmount(1) == 5000);
+		Assert.assertTrue(walletService.getUserTotalAmount(1) == 4000);
 		Assert.assertTrue(walletService.getUserFreezeAmount(1) == 0);
 		Assert.assertTrue(accountingService.getTotalCost(1) == 5000);
 		Assert.assertTrue(expressService.getUserExpressCount(1) == 5);
@@ -266,10 +270,10 @@ public class FullTest {
 		final BusinessIdentifer annotation = AccountingRequest.class.getAnnotation(BusinessIdentifer.class);
 		final int i = concurrentTestId++;
 
-		final AccountingRequest request = new AccountingRequest();
+		final AccountingRequestCfg request = new AccountingRequestCfg();
 		request.setAmount(1000l);
 		request.setUserId(1);
-		TransactionId parentTrxId = new TransactionId(applicationName, "concurrentTest", String.valueOf(i));
+		TransactionId parentTrxId = new TransactionId(applicationName, "concurrentTest", i);
 		HashMap<String, Object> header = new HashMap<>();
 		header.put(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY, parentTrxId);
 		header.put(EasytransConstant.CallHeadKeys.CALL_SEQ, 1);
@@ -329,7 +333,7 @@ public class FullTest {
 		final WalletPayTccMethodRequest request = new WalletPayTccMethodRequest();
 		request.setPayAmount(1000l);
 		request.setUserId(1);
-		TransactionId parentTrxId = new TransactionId(applicationName, "concurrentTest", String.valueOf(i));
+		TransactionId parentTrxId = new TransactionId(applicationName, "concurrentTest", i);
 		HashMap<String, Object> header = new HashMap<>();
 		header.put(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY, parentTrxId);
 		header.put(EasytransConstant.CallHeadKeys.CALL_SEQ, 1);

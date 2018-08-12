@@ -19,7 +19,17 @@ public class DatabaseTransactionLogProperties {
 	
 	private Boolean enabled;
 	
+	private String tablePrefix;
+	
 	private Map<String,String> druid;
+	
+	public String getTablePrefix() {
+		return tablePrefix;
+	}
+
+	public void setTablePrefix(String tablePrefix) {
+		this.tablePrefix = tablePrefix;
+	}
 
 	public Map<String, String> getDruid() {
 		return druid;

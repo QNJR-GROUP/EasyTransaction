@@ -75,7 +75,11 @@ public class EasyTransSynchronizer {
 	 * @param busCode the unique busCode in AppId
 	 * @param trxId the unique trxId in appId+busCode
 	 */
-	public void startSoftTrans(String busCode,String trxId){
+	public void startSoftTrans(String busCode,long trxId){
+		
+		if(isSoftTransBegon()) {
+			throw new RuntimeException("transaction already started,but try to start again." + busCode + "," + trxId);
+		}
 		
 		//hook to TransactionSynchronizer
 		TransactionSynchronizationManager.registerSynchronization(new TransactionHook());
@@ -97,6 +101,10 @@ public class EasyTransSynchronizer {
 			transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, pTrxId.getAppId(), pTrxId.getBusCode(), pTrxId.getTrxId(), pTransStatus);
 		}
 	}
+	
+	public boolean isSoftTransBegon() {
+		return innerGetLogProcessContent() != null;
+	}
 
 	public void registerLog(Content content){
 		LogProcessContext logProcessContext = getLogProcessContext();
@@ -108,11 +116,15 @@ public class EasyTransSynchronizer {
 	 * @return
 	 */
 	public LogProcessContext getLogProcessContext() {
-		LogProcessContext logProcessContext = (LogProcessContext) TransactionSynchronizationManager.getResource(LOG_PROCESS_CONTEXT);
+		LogProcessContext logProcessContext = innerGetLogProcessContent();
 		if(logProcessContext == null){
 			throw new RuntimeException("please call TransController.startSoftTrans() before executeMethods!");
 		}
 		return logProcessContext;
+	}
+
+	private LogProcessContext innerGetLogProcessContent() {
+		return (LogProcessContext) TransactionSynchronizationManager.getResource(LOG_PROCESS_CONTEXT);
 	}
 	
 	private void unbindLogProcessContext(){

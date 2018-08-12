@@ -18,6 +18,7 @@ import com.yiqiniu.easytrans.log.TransactionLogReader;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
 import com.yiqiniu.easytrans.master.EasyTransMasterSelector;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
+import com.yiqiniu.easytrans.util.ByteFormIdCodec;
 
 /** 
 * @author xudeyou 
@@ -37,19 +38,22 @@ public class DataBaseTransactionLogConfiguration {
 			DatabaseTransactionLogProperties properties){
 		return new DataBaseTransactionLogCleanJob(applicationName, master, logWritter, properties.getLogReservedDays(), properties.getLogCleanTime());
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(TransactionLogReader.class)
-	public DataBaseTransactionLogReaderImpl dataBaseTransactionLogReaderImpl(ObjectSerializer serializer,DataBaseForLog dataBaseWrap){
-		return new DataBaseTransactionLogReaderImpl(applicationName, serializer,dataBaseWrap.getDataSource());
+	public DataBaseTransactionLogReaderImpl dataBaseTransactionLogReaderImpl(ObjectSerializer serializer,
+			DataBaseForLog dataBaseWrap, ByteFormIdCodec idCodec, DatabaseTransactionLogProperties properties) {
+		return new DataBaseTransactionLogReaderImpl(applicationName, serializer, dataBaseWrap.getDataSource(), idCodec,
+				properties.getTablePrefix());
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean(TransactionLogWritter.class)
-	public DataBaseTransactionLogWritterImpl dataBaseTransactionLogWritterImpl(ObjectSerializer serializer,DataBaseForLog dataBaseWrap){
-		return new DataBaseTransactionLogWritterImpl(serializer,dataBaseWrap.getDataSource());
+	public DataBaseTransactionLogWritterImpl dataBaseTransactionLogWritterImpl(ObjectSerializer serializer,
+			DataBaseForLog dataBaseWrap, ByteFormIdCodec idCodec, DatabaseTransactionLogProperties properties) {
+		return new DataBaseTransactionLogWritterImpl(serializer, dataBaseWrap.getDataSource(), idCodec,
+				properties.getTablePrefix());
 	}
-	
 	
 	@Bean
 	@ConditionalOnMissingBean(DataBaseForLog.class)

@@ -22,7 +22,14 @@ wallet-service:
 easytrans:
   master:
     zk:
-      zooKeeperUrl: localhost:2181
+      zooKeeperUrl: localhost:2281
+  stringcodec:
+    zk:
+      zooKeeperUrl: ${easytrans.master.zk.zooKeeperUrl}
+  idgen:
+    trxId:
+      zkSnow:
+        zooKeeperUrl: ${easytrans.master.zk.zooKeeperUrl}
   log:
     database:
       logCleanEnabled: true
