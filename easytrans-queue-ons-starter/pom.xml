@@ -6,19 +6,18 @@
   	<parent>
 		  <groupId>com.yiqiniu.easytrans</groupId>
 		  <artifactId>easytrans</artifactId>
-		  <version>${easytrans.version}</version>
+		  <version>1.0.0-SNAPSHOT</version>
+		  <relativePath>../pom.xml</relativePath>
 	</parent>
   
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<easytrans.version>1.0.0-SNAPSHOT</easytrans.version>
 	</properties>
 
 <dependencies>
 	<dependency>
 		<groupId>com.yiqiniu.easytrans</groupId>
 		<artifactId>easytrans-core</artifactId>
-		<version>${easytrans.version}</version>
 	</dependency>
 
 	<dependency>
