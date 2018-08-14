@@ -76,7 +76,7 @@ public class ZkBasedSnowFlakeIdGenerator implements TrxIdGenerator {
 	     * @return
 	     */
 	    public synchronized long nextId() {
-	        long currStmp = getNexSecond();
+	        long currStmp = getCurrentSecond();
 	        if (currStmp < lastStmp) {
 	            throw new RuntimeException("Clock moved backwards.  Refusing to generate id");
 	        }
@@ -100,13 +100,6 @@ public class ZkBasedSnowFlakeIdGenerator implements TrxIdGenerator {
 					| sequence;                 //序列号部分
 	    }
 
-	    private long getNexSecond() {
-	        long second = getCurrentSecond();
-	        while (second <= lastStmp) {
-	            second = getCurrentSecond();
-	        }
-	        return second;
-	    }
 
 		private long getCurrentSecond() {
 			long mill = System.currentTimeMillis() / 1000;
