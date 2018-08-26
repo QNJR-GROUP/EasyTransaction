@@ -51,6 +51,7 @@
 ### 框架对应实现及基本原理
 框架实现了上述所有事务场景的解决方案，并提供了统一易用的接口。以下介绍基本实现原理
 
+
 #### 无需分布式事务
 对于此类事务，框架完全不介入，不执行一行额外代码
 
@@ -97,9 +98,10 @@
     }
 
 使用方法如下，使用方直接调用远程方法即可，无需考虑具体的分布式事务类型及后续处理：
+
     @Transactional
     public void buySomething(int userId,long money){
-        /**
+    /**
 		* 本地业务方法，下订单，并获得订单号
 		*/
 		JdbcTemplate jdbcTemplate = util.getJdbcTemplate();
