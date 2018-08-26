@@ -112,9 +112,9 @@ public class FullTest {
 			// synchronizer test
 			// 清除创建测试初始数据
 			cleanAndSetUp();
+			
 			// 测试主事务成功，从事务也全部成功的场景
 			commitedAndSubTransSuccess();
-
 			// 测试在执行COMMIT前发生异常的场景
 			rollbackWithExceptionJustBeforeCommit();
 			// 在主事务中，远程调用执行了一半后发生异常的场景
@@ -127,6 +127,13 @@ public class FullTest {
 			commitWithExceptionInMiddleOfConsistenGuardian();
 			// 主事务回滚了，在跟进相关补偿回滚操作时候发生异常的场景
 			rollbackWithExceptionInMiddleOfConsistenGuardian();
+			
+			
+			// SAGA TRY FAILED test
+			sagaSuccessTest();
+			//wait for async execute
+			sleep(1000);
+			rollbackWithExceptionInSagaTry();
 
 			
 			// idempotent test
@@ -185,13 +192,30 @@ public class FullTest {
 		
 		sleep(20000);// wait for msg queue retry test finished
 		
-		Assert.assertTrue(walletService.getUserTotalAmount(1) == 4000);
+		Assert.assertTrue(walletService.getUserTotalAmount(1) == 3000);
 		Assert.assertTrue(walletService.getUserFreezeAmount(1) == 0);
 		Assert.assertTrue(accountingService.getTotalCost(1) == 5000);
 		Assert.assertTrue(expressService.getUserExpressCount(1) == 5);
-		Assert.assertTrue(pointService.getUserPoint(1) == 7000);
+		Assert.assertTrue(pointService.getUserPoint(1) == 8000);
 		System.out.println("Test Passed!!");
 	
+	}
+
+	private void sagaSuccessTest() {
+		orderService.sagaWalletTest(1, 1000);
+	}
+	
+	public void rollbackWithExceptionInSagaTry() {
+		try {
+			OrderService.setExceptionTag(OrderService.EXCEPTION_TAG_IN_SAGA_TRY);
+			orderService.sagaWalletTest(1, 1000);
+		} catch (UtProgramedException e) {
+			LOG.info(e.getMessage());
+		}
+		
+		//SAGA EXECUTE ASYC,so we should wait for it 
+		sleep(1000);
+		OrderService.clearExceptionSet();
 	}
 
 	public void sleep(long sleepTime) {
@@ -202,7 +226,7 @@ public class FullTest {
 			e.printStackTrace();
 		}
 	}
-
+	
 	public void testMessageQueueConsumeFailue() {
 
 		// 失败一次后成功
@@ -267,7 +291,7 @@ public class FullTest {
 
 	private void differentMethodConcurrentCompensable() {
 
-		final BusinessIdentifer annotation = AccountingRequest.class.getAnnotation(BusinessIdentifer.class);
+		final BusinessIdentifer annotation = AccountingRequestCfg.class.getAnnotation(BusinessIdentifer.class);
 		final int i = concurrentTestId++;
 
 		final AccountingRequestCfg request = new AccountingRequestCfg();
@@ -461,6 +485,8 @@ public class FullTest {
 		}
 		OrderService.clearExceptionSet();
 	}
+	
+
 
 	public void rollbackWithExceptionInMiddle() {
 		try {

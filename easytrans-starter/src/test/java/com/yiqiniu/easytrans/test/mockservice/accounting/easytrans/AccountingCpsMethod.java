@@ -35,8 +35,13 @@ public class AccountingCpsMethod implements CompensableMethod<AccountingRequestC
 		service.reverseEntry(param);
 	}
 	
-	public static class AccountingRequest {
+	public static class AccountingRequest implements Serializable {
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		private Integer userId;
 		
 		private Long amount;
@@ -61,6 +66,12 @@ public class AccountingCpsMethod implements CompensableMethod<AccountingRequestC
 	@BusinessIdentifer(appId=Constant.APPID,busCode=METHOD_NAME)
 	public static class AccountingRequestCfg extends AccountingRequest implements CompensableMethodRequest<AccountingResponse> {
 		private static final long serialVersionUID = 1L;
+
+		@Override
+		public String toString() {
+			return "AccountingRequestCfg [getUserId()=" + getUserId() + ", getAmount()=" + getAmount() + "]";
+		}
+		
 	}
 	
 	public static class AccountingResponse implements Serializable{

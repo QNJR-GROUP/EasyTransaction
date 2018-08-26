@@ -107,5 +107,10 @@ public class ReliableMessageMethodExecutor implements EasyTransExecutor,LogProce
 		return parentTrxId.getAppId()+"|"+parentTrxId.getBusCode()+"|"+parentTrxId.getTrxId()+"|"+content.getcId();
 	}
 
+	@Override
+	public boolean preLogProcess(LogProcessContext ctx, Content currentContent) {
+		return true;
+	}
+
 
 }

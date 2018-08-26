@@ -29,6 +29,7 @@ import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCps
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.AfterMasterTransMethodResult;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.ExpressDeliverAfterTransMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayCascadeTccMethod.WalletPayCascadeTccMethodRequest;
+import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPaySagaTccMethod.WalletPaySagaTccMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodResult;
 
@@ -40,6 +41,7 @@ public class OrderService {
 	public static final String EXCEPTION_TAG_JUST_AFTER_START_EASY_TRANSACTION = "JustAfterStartEasyTrans";
 	public static final String EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_SUCCESS_MASTER_TRANS = "InMiddleOfConsistentGuardianWithSuccessMasterTrans";
 	public static final String EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_ROLLEDBACK_MASTER_TRANS = "InMiddleOfConsistentGuardianWithRolledBackMasterTrans";
+	public static final String EXCEPTION_TAG_IN_SAGA_TRY = "EXCEPTION_TAG_IN_SAGA_TRY";
 
 	@Resource
 	private TestUtil util;
@@ -165,6 +167,25 @@ public class OrderService {
 	}
 	
 	@Transactional("buySthTransactionManager")
+	public void sagaWalletTest(int userId,long money) {
+		WalletPaySagaTccMethodRequest sagaDeductRequest = new WalletPaySagaTccMethodRequest();
+		sagaDeductRequest.setUserId(userId);
+		sagaDeductRequest.setPayAmount(money/2);
+		transaction.execute(sagaDeductRequest);
+		
+		WalletPayTccMethodRequest deductRequest = new WalletPayTccMethodRequest();
+		deductRequest.setUserId(userId);
+		deductRequest.setPayAmount(money/2);
+		transaction.execute(deductRequest);
+		
+		OrderMessage orderMessage = new OrderMessage();
+		orderMessage.setUserId(userId);
+		orderMessage.setAmount(money);
+		transaction.execute(orderMessage);		
+	}
+	
+	
+	@Transactional("buySthTransactionManager")
 	public Future<AfterMasterTransMethodResult> buySomething(int userId,long money){
 		
 		/**
@@ -195,6 +216,7 @@ public class OrderService {
 		WalletPayTccMethodRequest deductRequest = new WalletPayTccMethodRequest();
 		deductRequest.setUserId(userId);
 		deductRequest.setPayAmount(money/10);
+		
 		//return future for the benefits of performance enhance(batch write execute log and batch execute RPC)
 		//返回future是为了能方便的优化性能(批量写日志及批量调用RPC)
 		Future<WalletPayTccMethodResult> deductFuture = null;
@@ -203,6 +225,7 @@ public class OrderService {
 			 * 执行10遍，每次都扣十分之一钱，以测试相同方法在业务上调用多次的场景
 			 * 因之前版本不支持同一事物内调用同一个方法多次，这里只是测试调用多次的场景，并无其他特殊含义
 			 */
+			// tcc
 			deductFuture = transaction.execute(deductRequest);
 			deductFuture = transaction.execute(deductRequest);
 			deductFuture = transaction.execute(deductRequest);

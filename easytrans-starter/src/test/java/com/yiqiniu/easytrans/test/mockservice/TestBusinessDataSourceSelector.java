@@ -24,6 +24,8 @@ public class TestBusinessDataSourceSelector implements DataSourceSelector {
 		if(appId != null){
 			//无论是否递归的业务都是同一个数据源
 			busCode = busCode.replace("Cascade", "");
+			busCode = busCode.replace("sagaP", "p");
+
 			return ctx.getBean(busCode, DataSource.class);
 		}else{
 			return ctx.getBean("whole", DataSource.class);
@@ -40,6 +42,8 @@ public class TestBusinessDataSourceSelector implements DataSourceSelector {
 		
 		if(appId != null){
 			busCode = busCode.replace("Cascade", "");
+			busCode = busCode.replace("sagaP", "p");
+
 			return ctx.getBean(busCode, DataSource.class);
 		}else{
 			return ctx.getBean("whole", DataSource.class);
@@ -55,6 +59,8 @@ public class TestBusinessDataSourceSelector implements DataSourceSelector {
 		
 		if(appId != null){
 			busCode = busCode.replace("Cascade", "");
+			busCode = busCode.replace("sagaP", "p");
+
 			return ctx.getBean(busCode+"TransactionManager", PlatformTransactionManager.class);
 		}else{
 			return ctx.getBean("wholeTransactionManager", PlatformTransactionManager.class);
@@ -65,6 +71,7 @@ public class TestBusinessDataSourceSelector implements DataSourceSelector {
 	public PlatformTransactionManager selectTransactionManager(String appId, String busCode, EasyTransRequest<?, ?> request) {
 		if(appId != null){
 			busCode = busCode.replace("Cascade", "");
+			busCode = busCode.replace("sagaP", "p");
 			return ctx.getBean(busCode+"TransactionManager", PlatformTransactionManager.class);
 		}else{
 			return ctx.getBean("wholeTransactionManager", PlatformTransactionManager.class);

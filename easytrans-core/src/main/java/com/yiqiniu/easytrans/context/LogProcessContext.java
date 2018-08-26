@@ -35,6 +35,7 @@ public class LogProcessContext{
 	private ExecuteCacheManager executeManager;
 	private LogCache logCache;
 	private TransStatusLogger transStatusChecker;
+	private MasterTransactionStatusVotter masterTransactionStatusVotter;
 	
 	private TransactionLogWritter writer;
 	private TransactionId transactionId;
@@ -92,6 +93,7 @@ public class LogProcessContext{
 		executeManager = new ExecuteCacheManager(this);
 		logCache = new LogCache(this);
 		this.transStatusChecker = transStatusChecker;
+		this.masterTransactionStatusVotter = new MasterTransactionStatusVotter();
 	}
 	
 	public TransactionId getTransactionId(){
@@ -113,6 +115,12 @@ public class LogProcessContext{
 	public GuardianProcessEndEventManager getProcessEndManager() {
 		return processEndManager;
 	}
+	
+	public MasterTransactionStatusVotter getMasterTransactionStatusVotter() {
+		return masterTransactionStatusVotter;
+	}
+
+
 
 	public void registerDemiLogEventListener(DemiLeftContent LeftContent,DemiLogEventHandler handler){
 		demiLogManager.registerSemiLogEventListener(LeftContent, handler);

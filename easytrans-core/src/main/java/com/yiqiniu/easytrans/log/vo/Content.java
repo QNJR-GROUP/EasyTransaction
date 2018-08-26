@@ -7,6 +7,7 @@ import com.yiqiniu.easytrans.core.LogProcessor;
 import com.yiqiniu.easytrans.executor.AfterTransMethodExecutor;
 import com.yiqiniu.easytrans.executor.CompensableMethodExecutor;
 import com.yiqiniu.easytrans.executor.ReliableMessageMethodExecutor;
+import com.yiqiniu.easytrans.executor.SagaTccMethodExecutor;
 import com.yiqiniu.easytrans.executor.TccMethodExecutor;
 import com.yiqiniu.easytrans.log.vo.aft.AfterTransCallRegisterContent;
 import com.yiqiniu.easytrans.log.vo.aft.AfterTransCalledContent;
@@ -14,6 +15,9 @@ import com.yiqiniu.easytrans.log.vo.compensable.CompensatedContent;
 import com.yiqiniu.easytrans.log.vo.compensable.PreCompensableCallContent;
 import com.yiqiniu.easytrans.log.vo.msg.MessageRecordContent;
 import com.yiqiniu.easytrans.log.vo.msg.MessageSentContent;
+import com.yiqiniu.easytrans.log.vo.saga.PreSagaTccCallContent;
+import com.yiqiniu.easytrans.log.vo.saga.SagaTccCallCancelledContent;
+import com.yiqiniu.easytrans.log.vo.saga.SagaTccCallConfirmedContent;
 import com.yiqiniu.easytrans.log.vo.tcc.PreTccCallContent;
 import com.yiqiniu.easytrans.log.vo.tcc.TccCallCancelledContent;
 import com.yiqiniu.easytrans.log.vo.tcc.TccCallConfirmedContent;
@@ -60,7 +64,10 @@ public abstract class Content implements Serializable {
 		PreCompensableCall(8,CompensableMethodExecutor.class,PreCompensableCallContent.class),
 		Compensated(9,null,CompensatedContent.class),
 		AfterTransCallRegister(10,AfterTransMethodExecutor.class,AfterTransCallRegisterContent.class),
-		AfterTransCalled(11,null,AfterTransCalledContent.class)
+		AfterTransCalled(11,null,AfterTransCalledContent.class),
+		PreSagaTccCall(12,SagaTccMethodExecutor.class,PreSagaTccCallContent.class),
+		SagaTccCallConfirmed(13,null,SagaTccCallConfirmedContent.class),
+		SagaTccCallCanceled(14,null,SagaTccCallCancelledContent.class),
 		;
 		
 		private static HashMap<Integer,ContentType> map = new HashMap<Integer, Content.ContentType>();

@@ -26,7 +26,7 @@ public class DemiLogEventManager {
 		this.logCtx = logCtx;
 	}
 
-	private Map<Content/*LeftDemi*/,Content/*the matche Right Content*/> mapMatchResult = new HashMap<Content,Content>();
+	private Map<Content/*LeftDemi*/,Content/*the matched Right Content*/> mapMatchResult = new HashMap<Content,Content>();
 	private Map<Content/*LeftDemi*/,List<DemiLogEventHandler>> mapListener = new HashMap<Content/*contentId*/,List<DemiLogEventHandler>>();
 	
 	

@@ -15,4 +15,13 @@ public interface LogProcessor {
 	 * @return true for success,false for end processing and retry later
 	 */
 	boolean logProcess(LogProcessContext ctx,Content currentContent);
+	
+	/**
+	 * the pre-process method for specified log type
+	 * @param ctx log processing context 
+	 * @param currentContent processing content
+	 * @return true for success,false for end processing and retry later
+	 */
+	boolean preLogProcess(LogProcessContext ctx,Content currentContent);
+
 }
