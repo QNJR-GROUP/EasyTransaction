@@ -151,6 +151,12 @@ public class AfterTransMethodExecutor implements EasyTransExecutor,LogProcessor,
 			
 			return result.get();
 		}
+	}
+
+
+	@Override
+	public boolean preLogProcess(LogProcessContext ctx, Content currentContent) {
+		return true;
 	};
 
 

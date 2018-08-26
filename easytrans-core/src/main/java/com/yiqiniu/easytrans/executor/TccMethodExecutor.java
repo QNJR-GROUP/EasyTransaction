@@ -98,5 +98,10 @@ public class TccMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLog
 		}
 	}
 
+	@Override
+	public boolean preLogProcess(LogProcessContext ctx, Content currentContent) {
+		return true;
+	}
+
 
 }

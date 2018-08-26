@@ -40,4 +40,12 @@ public interface TransStatusLogger {
 	 * @param status
 	 */
 	void updateExecuteFlagForSlaveTrx(TransactionId pId, EasyTransRequest<?, ?> request, int status);
+
+	/**
+	 * update master transaction status
+	 * @param pId
+	 * @param request
+	 * @param status
+	 */
+	int updateMasterTransactionStatus(TransactionId pId, int status);
 }

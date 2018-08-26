@@ -34,6 +34,7 @@ import com.yiqiniu.easytrans.executor.AfterTransMethodExecutor;
 import com.yiqiniu.easytrans.executor.BestEffortMessageMethodExecutor;
 import com.yiqiniu.easytrans.executor.CompensableMethodExecutor;
 import com.yiqiniu.easytrans.executor.ReliableMessageMethodExecutor;
+import com.yiqiniu.easytrans.executor.SagaTccMethodExecutor;
 import com.yiqiniu.easytrans.executor.TccMethodExecutor;
 import com.yiqiniu.easytrans.filter.DefaultEasyTransFilterFactory;
 import com.yiqiniu.easytrans.filter.EasyTransFilter;
@@ -202,6 +203,12 @@ public class EasyTransCoreConfiguration {
 	public TccMethodExecutor tccMethodExecutor(@Lazy EasyTransSynchronizer transSynchronizer,
 			RemoteServiceCaller rpcClient) {
 		return new TccMethodExecutor(transSynchronizer, rpcClient);
+	}
+	
+	@Bean
+	public SagaTccMethodExecutor sagaTccMethodExecutor(@Lazy EasyTransSynchronizer transSynchronizer,
+			RemoteServiceCaller rpcClient) {
+		return new SagaTccMethodExecutor(transSynchronizer, rpcClient);
 	}
 
 	@Bean

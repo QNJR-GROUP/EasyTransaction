@@ -95,5 +95,10 @@ public class CompensableMethodExecutor implements EasyTransExecutor,LogProcessor
 		}
 	}
 
+	@Override
+	public boolean preLogProcess(LogProcessContext ctx, Content currentContent) {
+		return true;
+	}
+
 
 }

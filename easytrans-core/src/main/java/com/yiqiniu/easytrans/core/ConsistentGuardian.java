@@ -9,6 +9,8 @@ import org.springframework.util.Assert;
 
 import com.yiqiniu.easytrans.context.LogProcessContext;
 import com.yiqiniu.easytrans.datasource.TransStatusLogger;
+import com.yiqiniu.easytrans.datasource.TransStatusLogger.TransactionStatus;
+import com.yiqiniu.easytrans.filter.MetaDataFilter;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
 import com.yiqiniu.easytrans.log.vo.Content;
 import com.yiqiniu.easytrans.log.vo.Content.ContentType;
@@ -59,12 +61,54 @@ public class ConsistentGuardian {
 	 */
 	public boolean process(LogProcessContext logCtx){
 		
+		Boolean currentTrxStatus = logCtx.getFinalMasterTransStatus();
+		logCtx.getMasterTransactionStatusVotter().setTransactionStatus(currentTrxStatus);
+		
 		LogCollection logCollection = logCtx.getLogCollection();
-
-		//依次调用LOG对应的Processor
+		List<Content> orderedContents = logCollection.getOrderedContents();
+		
+		//依次调用LOG对应的processor里的preProcess
+		//目前preProcess中其中一个任务就是确定主控事务状态，另外一个就是执行SAGA的 正向调用/TRY 等方法
+		//若主控事务状态未知，则部分LOG对应的preProcess操作里将会投票表决主控事务状态，若有表示不能提交的话，则事务状态为回滚
+		//根据preProcess的数据更新主控事务状态（主控事务状态确定，才能往下执行，）
+		for(int i = 0;i < orderedContents.size() ; i++){
+			Content content = orderedContents.get(i);
+			//check log order
+			Assert.isTrue(content.getcId() != null && content.getcId().equals(i + 1),"content list did not sort or contentId is null");
+			
+			Class<? extends LogProcessor> proccessorClass = ContentType.getById(content.getLogType()).getProccessorClass();
+			if(proccessorClass == null){
+				if(LOG.isDebugEnabled()){
+					LOG.debug("processor not set,continue" + content);
+				}
+				continue;
+			}
+			
+			LogProcessor processor = proccessorMap.get(proccessorClass);
+			if(!processor.preLogProcess(logCtx, content)){
+				LOG.warn( "log pre-Processor return false,end proccesing and retry later." + content);
+				return false;
+			}
+		}
+		
+		// 事务状态未知，且本事务为主控事务，则更新主控事务状态
+		if (currentTrxStatus == null
+				&& MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY) == null) {
+			boolean allowCommit = logCtx.getMasterTransactionStatusVotter().getCurrentVoteStatusCommited();
+			int updateCount = transChecker.updateMasterTransactionStatus(logCtx.getTransactionId(),
+					allowCommit ? TransactionStatus.COMMITTED : TransactionStatus.ROLLBACKED);
+			
+			//concurrent modify check 
+			if(updateCount == 0) {
+				throw new RuntimeException("can not find the trx,or the status of Transaction is not UNKOWN!");
+			}
+			
+			logCtx.setFinalMasterTransStatus(allowCommit);
+		}
+		
+		//依次调用LOG对应的Processor的logProcess
 		//统计并发布SemiLog事件
 		//发布ProcessEnd事件
-		List<Content> orderedContents = logCollection.getOrderedContents();
 		for(int i = 0;i < orderedContents.size() ; i++){
 			
 			Content content = orderedContents.get(i);

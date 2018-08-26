@@ -17,6 +17,7 @@ import com.yiqiniu.easytrans.protocol.aft.AfterMasterTransMethod;
 import com.yiqiniu.easytrans.protocol.cps.CompensableMethod;
 import com.yiqiniu.easytrans.protocol.msg.BestEffortMessageHandler;
 import com.yiqiniu.easytrans.protocol.msg.ReliableMessageHandler;
+import com.yiqiniu.easytrans.protocol.saga.SagaTccMethod;
 import com.yiqiniu.easytrans.protocol.tcc.TccMethod;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
@@ -44,6 +45,7 @@ public class DefaultListableProviderFactory implements ListableProviderFactory {
 			mapBusinessProvider.put(RpcBusinessProvider.class, rpcBusinessMap);
 			
 			rpcBusinessMap.put(TccMethod.class, new ArrayList<Object>());
+			rpcBusinessMap.put(SagaTccMethod.class, new ArrayList<Object>());
 			rpcBusinessMap.put(CompensableMethod.class, new ArrayList<Object>());
 			rpcBusinessMap.put(AfterMasterTransMethod.class, new ArrayList<Object>());
 		}

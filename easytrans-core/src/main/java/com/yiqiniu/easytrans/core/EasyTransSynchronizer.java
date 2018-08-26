@@ -89,8 +89,12 @@ public class EasyTransSynchronizer {
 		//check whether is a parent transaction
 		TransactionId pTrxId = getParentTransactionId();
 		if(pTrxId == null){
+			
 			//if this transaction is roll back, this record is will disappear
-			transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, null, null, null, TransactionStatus.COMMITTED);
+			//transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, null, null, null, TransactionStatus.COMMITTED);
+			
+			// since introduced SAGA, Global-transaction status can not be determined by master transaction commit 
+			transStatusLogger.writeExecuteFlag(applicationName, busCode, trxId, null, null, null, TransactionStatus.UNKNOWN);
 		} else {
 			//a transaction with parent transaction,it's status depends on parent
 			//check whether the parent transaction status is determined
@@ -171,7 +175,8 @@ public class EasyTransSynchronizer {
 						}
 					}
 				} else {
-					logProcessContext.setFinalMasterTransStatus(true);
+					//since introduced SAGA, transactionStatus can not be determined by the DB commit of master
+					logProcessContext.setFinalMasterTransStatus(null);
 				}
 				break;
 			case STATUS_ROLLED_BACK:
