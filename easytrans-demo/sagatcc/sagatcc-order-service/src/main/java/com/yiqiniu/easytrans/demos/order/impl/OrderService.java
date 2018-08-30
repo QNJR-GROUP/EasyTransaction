@@ -55,12 +55,12 @@ public class OrderService {
 		 * call remote service after local transaction finished to deduct money, it's a SAGA-TCC service,
 		 * framework will maintains the eventually constancy based on the final transaction status
 		 * if you think introducing object transaction(EasyTransFacade) is an unacceptable coupling
-		 * then you can refer to another demo in the demos directory, it will show you how to execute transaction by user defined interface
+		 * then you can refer to another demo(interfacecall) in the demos directory, it will show you how to execute transaction by user defined interface
 		 * 
 		 * 在本地事务结束后，调用远程服务扣除所需的钱,这个远程服务实现了SAGA-TCC接口,
 		 * 框架会自动维护全局事务的最终一致性
 		 * 如果你认为引入transaction（EasyTransFacde）是一个无法接受的耦合
-		 * 那么你可以参考在demos目录下另外一个样例，它会告诉你如何用用户自定义的接口来执行远程事务
+		 * 那么你可以参考在demos目录下另外一个样例(interfacecall)，它会告诉你如何用用户自定义的接口来执行远程事务
 		 */
 		WalletPayRequestVO deductRequest = new WalletPayRequestVO();
 		deductRequest.setUserId(userId);

@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.yiqiniu.easytrans.demos</groupId>
+	<artifactId>interfacecall</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<easytrans.version>1.0.0-SNAPSHOT</easytrans.version>
+		<demo.version>1.0.0</demo.version>
+	</properties>
+
+
+	<modules>
+		<module>interfacecall-wallet-api</module>
+		<module>interfacecall-wallet-service</module>
+		<module>interfacecall-order-service</module>
+	</modules>
+
+
+	<parent>
+		<groupId>com.yiqiniu.easytrans</groupId>
+		<artifactId>easytrans</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>interfacecall-wallet-api</artifactId>
+				<version>${demo.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>interfacecall-wallet-service</artifactId>
+				<version>${demo.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>interfacecall-order-service</artifactId>
+				<version>${demo.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+</project>

@@ -14,12 +14,12 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.yiqiniu.easytrans.demos.order.remoteservice.WalletPayMoneyService;
-import com.yiqiniu.easytrans.demos.wallet.api.vo.WalletPayVO.WalletPayRequestVO;
-import com.yiqiniu.easytrans.demos.wallet.api.vo.WalletPayVO.WalletPayResponseVO;
+import com.yiqiniu.easytrans.demos.wallet.api.WalletPayMoneyService;
+import com.yiqiniu.easytrans.demos.wallet.api.WalletPayMoneyService.WalletPayRequestVO;
+import com.yiqiniu.easytrans.demos.wallet.api.WalletPayMoneyService.WalletPayResponseVO;
 
 @Component
-public class OrderServiceProxyForm {
+public class OrderService {
 	
 
 	@Resource
@@ -31,17 +31,17 @@ public class OrderServiceProxyForm {
 	@Transactional
 	public String buySomething(int userId,long money){
 		
-		int id = saveOrderRecord(jdbcTemplate,userId,money);
+		int id = saveOrderRecord(userId, money);
 		WalletPayRequestVO request = new WalletPayRequestVO();
 		request.setUserId(userId);
 		request.setPayAmount(money);
+		
 		WalletPayResponseVO pay = payService.pay(request);
-
 		return "id:" + id + " freeze:" + pay.getFreezeAmount();
 	}
 	
 	
-	private Integer saveOrderRecord(JdbcTemplate jdbcTemplate, final int userId, final long money) {
+	private Integer saveOrderRecord(final int userId, final long money) {
 		
 		final String INSERT_SQL = "INSERT INTO `order` (`order_id`, `user_id`, `money`, `create_time`) VALUES (NULL, ?, ?, ?);";
 		KeyHolder keyHolder = new GeneratedKeyHolder();
