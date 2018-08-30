@@ -1,4 +1,4 @@
-package com.yiqiniu.easytrans.demos.order.impl;
+package com.yiqiniu.easytrans.demos.wallet.impl;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,8 +9,8 @@ import com.yiqiniu.easytrans.EnableEasyTransaction;
 @SpringBootApplication
 @EnableEasyTransaction
 @EnableTransactionManagement
-public class OrderApplication {
+public class WalletApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(OrderApplication.class, args);
+		SpringApplication.run(WalletApplication.class, args);
 	}
 }

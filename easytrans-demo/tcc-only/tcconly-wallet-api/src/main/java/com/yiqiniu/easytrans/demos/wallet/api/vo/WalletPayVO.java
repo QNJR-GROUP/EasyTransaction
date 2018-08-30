@@ -2,10 +2,15 @@ package com.yiqiniu.easytrans.demos.wallet.api.vo;
 
 import java.io.Serializable;
 
+import com.yiqiniu.easytrans.demos.wallet.api.WalletServiceApiConstant;
+import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
+import com.yiqiniu.easytrans.protocol.tcc.TccMethodRequest;
+
 public class WalletPayVO {
 
 	
-	public static class WalletPayRequestVO implements Serializable {
+	@BusinessIdentifer(appId=WalletServiceApiConstant.APPID,busCode="pay",rpcTimeOut=2000)
+	public static class WalletPayRequestVO implements TccMethodRequest<WalletPayResponseVO> {
 
 		private static final long serialVersionUID = 1L;
 

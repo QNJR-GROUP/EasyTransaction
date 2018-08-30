@@ -12,9 +12,11 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 	
+	
 	@RequestMapping("/buySth")
 	@ResponseBody
-	public Integer buySomething(@RequestParam int userId,@RequestParam int money){
+	public String buySomethingProxy(@RequestParam int userId,@RequestParam int money){
 		return orderService.buySomething(userId, money);
 	}
+	
 }

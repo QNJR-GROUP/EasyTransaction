@@ -1,0 +1,13 @@
+server_back.properties
+*.class
+*.log
+*.log.*
+.factorypath
+/target/*
+/.settings/*
+/bin/*
+/.project
+/.classpath
+/logs
+/target/
+.DS_Store
