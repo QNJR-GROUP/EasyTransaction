@@ -1,6 +1,6 @@
 spring:
   application:
-    name: order-service  # the same with com.yiqiniu.easytrans.demos.order.Constant.APPID
+    name: wallet-service  # the same with com.yiqiniu.easytrans.demos.order.Constant.APPID
   datasource: # order service datasource config
     url: jdbc:mysql://localhost:3306/wallet?characterEncoding=UTF-8&useSSL=false
     username: root
