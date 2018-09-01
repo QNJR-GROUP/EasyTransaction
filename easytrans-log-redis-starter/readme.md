@@ -1,1 +1,1 @@
-## 分布式事务日志 redis实现
+## distrubuted transaction log  redis implement
