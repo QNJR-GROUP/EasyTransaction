@@ -1,5 +1,5 @@
 # English
-(English is not my mother tongue, can someone help me to review the text below?)
+(English is not my native language, can someone help me to review the text below?)
 
 ## The origin
 
