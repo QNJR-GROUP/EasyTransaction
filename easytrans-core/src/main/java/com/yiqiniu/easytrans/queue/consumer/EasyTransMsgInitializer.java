@@ -93,11 +93,14 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 			}
 		}
 		
-		//register listener to queue
-		for(Entry<String, List<String>> e:map.entrySet()){
-			consumer.subscribe(e.getKey(), e.getValue(), this);
+		if(map.size() != 0) {
+			//register listener to queue
+			for(Entry<String, List<String>> e:map.entrySet()){
+				consumer.subscribe(e.getKey(), e.getValue(), this);
+			}
+			consumer.start();
 		}
-		consumer.start();
+		
 	}
 	
 	@Override

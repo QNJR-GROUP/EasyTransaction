@@ -143,6 +143,7 @@ public class KafkaEasyTransMsgConsumerImpl implements EasyTransMsgConsumer {
 					}
 				}
 			};
+			dispatchThread.setDaemon(true);
 			dispatchThread.start();
 		}
 		
@@ -170,6 +171,7 @@ public class KafkaEasyTransMsgConsumerImpl implements EasyTransMsgConsumer {
 					}
 				}
 			};
+			reconsumeThread.setDaemon(true);
 			reconsumeThread.start();
 		}
 	}
