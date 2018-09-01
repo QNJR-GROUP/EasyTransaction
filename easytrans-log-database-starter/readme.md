@@ -1,1 +1,1 @@
-## LOG-DATABASE调用实现
+## distruibute transaction log   relation database implement

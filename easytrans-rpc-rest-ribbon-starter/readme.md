@@ -1,5 +1,51 @@
-## PRC-REST-RIBBON调用实现
+# English
+## PRC REST-RIBBON implement 
+use http and netflix-ribbon as RPC infrastructure
 
+## Mapping between HTTP uri and Easytransaction request
+To meet the requirements of the uri context, both the caller and the callee are allowed to set the uri context
+
+assume WEB-CONTEXT in the callee/service provider is:
+
+	/${rootContext}
+
+Then you can add one more WEB-CONTEXT to the request of EasyTransaction, for example:
+
+	/${easytransContext}
+
+Then the URI of TCC provider is similar to the following:
+
+	curl -X POST http://${appid}/${rootContext}/${easytransContext}/${busCode}/doTry
+	curl -X POST http://${appid}/${rootContext}/${easytransContext}/${busCode}/doConfirm
+	curl -X POST http://${appid}/${rootContext}/${easytransContext}/${busCode}/doCancel
+
+The client / caller needs to set up EasyTrans Call Context for each APPID service:
+
+	/${rootContext}/${easytransContext}
+
+the config sample:
+
+        easytrans:
+		  rpc:
+		    rest-ribbon:
+	    	  enabled: true
+	      	provider:
+	        	context: /easytrans
+	      	consumer:
+	        	trx-test-service:
+	          	  context: /easytrans
+
+## config ribbon
+The RIBBON configuration is the same with the native RIBBON/EUREKA, but the IRule implementation is an exception.
+
+The custom implementation of IRule achieves sticky calls to improve the efficiency of nested transactions.
+
+## attention
+in current RPC implement，timeout property in businessIdentifer is invalid，because ribbon can not set timeout for a URI
+
+
+# 中文
+## PRC REST-RIBBON 实现 
 使用HTTP调用及RIBBON做负载均衡的实现
 
 ## RPC方法与HTTP方法的映射

@@ -1,5 +1,5 @@
 ## English
-this demo show how to get ride of any framework class in your business code(but the configuration code will still introduce the classes of framework), so that we can get a more pretty code style in our business code
+this demo show how to get rid of any framework class in your business code(but the configuration code will still introduce the classes of framework), so that we can get a more pretty code style in our business code
 
 to run this demo, you will need zookeeper and mysql,change the configuration in applicaiton.yml,you can start the services
 
