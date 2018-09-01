@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: order-service  # the same with com.yiqiniu.easytrans.demos.order.Constant.APPID
+  datasource: # order service datasource config
+    url: jdbc:mysql://localhost:3306/order?characterEncoding=UTF-8&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+
+server: 
+  port: 8080
+
+# RIBBON用，也可以直接开启Eureka
+order-service:
+  ribbon:
+    listOfServers: localhost:8080
+
+wallet-service:
+  ribbon:
+    listOfServers: localhost:8081
+
+easytrans:
+  master:
+    zk:
+      zooKeeperUrl: localhost:2281
+  stringcodec:
+    zk:
+      zooKeeperUrl: ${easytrans.master.zk.zooKeeperUrl}
+  idgen:
+    trxId:
+      zkSnow:
+        zooKeeperUrl: ${easytrans.master.zk.zooKeeperUrl}
+  log:
+    database:
+      logCleanEnabled: true
+      logReservedDays: 14
+      logCleanTime: 01:22:00
+      druid:
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/order_translog?characterEncoding=UTF-8&useSSL=false
+        username: root
+        password: 123456
+  queue:
+    kafka:
+      enabled: true
+      produerCfg:
+        nativeCfg:
+          bootstrap.servers: localhost:9092
+          acks: all
+          retries: 0
+          batch.size: 16384
+          linger.ms: 1
+          buffer.memory: 3554432
+          key.serializer: org.apache.kafka.common.serialization.StringSerializer
+          value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+#      consumer-cfg:
+#        reconsume: # when error occur,when the message will be reconsume.for efficent,please keep the array below small.
+#          - [3000,3] # retry every 3000 millseconds,for 3 times,after 3 time faliures will move to the next retry level
+#          - [60000,5] # retry every 1 minutes,for 3 times,after 3 time faliures will move to the next retry level
+#          - [300000,3] # retry every 5 minutes,for 3 times,after 3 time faliures will move to the next retry level
+#          - [3600000] # retry every 1 hour,forever
+#        native-cfg:
+#          bootstrap.servers: localhost:9092
+#          group.id: ${spring.application.name}
+#          enable.auto.commit: false # please do not change it
+#          max.poll.records: 100
+#          key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#          value.deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+
+
+
+    
+      
