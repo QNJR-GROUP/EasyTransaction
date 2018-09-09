@@ -129,7 +129,7 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
 		 * 这个方法也可以不调用，框架用默认的业务代码及自动生成的ID号，但这样做的缺点是全局事务ID无法直接关联到具体业务
 		 * 不过这个可以通过自定义BusinessCodeGenerator及TrxIdGenerator来产生关联
 		 */
-		transaction.startEasyTrans(BUSINESS_CODE, String.valueOf(id));
+		transaction.startEasyTrans(BUSINESS_CODE, id);
 		
 		/**
 		 * 调用远程服务扣除所需的钱,这个远程服务实现了TCC接口,
