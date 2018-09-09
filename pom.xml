@@ -2,18 +2,48 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<name>EasyTransaction</name>
 
 	<groupId>com.yiqiniu.easytrans</groupId>
 	<artifactId>easytrans</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<!-- since maven 3.5 -->
+	<version>${revision}</version>
 	<packaging>pom</packaging>
+
+
+	<description>A distribute transaction solution unified the usage of TCC , SAGA , reliable message, compensate and so on</description>
+	<url>https://github.com/QNJR-GROUP/EasyTransaction</url>
+	<organization>
+		<name>QNJR</name>
+	</organization>
+	
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<id>Xu Deyou</id>
+			<name>Xu Deyou</name>
+			<email>skyes.xu@qq.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/QNJR-GROUP/EasyTransaction.git</connection>
+		<developerConnection>scm:git:ssh://github.com:QNJR-GROUP/EasyTransaction.git</developerConnection>
+		<url>https://github.com/QNJR-GROUP/EasyTransaction/tree/master</url>
+	</scm>
 
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<easytrans.version>1.0.0-SNAPSHOT</easytrans.version>
+		<revision>1.0.0</revision>
 	</properties>
 
 
@@ -41,7 +71,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>Dalston.SR4</version>
+				<version>Dalston.SR5</version>
 				<!-- <version>Camden.SR7</version> -->
 				<type>pom</type>
 				<scope>import</scope>
@@ -50,53 +80,136 @@
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
 				<artifactId>easytrans-core</artifactId>
-				<version>${easytrans.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
 				<artifactId>easytrans-starter</artifactId>
-				<version>${easytrans.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
 				<artifactId>easytrans-queue-ons-starter</artifactId>
-				<version>${easytrans.version}</version>
+				<version>${revision}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
 				<artifactId>easytrans-queue-kafka-starter</artifactId>
-				<version>${easytrans.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
 				<artifactId>easytrans-rpc-rest-ribbon-starter</artifactId>
-				<version>${easytrans.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
 				<artifactId>easytrans-rpc-dubbo-starter</artifactId>
-				<version>${easytrans.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
 				<artifactId>easytrans-log-database-starter</artifactId>
-				<version>${easytrans.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
 				<artifactId>easytrans-log-redis-starter</artifactId>
-				<version>${easytrans.version}</version>
+				<version>${revision}</version>
 			</dependency>
 
 		</dependencies>
 	</dependencyManagement>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<configuration>
+					<flattenMode>bom</flattenMode>
+					<updatePomFile>true</updatePomFile>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten.clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<configuration>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 </project>

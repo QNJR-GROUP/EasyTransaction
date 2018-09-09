@@ -3,9 +3,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.13.RELEASE</version>
+	</parent>
+
 	<groupId>com.yiqiniu.easytrans.demos</groupId>
 	<artifactId>interfacecall</artifactId>
-	<version>1.0.0</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 
@@ -13,8 +19,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<easytrans.version>1.0.0-SNAPSHOT</easytrans.version>
-		<demo.version>1.0.0</demo.version>
+		<revision>1.0.0</revision>
 	</properties>
 
 
@@ -24,29 +29,39 @@
 		<module>interfacecall-order-service</module>
 	</modules>
 
-
-	<parent>
-		<groupId>com.yiqiniu.easytrans</groupId>
-		<artifactId>easytrans</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-	</parent>
-
 	<dependencyManagement>
 		<dependencies>
+		
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>Dalston.SR5</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		
+			<dependency>
+				<groupId>com.yiqiniu.easytrans</groupId>
+				<artifactId>easytrans</artifactId>
+				<version>${revision}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		
 			<dependency>
 				<groupId>com.yiqiniu.easytrans.demos</groupId>
 				<artifactId>interfacecall-wallet-api</artifactId>
-				<version>${demo.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.yiqiniu.easytrans.demos</groupId>
 				<artifactId>interfacecall-wallet-service</artifactId>
-				<version>${demo.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.yiqiniu.easytrans.demos</groupId>
 				<artifactId>interfacecall-order-service</artifactId>
-				<version>${demo.version}</version>
+				<version>${revision}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

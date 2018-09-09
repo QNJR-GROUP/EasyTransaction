@@ -11,3 +11,4 @@ server_back.properties
 /logs
 /target/
 .DS_Store
+.flattened-pom.xml

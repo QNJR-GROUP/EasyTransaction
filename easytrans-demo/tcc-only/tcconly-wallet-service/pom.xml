@@ -6,7 +6,8 @@
 	<parent>
 		<groupId>com.yiqiniu.easytrans.demos</groupId>
 		<artifactId>tcconly</artifactId>
-		<version>1.0.0</version>
+		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 
