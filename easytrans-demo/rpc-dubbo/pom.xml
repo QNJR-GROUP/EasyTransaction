@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	
+	<parent>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-parent</artifactId>
+	    <version>1.5.13.RELEASE</version>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.yiqiniu.easytrans.demos</groupId>
+	<artifactId>rpcdubbo</artifactId>
+	<version>${revision}</version>
+	<packaging>pom</packaging>
+
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<revision>1.0.0</revision>
+	</properties>
+
+
+	<modules>
+		<module>rpcdubbo-wallet-api</module>
+		<module>rpcdubbo-wallet-service</module>
+		<module>rpcdubbo-order-service</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+		
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>Dalston.SR5</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.yiqiniu.easytrans</groupId>
+				<artifactId>easytrans</artifactId>
+				<version>${revision}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>rpcdubbo-wallet-api</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>rpcdubbo-wallet-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>rpcdubbo-order-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+</project>
