@@ -2,6 +2,7 @@ package com.yiqiniu.easytrans.util;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -10,6 +11,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.aop.framework.AdvisedSupport;
+import org.springframework.aop.framework.AopProxy;
+import org.springframework.aop.support.AopUtils;
 
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.BusinessProvider;
@@ -24,6 +29,7 @@ public final class ReflectUtil {
 		List<Class<?>> pType = getTypeArguments(EasyTransRequest.class,paramsClass);
 		return (Class<R>) pType.get(0);
 	}
+	
 	
 	@SuppressWarnings("unchecked")
 	public static Class<? extends EasyTransRequest<?, ?>> getRequestClass(Class<? extends BusinessProvider<?>> providerClass){
@@ -143,7 +149,6 @@ public final class ReflectUtil {
 	 * @return a list of the raw classes for the actual type arguments.
 	 */
 	public static <T> List<Class<?>> getTypeArguments(Class<T> baseClass, Class<? extends T> childClass) {
-		
 		Map<Type, Type> resolvedTypes = new HashMap<Type, Type>();
 		Type type = getNecessaryResolvedTypes(baseClass, childClass, resolvedTypes);
 
@@ -167,5 +172,52 @@ public final class ReflectUtil {
 		}
 		return typeArgumentsAsClasses;
 	}
+	
+	/**
+     * get the original object from proxy object
+	 * @param <T>
+     * @param proxy Object
+     * @return Original Object
+     * @throws Exception
+     * @author lisq 20180912
+     */
+    public static <T> T getOriginalObject(T proxy) {
+
+        if(!AopUtils.isAopProxy(proxy)) {
+            return proxy;//不是代理对象
+        }
+		try {
+			if (AopUtils.isJdkDynamicProxy(proxy)) {
+				return (T) getJdkDynamicProxyTargetObject(proxy);
+			} else if (AopUtils.isCglibProxy(proxy)) {
+				return (T) getCglibProxyTargetObject(proxy);
+			} else {
+				throw new Exception("Proxy type not supported！");
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Proxy original object get error!!!");
+		}
+    }
+    
+    private static Object getCglibProxyTargetObject(Object proxy) throws Exception {
+        Field h = proxy.getClass().getDeclaredField("CGLIB$CALLBACK_0");
+        h.setAccessible(true);
+        Object dynamicAdvisedInterceptor = h.get(proxy);
+        Field advised = dynamicAdvisedInterceptor.getClass().getDeclaredField("advised");
+        advised.setAccessible(true);
+        Object target = ((AdvisedSupport)advised.get(dynamicAdvisedInterceptor)).getTargetSource().getTarget();
+        return target;
+    }
+
+
+    private static Object getJdkDynamicProxyTargetObject(Object proxy) throws Exception {
+        Field h = proxy.getClass().getSuperclass().getDeclaredField("h");
+        h.setAccessible(true);
+        AopProxy aopProxy = (AopProxy) h.get(proxy);
+        Field advised = aopProxy.getClass().getDeclaredField("advised");
+        advised.setAccessible(true);
+        Object target = ((AdvisedSupport)advised.get(aopProxy)).getTargetSource().getTarget();
+        return target;
+    }
 	
 }

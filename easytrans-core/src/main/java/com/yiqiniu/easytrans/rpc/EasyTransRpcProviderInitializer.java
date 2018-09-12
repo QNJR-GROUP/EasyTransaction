@@ -45,6 +45,8 @@ public class EasyTransRpcProviderInitializer {
 			HashMap<BusinessIdentifer,RpcBusinessProvider<?>> map = new HashMap<BusinessIdentifer, RpcBusinessProvider<?>>(services.size());
 			for(Object serviceObject:services){
 				RpcBusinessProvider<?> provider = (RpcBusinessProvider<?>) serviceObject;
+				// modify by lisq  20180912 supports proxy
+				provider =  ReflectUtil.getOriginalObject(provider);
 				Class<? extends EasyTransRequest<?, ?>> requestClass = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) provider.getClass());
 				BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(requestClass);
 				map.put(businessIdentifer, provider);

@@ -66,7 +66,9 @@ public class DefaultListableProviderFactory implements ListableProviderFactory {
 					Class<?> transactionType = transactionTypeList.getKey();
 					if(transactionType.isAssignableFrom(bean.getClass())){
 						transactionTypeList.getValue().add(bean);
-						Class<? extends EasyTransRequest<?, ?>> requestClass = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) bean.getClass());
+						//modify by lisq 20180912 supports proxy
+						Object orgObject = ReflectUtil.getOriginalObject(bean);
+						Class<? extends EasyTransRequest<?, ?>> requestClass = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) orgObject.getClass());
 						BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(requestClass);
 						if(businessIdentifer == null){
 							throw new RuntimeException("request class did not add Annotation BusinessIdentifer,please add it! class:" + requestClass);
