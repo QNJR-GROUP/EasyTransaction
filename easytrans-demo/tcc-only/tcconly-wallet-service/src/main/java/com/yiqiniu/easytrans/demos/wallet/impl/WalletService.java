@@ -4,6 +4,7 @@ import javax.annotation.Resource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.yiqiniu.easytrans.core.EasyTransFacade;
 import com.yiqiniu.easytrans.demos.wallet.api.vo.WalletPayVO.WalletPayRequestVO;
@@ -17,7 +18,7 @@ public class WalletService {
 	@Resource
 	private JdbcTemplate jdbcTemplate;
 	
-	
+	@Transactional
 	public WalletPayResponseVO doTryPay(WalletPayRequestVO param) {
 		int update = jdbcTemplate.update("update `wallet` set freeze_amount = freeze_amount + ? where user_id = ? and (total_amount - freeze_amount) >= ?;", 
 				param.getPayAmount(),param.getUserId(),param.getPayAmount());
@@ -31,7 +32,7 @@ public class WalletService {
 		return walletPayTccMethodResult;
 	}
 	
-
+	@Transactional
 	public void doConfirmPay(WalletPayRequestVO param) {
 		int update = jdbcTemplate.update("update `wallet` set freeze_amount = freeze_amount - ?, total_amount = total_amount - ? where user_id = ?;", 
 				param.getPayAmount(),param.getPayAmount(),param.getUserId());
@@ -41,6 +42,7 @@ public class WalletService {
 		}
 	}
 	
+	@Transactional
 	public void doCancelPay(WalletPayRequestVO param) {
 		int update = jdbcTemplate.update("update `wallet` set freeze_amount = freeze_amount - ? where user_id = ?;", 
 				param.getPayAmount(),param.getUserId());
