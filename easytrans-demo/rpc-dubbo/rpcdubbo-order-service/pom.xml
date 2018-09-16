@@ -47,7 +47,6 @@
 			<groupId>com.yiqiniu.easytrans</groupId>
 			<artifactId>easytrans-rpc-dubbo-starter</artifactId>
 			<exclusions>
-				<!-- dubbo import a very old version spring , exclude it -->
 				<exclusion>
 					<groupId>org.springframework</groupId>
 					<artifactId>spring</artifactId>

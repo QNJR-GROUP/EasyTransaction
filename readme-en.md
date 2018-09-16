@@ -46,6 +46,7 @@ Distributed business scenario
 	* applicable to businesses that require remote execution results to determine global-transaction status, and remote execution is able to make compensation.
 	* common
 	* Priority is given to compensation-based eventual consistency transactions if there's unsolvable problems with message queues are used
+	* In this framework, compensation pattern do not support nested transaction, you can use TCC instead when nested transaction is required
 * TCC pattern
 	* applicable to businesses that require remote execution results to determine global-transaction status, and remote execution is unable to make compensation.
 	* the least common.
@@ -103,7 +104,7 @@ Business code can introduce EasyTransaction by maven
 	  <dependency>
         <groupId>com.yiqiniu.easytrans</groupId>
         <artifactId>easytrans-starter</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
       </dependency>
 
 This Starter contains several default implement, included: RDBS based distributed transaction log，Netflix-ribbon based http RPC implement，KAFKA based queue，if you want to replace it ,just exclude it.

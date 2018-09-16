@@ -77,7 +77,7 @@ import com.yiqiniu.easytrans.serialization.impl.SpringObjectSerialization;
 import com.yiqiniu.easytrans.stringcodec.StringCodec;
 import com.yiqiniu.easytrans.stringcodec.impl.EnableStringCodecZookeeperImpl;
 import com.yiqiniu.easytrans.util.ByteFormIdCodec;
-import com.yiqiniu.easytrans.util.CallWrappUtil;
+import com.yiqiniu.easytrans.util.CallWrapUtil;
 import com.yiqiniu.easytrans.util.DeafultByteFormIdCodec;
 
 /**
@@ -359,8 +359,8 @@ public class EasyTransCoreConfiguration {
 	}
 	
 	@Bean
-	public CallWrappUtil callWrappUtil(EasyTransFacade facade) {
-		return new CallWrappUtil(facade);
+	public CallWrapUtil callWrappUtil(EasyTransFacade facade) {
+		return new CallWrapUtil(facade);
 	}
 	
 }

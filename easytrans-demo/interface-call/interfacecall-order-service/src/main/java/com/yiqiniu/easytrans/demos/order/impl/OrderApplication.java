@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.yiqiniu.easytrans.EnableEasyTransaction;
 import com.yiqiniu.easytrans.demos.wallet.api.WalletPayMoneyService;
 import com.yiqiniu.easytrans.demos.wallet.api.requestcfg.WalletPayRequestCfg;
-import com.yiqiniu.easytrans.util.CallWrappUtil;
+import com.yiqiniu.easytrans.util.CallWrapUtil;
 
 @SpringBootApplication
 @EnableEasyTransaction
@@ -22,7 +22,7 @@ public class OrderApplication {
 	 * create WalletPayMoneyService instance, you can inject the instance to call wallet tcc service
 	 */
 	@Bean
-	public WalletPayMoneyService payService(CallWrappUtil util) {
+	public WalletPayMoneyService payService(CallWrapUtil util) {
 		return util.createTransactionCallInstance(WalletPayMoneyService.class, WalletPayRequestCfg.class);
 	}
 	

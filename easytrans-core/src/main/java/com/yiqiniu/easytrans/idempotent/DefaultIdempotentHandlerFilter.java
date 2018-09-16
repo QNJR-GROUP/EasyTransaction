@@ -61,7 +61,9 @@ public class DefaultIdempotentHandlerFilter implements IdempotentHandlerFilter {
 								
 								IdempotentPo idempotentPo = helper.getIdempotentPo(filterChain, header, request);
 								ExecuteOrder executeOrder = helper.getExecuteOrder(filterChain.getAppId(), filterChain.getBusCode(), filterChain.getInnerMethodName());
-								String objectMD5 = ObjectDigestUtil.getObjectMD5(request);
+								
+								byte[] serialization = serializer.serialization(request);
+								String objectMD5 = ObjectDigestUtil.MD5Encode(serialization);
 								
 								EasyTransResult innerResult = filterResult(idempotentPo, objectMD5, executeOrder);
 								
