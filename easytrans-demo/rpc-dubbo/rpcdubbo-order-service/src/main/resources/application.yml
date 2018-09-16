@@ -17,7 +17,7 @@ easytrans:
   rpc:
     dubbo:
       enabled: true
-      dubbo-zk-url: zookeeper://${easytrans.master.zk.zooKeeperUrl}
+      
   stringcodec:
     zk:
       zooKeeperUrl: ${easytrans.master.zk.zooKeeperUrl}
@@ -37,6 +37,19 @@ easytrans:
         password: 123456
 
 
-
+# Dubbo Config properties
+# please refer https://dubbo.incubator.apache.org/en-us/docs/user/references/xml/introduction.html
+dubbo:
+  application:
+    name: order-service
+  protocol:
+    name: dubbo
+    port: 20880
+  registry:
+    address: zookeeper://localhost:2281
+  provider:
+    timeout: 1000
+  consumer:
+    timeout: 1000
     
       

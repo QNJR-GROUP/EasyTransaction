@@ -3,9 +3,14 @@ package com.yiqiniu.easytrans.rpc.impl.dubbo;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ConsumerConfig;
+import com.alibaba.dubbo.config.ModuleConfig;
+import com.alibaba.dubbo.config.MonitorConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.rpc.service.GenericService;
@@ -16,13 +21,23 @@ import com.yiqiniu.easytrans.util.ReflectUtil;
 
 public class DubboEasyTransRpcConsumerImpl implements EasyTransRpcConsumer{
 	
-	private String applicationName;
-	private String dubboZkUrl;
+	private ApplicationConfig applicationConfig; 
+	private RegistryConfig registryConfig;
+	private ProtocolConfig protocolConfig;
+	private ConsumerConfig consumerConfig;
+	private ModuleConfig moduleConfig;
+	private MonitorConfig monitorConfig;
+	private DubboReferanceCustomizationer customizationer;
 	
-	public DubboEasyTransRpcConsumerImpl(String applicationName, String dubboZkUrl) {
+	public DubboEasyTransRpcConsumerImpl(Optional<ApplicationConfig> applicationConfig, Optional<RegistryConfig> registryConfig,Optional<ProtocolConfig> protocolConfig,Optional<ConsumerConfig> consumerConfig,Optional<ModuleConfig> moduleConfig,Optional<MonitorConfig> monitorConfig, Optional<DubboReferanceCustomizationer> customizationer) {
 		super();
-		this.applicationName = applicationName;
-		this.dubboZkUrl = dubboZkUrl;
+		this.applicationConfig = applicationConfig.orElse(null);
+		this.registryConfig = registryConfig.orElse(null);
+		this.protocolConfig = protocolConfig.orElse(null);
+		this.customizationer = customizationer.orElse(null);
+		this.consumerConfig = consumerConfig.orElse(null);
+		this.moduleConfig = moduleConfig.orElse(null);
+		this.monitorConfig = monitorConfig.orElse(null);
 	}
 
 	private Map<String,GenericService> mapRef = new ConcurrentHashMap<String,GenericService>();
@@ -34,23 +49,8 @@ public class DubboEasyTransRpcConsumerImpl implements EasyTransRpcConsumer{
 		GenericService genericService = getCaller(appId, busCode,params);
 		
 		Object result = genericService.$invoke(innerMethod, new String[]{params.getClass().getName(), header.getClass().getName()}, new Object[]{params,header});
-//		JsonElement jsonTree = gson.toJsonTree(result);
-//		return (R) gson.fromJson(jsonTree, getResultClass(params));
 		return (R)result;
 	}
-
-	
-//	private ConcurrentHashMap<Class<?>, Class<?>> mapResultClazz = new ConcurrentHashMap<Class<?>, Class<?>>();
-//	@SuppressWarnings("unchecked")
-//	private <P extends EasyTransRequest<?, ?>> Class<?> getResultClass(P params) {
-//		
-//		Class<?> resultClazz = mapResultClazz.get(params.getClass());
-//		if(resultClazz == null){
-//			resultClazz = ReflectUtil.getResultClass(params.getClass());
-//			mapResultClazz.put(params.getClass(), resultClazz);
-//		}
-//		return resultClazz;
-//	}
 
 	private GenericService getCaller(String appId, String busCode,EasyTransRequest<?,?> request) {
 		GenericService genericService = mapRef.get(getTargetKey(appId,busCode));
@@ -64,11 +64,38 @@ public class DubboEasyTransRpcConsumerImpl implements EasyTransRpcConsumer{
 			referenceConfig.setInterface(value.getName()); // 弱类型接口名 
 			referenceConfig.setVersion("1.0.0"); 
 			referenceConfig.setGeneric(true); // 声明为泛化接口 
-			referenceConfig.setApplication(new ApplicationConfig(applicationName));
-			referenceConfig.setRegistry(new RegistryConfig(dubboZkUrl));
 			referenceConfig.setGroup(appId + "-" + busCode);
 			referenceConfig.setCheck(false);
 			referenceConfig.setSticky(true);//设置粘滞连接以优化级联事务的级联提交性能
+			
+			if(applicationConfig != null) {
+				referenceConfig.setApplication(applicationConfig);
+			}
+			
+			if(registryConfig != null) {
+				referenceConfig.setRegistry(registryConfig);
+			}
+			
+			if(protocolConfig != null) {
+				referenceConfig.setProtocol(protocolConfig.getName());
+			}
+			
+			if(moduleConfig != null) {
+				referenceConfig.setModule(moduleConfig);
+			}
+			
+			if(monitorConfig != null) {
+				referenceConfig.setMonitor(monitorConfig);
+			}
+			
+			if(consumerConfig != null) {
+				referenceConfig.setConsumer(consumerConfig);
+			}
+			
+			if(customizationer != null) {
+				customizationer.customDubboReferance(appId,busCode,referenceConfig);
+			}
+			
 			genericService = referenceConfig.get();
 			mapRef.put(getTargetKey(appId,busCode), genericService);
 		}
