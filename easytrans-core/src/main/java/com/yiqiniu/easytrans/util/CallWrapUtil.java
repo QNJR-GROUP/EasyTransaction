@@ -14,11 +14,11 @@ import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.tcc.TccMethodRequest;
 
-public class CallWrappUtil {
+public class CallWrapUtil {
 	
 	private EasyTransFacade facade;
 	
-	public CallWrappUtil(EasyTransFacade facade) {
+	public CallWrapUtil(EasyTransFacade facade) {
 		this.facade = facade;
 	}
 	
