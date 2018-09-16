@@ -82,7 +82,27 @@ public class ObjectDigestUtil {
 			md.update(resultString.getBytes("UTF-8"));
 			resultString = byteArrayToHexString(md.digest());
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		return resultString;
+	}
+	
+
+	/**
+	 * MD5编码
+	 * 
+	 * @param origin
+	 *            原始字符串
+	 * @return 经过MD5加密之后的结果
+	 */
+	public static String MD5Encode(byte[] origin) {
+		String resultString = null;
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			md.update(origin);
+			resultString = byteArrayToHexString(md.digest());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		return resultString;
 	}
