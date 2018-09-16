@@ -23,7 +23,6 @@
 		<dependency>
 			<groupId>com.yiqiniu.easytrans</groupId>
 			<artifactId>easytrans-core</artifactId>
-			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 

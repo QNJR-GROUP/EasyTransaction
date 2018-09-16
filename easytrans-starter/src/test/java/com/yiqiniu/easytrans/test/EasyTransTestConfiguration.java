@@ -18,7 +18,7 @@ import com.yiqiniu.easytrans.EnableEasyTransaction;
 import com.yiqiniu.easytrans.queue.QueueTopicMapper;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingApi;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
-import com.yiqiniu.easytrans.util.CallWrappUtil;
+import com.yiqiniu.easytrans.util.CallWrapUtil;
 
 @SpringBootApplication
 @EnableEasyTransaction
@@ -34,7 +34,7 @@ import com.yiqiniu.easytrans.util.CallWrappUtil;
 public class EasyTransTestConfiguration {
 	
 	@Bean
-	public AccountingApi accountingApi(CallWrappUtil util) {
+	public AccountingApi accountingApi(CallWrapUtil util) {
 		return util.createTransactionCallInstance(AccountingApi.class, AccountingRequestCfg.class);
 	}
 	
