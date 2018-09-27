@@ -76,6 +76,10 @@ public class MetaDataFilter implements EasyTransFilter {
 			}
 		}
 		
+		if(transactionStatus == null) {
+			throw new RuntimeException("can not determine the transaction status of " + appId + " " + busCode + " " + innerMethod);
+		}
+		
 		return transactionStatus;
 	}
 	
