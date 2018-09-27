@@ -18,6 +18,7 @@ public class LogCollection implements Serializable{
 		this.busCode = busCode;
 		this.trxId = trxId;
 		this.orderedContents = orderedContents;
+		this.createTime = createTime;
 	}
 
 	/**

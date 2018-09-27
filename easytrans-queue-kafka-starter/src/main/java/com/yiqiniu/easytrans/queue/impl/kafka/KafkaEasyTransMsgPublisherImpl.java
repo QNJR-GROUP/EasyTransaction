@@ -71,7 +71,7 @@ public class KafkaEasyTransMsgPublisherImpl implements EasyTransMsgPublisher {
 	public int calcMessagePartition(String kafkaTopic, TransactionId trxId) {
 		List<PartitionInfo> partitionMetaData = kafkaProducer.partitionsFor(kafkaTopic);
 		int partitionSize = partitionMetaData.size();
-		int partition = Math.abs(trxId.hashCode()) % partitionSize;
+		int partition = Math.abs(trxId.hashCode() % partitionSize);
 		return partition;
 	}
 	

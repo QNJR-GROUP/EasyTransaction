@@ -1,6 +1,7 @@
 package com.yiqiniu.easytrans.log.impl.database;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -91,7 +92,7 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 		List<Content> currentContentList = new ArrayList<Content>();
 		byte[] currentId = null;
 		for(DataBaseTransactionLogDetail detailDo:query){
-			if(!detailDo.getTransLogId().equals(currentId)){
+			if(!Arrays.equals(detailDo.getTransLogId(), currentId)){
 				addToResult(result, currentDoList, currentContentList);
 				currentContentList.clear();
 				currentDoList.clear();
@@ -121,6 +122,5 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 					new ArrayList<Content>(currentContentList), first.getCreateTime()));
 		}
 	}
-	
-	
+		
 }

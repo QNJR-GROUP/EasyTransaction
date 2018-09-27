@@ -119,6 +119,8 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 			if(result.getException() != null){
 				throw result.getException();
 			}
+		} else {
+			throw new RuntimeException("result is null!");
 		}
 		
 		return result.getValue();
