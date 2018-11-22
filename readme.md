@@ -55,6 +55,8 @@
 	* 本框架实现的SAGA并非传统的SAGA,可以将其类比为异步TCC，与传统SAGA的区别可以类比 传统补偿及TCC的关系
 	* 还有就是本框架使用RPC而非队列实现SAGA，具体原因可以在SAGA-TCC这个DEMO里查看
 
+关于如何选择分布式事务形态，更详细的可参考：https://mp.weixin.qq.com/s/Vwh4RuwEocsMpOFyvmFJfw
+
 ### 框架对应实现及基本原理
 框架实现了上述所有事务场景的解决方案，并提供了统一易用的接口。以下介绍基本实现原理
 
@@ -90,7 +92,7 @@
 	  <dependency>
         <groupId>com.yiqiniu.easytrans</groupId>
         <artifactId>easytrans-starter</artifactId>
-        <version>1.1.1</version>
+        <version>1.1.2</version>
       </dependency>
 
 Starter里包含了若干默认的组件实现:基于mysql的分布式事务日志存储，基于ribbon-rest的RPC实现，基于KAFKA的消息队列，若不需要或者要替换，可以EXCLUDE掉

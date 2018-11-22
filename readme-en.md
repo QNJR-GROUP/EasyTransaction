@@ -104,7 +104,7 @@ Business code can introduce EasyTransaction by maven
 	  <dependency>
         <groupId>com.yiqiniu.easytrans</groupId>
         <artifactId>easytrans-starter</artifactId>
-        <version>1.1.1</version>
+        <version>1.1.2</version>
       </dependency>
 
 This Starter contains several default implement, included: RDBS based distributed transaction log，Netflix-ribbon based http RPC implement，KAFKA based queue，if you want to replace it ,just exclude it.

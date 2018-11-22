@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -329,9 +330,8 @@ public class EasyTransCoreConfiguration {
 	public static class EnableDefaultMasterImpl {
 	}
 
-	@Bean
-	public ConsistentGuardianDaemonConfiguration consistentGuardianDaemonConfiguration() {
-		return new ConsistentGuardianDaemonConfiguration();
+	@Import(ConsistentGuardianDaemonConfiguration.class)
+	public static class EnableConsistentGuardianDaemon {
 	}
 
 	@Bean
