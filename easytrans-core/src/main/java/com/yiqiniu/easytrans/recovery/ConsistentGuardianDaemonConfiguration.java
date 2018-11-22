@@ -21,7 +21,7 @@ public class ConsistentGuardianDaemonConfiguration {
 	private String applicationName;
 	
 	@Bean
-	@ConditionalOnProperty("easytrans.recovery.enabled")
+	@ConditionalOnProperty(name="easytrans.recovery.enabled",matchIfMissing = true)
 	public ConsistentGuardianDaemon consistentGuardianDaemon(ConsistentGuardianDaemonProperties properties,TransactionLogReader logReader, ConsistentGuardian guardian,
 			EasyTransMasterSelector master){
 		return new ConsistentGuardianDaemon(logReader, guardian, master, properties.getExecuteInterval(), properties.getPageSize(), properties.getDelay());
