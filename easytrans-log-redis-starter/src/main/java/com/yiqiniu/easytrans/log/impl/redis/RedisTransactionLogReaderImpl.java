@@ -63,18 +63,16 @@ public class RedisTransactionLogReaderImpl implements TransactionLogReader {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public List<LogCollection> getUnfinishedLogs(LogCollection locationId, int pageSize, Date createTimeFloor) {
+	public List<LogCollection> getUnfinishedLogs(LogCollection locationId, int pageSize, Date createTimeCeiling) {
 
-		double latestTime = createTimeFloor.getTime();
+		double latestTime = createTimeCeiling.getTime();
+		double floorTime = Double.MIN_VALUE;
 		if (locationId != null) {
-			double indexTime = locationId.getCreateTime().getTime();
-			if (latestTime < indexTime) {
-				latestTime = indexTime;
-			}
+			floorTime = locationId.getCreateTime().getTime();
 		}
 
 		RedisFuture<List<ScoredValue<byte[]>>> zrangebyscore = async.zrangebyscoreWithScores(keyPrefix + appId,
-				Range.from(Boundary.excluding(Double.MIN_VALUE), Boundary.including(latestTime)),
+				Range.from(Boundary.excluding(floorTime), Boundary.including(latestTime)),
 				Limit.create(0, pageSize));
 
 		List<LogCollection> result = new ArrayList<>();
@@ -83,7 +81,6 @@ public class RedisTransactionLogReaderImpl implements TransactionLogReader {
 			if (transIds == null || transIds.size() == 0) {
 				return Collections.emptyList();
 			}
-
 			
 			//turn bytes to String
 			List<Pair<String, Double>> transIdStrs = transIds.stream()
