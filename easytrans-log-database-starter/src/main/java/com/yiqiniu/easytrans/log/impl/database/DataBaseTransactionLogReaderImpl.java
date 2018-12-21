@@ -63,7 +63,7 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 	}
 	@Override
 	public List<LogCollection> getUnfinishedLogs(LogCollection locationId,
-			int pageSize, Date createTimeFloor) {
+			int pageSize, Date createTimeCeiling) {
 		
 		JdbcTemplate localJdbcTemplate = getJdbcTemplate();
 		
@@ -72,9 +72,9 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 		List<byte[]> transIdList = null;
 		if(locationId != null){
 			byte[] transIdLocation = idCodec.getTransIdByte(new TransactionId(locationId.getAppId(), locationId.getBusCode(), locationId.getTrxId()));
-			transIdList = localJdbcTemplate.queryForList(selectUnfinishedTransWithoutPos, new Object[]{idCodec.getAppIdCeil(appId), idCodec.getAppIdFloor(appId), createTimeFloor,transIdLocation,pageSize},byte[].class);
+			transIdList = localJdbcTemplate.queryForList(selectUnfinishedTransWithoutPos, new Object[]{idCodec.getAppIdCeil(appId), idCodec.getAppIdFloor(appId), createTimeCeiling,transIdLocation,pageSize},byte[].class);
 		}else{
-			transIdList = localJdbcTemplate.queryForList(selectUnfinishedTransWithPos, new Object[]{idCodec.getAppIdCeil(appId), idCodec.getAppIdFloor(appId), createTimeFloor,pageSize},byte[].class);
+			transIdList = localJdbcTemplate.queryForList(selectUnfinishedTransWithPos, new Object[]{idCodec.getAppIdCeil(appId), idCodec.getAppIdFloor(appId), createTimeCeiling,pageSize},byte[].class);
 		}
 		
 		if(transIdList == null || transIdList.size() ==0){

@@ -78,7 +78,7 @@ public class ConsistentGuardianDaemon {
 										logCollection.getTrxId());
 							} else {
 								LOG.info(
-										"Skip transaction {} {} {},for retry time limie",
+										"Skip transaction {} {} {},for retry time limit",
 										logCollection.getAppId(),
 										logCollection.getBusCode(),
 										logCollection.getTrxId());
@@ -136,7 +136,8 @@ public class ConsistentGuardianDaemon {
 		Date lastTryTime = (Date) objects[0];
 		Integer triedCount = (Integer) objects[1];
 		instance.setTimeInMillis(lastTryTime.getTime());
-		instance.add(Calendar.SECOND, 2^(triedCount + 1));
+		instance.add(Calendar.SECOND, (int)Math.pow(2, (triedCount + 1)));
+		
 		long nextExecuteTime = instance.getTimeInMillis();
 		
 		if(nextExecuteTime < System.currentTimeMillis()){

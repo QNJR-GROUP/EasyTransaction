@@ -12,8 +12,8 @@ public interface TransactionLogReader {
 	 * get current service's unfinished logs
 	 * @param locationId can be null
 	 * @param pageSize
-	 * @param createTimeFloor
+	 * @param createTimeCeiling
 	 * @return
 	 */
-	List<LogCollection> getUnfinishedLogs(LogCollection locationId,int pageSize,Date createTimeFloor);
+	List<LogCollection> getUnfinishedLogs(LogCollection locationId,int pageSize,Date createTimeCeiling);
 }
