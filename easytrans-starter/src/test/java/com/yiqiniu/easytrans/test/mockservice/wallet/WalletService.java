@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.yiqiniu.easytrans.core.EasyTransFacade;
 import com.yiqiniu.easytrans.test.Constant;
 import com.yiqiniu.easytrans.test.mockservice.TestUtil;
+import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponFescarAtMethod.UseCouponMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.ExpressDeliverAfterTransMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderMessageForCascadingTest;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderService.UtProgramedException;
@@ -106,6 +107,15 @@ public class WalletService {
 		expressDeliverAfterTransMethodRequest.setUserId(param.getUserId());
 		expressDeliverAfterTransMethodRequest.setPayAmount(param.getPayAmount());
 		transaction.execute(expressDeliverAfterTransMethodRequest);
+		
+		
+		if(param.getUseCoupon()) {
+		    UseCouponMethodRequest useCouponRequest = new UseCouponMethodRequest();
+		    useCouponRequest.setUserId(1);
+		    useCouponRequest.setCoupon(1l);
+		    transaction.execute(useCouponRequest);
+		}
+		
 		
 		checkUtProgramedException();
 		

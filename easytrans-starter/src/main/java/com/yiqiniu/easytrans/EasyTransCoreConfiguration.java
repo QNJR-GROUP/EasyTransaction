@@ -34,6 +34,7 @@ import com.yiqiniu.easytrans.datasource.impl.SingleDataSourceSelector;
 import com.yiqiniu.easytrans.executor.AfterTransMethodExecutor;
 import com.yiqiniu.easytrans.executor.BestEffortMessageMethodExecutor;
 import com.yiqiniu.easytrans.executor.CompensableMethodExecutor;
+import com.yiqiniu.easytrans.executor.FescarAtMethodExecutor;
 import com.yiqiniu.easytrans.executor.ReliableMessageMethodExecutor;
 import com.yiqiniu.easytrans.executor.SagaTccMethodExecutor;
 import com.yiqiniu.easytrans.executor.TccMethodExecutor;
@@ -211,6 +212,11 @@ public class EasyTransCoreConfiguration {
 			RemoteServiceCaller rpcClient) {
 		return new SagaTccMethodExecutor(transSynchronizer, rpcClient);
 	}
+	
+    @Bean
+    public FescarAtMethodExecutor fescarAtMethodExecutor(@Lazy EasyTransSynchronizer transSynchronizer, RemoteServiceCaller rpcClient) {
+        return new FescarAtMethodExecutor(transSynchronizer, rpcClient);
+    }
 
 	@Bean
 	@ConditionalOnMissingBean(EasyTransMsgListener.class)
@@ -274,8 +280,8 @@ public class EasyTransCoreConfiguration {
 	}
 
 	@Bean
-	public MetaDataFilter metaDataFilter(ListableProviderFactory providerFactory) {
-		return new MetaDataFilter(providerFactory);
+	public MetaDataFilter metaDataFilter(ListableProviderFactory providerFactory, DataSourceSelector ds) {
+		return new MetaDataFilter(providerFactory, ds);
 	}
 
 	@Bean

@@ -22,4 +22,9 @@ public class EasytransConstant {
 	
 	public final static String EscapeChar = "_";
 
+    public static class DataSourceRelative {
+        public static final String DATA_SOURCE = "RELATIVE_DS";
+        public static final String TRANSACTION_MANAGER = "RELATIVE_TM";
+    }
+
 }

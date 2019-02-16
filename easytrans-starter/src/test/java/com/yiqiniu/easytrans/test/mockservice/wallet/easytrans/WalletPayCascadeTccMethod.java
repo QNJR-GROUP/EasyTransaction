@@ -48,6 +48,8 @@ public class WalletPayCascadeTccMethod implements TccMethod<WalletPayCascadeTccM
 		private Integer userId;
 		
 		private Long payAmount;
+		
+		private Boolean useCoupon;
 
 		public Long getPayAmount() {
 			return payAmount;
@@ -64,6 +66,16 @@ public class WalletPayCascadeTccMethod implements TccMethod<WalletPayCascadeTccM
 		public void setUserId(Integer userId) {
 			this.userId = userId;
 		}
+
+        public Boolean getUseCoupon() {
+            return useCoupon;
+        }
+
+        public void setUseCoupon(Boolean useCoupon) {
+            this.useCoupon = useCoupon;
+        }
+		
+		
 	}
 
 	@Override

@@ -27,7 +27,12 @@ public class WalletPaySagaTccMethod implements SagaTccMethod<WalletPaySagaTccMet
 	public void sagaTry(WalletPaySagaTccMethodRequest param) {
 		OrderService.checkThrowException(OrderService.EXCEPTION_TAG_IN_SAGA_TRY);
 		WalletPayTccMethodRequest serviceRequest = convert2ServiceParam(param);
-		wlletService.doTryPay(serviceRequest);
+		try {
+            wlletService.doTryPay(serviceRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
 	}
 
 	private WalletPayTccMethodRequest convert2ServiceParam(WalletPaySagaTccMethodRequest param) {

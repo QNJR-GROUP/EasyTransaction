@@ -71,7 +71,7 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		//通过busCode以及http method获取对应要执行的JAVA METHOD以及JAVA OBJECT
 		Object[] objList = getCorrespondingObjArray(innerMethod,busCode);
 		if(objList == null){
-			throw new IllegalArgumentException("对应的接口尚未注册到本服务：" + busCode);
+			throw new IllegalArgumentException("对应的接口尚未注册到本服务：" + busCode + " " + innerMethod);
 		}
 		Object callObj = objList[0];
 		Method callMethod = (Method) objList[1];
@@ -106,6 +106,11 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		
 		Map<String,Object> header = deserializeHeader(easyTransHeader);
 		
+		if(logger.isDebugEnabled()) {
+		    logger.debug("ET RPC call recived,busCode:{},innerMethod:{},header:{},body:{}",busCode,innerMethod, header, requestObj);
+		}
+
+		
 		EasyTransResult result;
 		try {
 			result = filterChain.invokeFilterChain(header,requestObj);
@@ -117,7 +122,8 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		
 		if(result != null){
 			if(result.getException() != null){
-				throw result.getException();
+			    logger.error("ET call exception occour", result.getException());
+			    throw result.getException();
 			}
 		} else {
 			throw new RuntimeException("result is null!");
