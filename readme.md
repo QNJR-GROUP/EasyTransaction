@@ -43,7 +43,7 @@
     * 适用于需要获取远程执行结果来决定逻辑事务走向 且 可以进行补偿的业务
     * 若使用消息队列不能解决的事务问题优先考虑使用基于补偿的最终一致性事务（若需要嵌套事务，则使用TCC）
     * 本框架中传统补偿不支持嵌套，若有需要，可改用TCC
-* 使用自动补偿完成的最终一致性事务（参考阿里Fescar的AT模式，目前处于Alpha状态，仅供熟悉原理代码能自行排坑者使用）
+* 使用自动补偿完成的最终一致性事务（整合改造阿里的Fescar的AT模式完成）
     * 适用于需要获取远程执行结果来决定逻辑事务走向 且 不介意偶尔读取并展示脏数据的场景
     * 该模式下，普通select时数据整体处于脏读状态，进行本地更新事务时，若进行逻辑判断所需的字段会参与到全局事务时，需要用Select for update获取准确值后再判断
     * 因上述全局事务及本地事务的协作是一个隐式、易错点，甚至于写每一个涉及更新的SQL都需要考虑上面这个因素，因此希望引入并使用自动补偿时，需建立好相关使用规范，以避免后续项目失控
@@ -96,10 +96,8 @@
 	  <dependency>
         <groupId>com.yiqiniu.easytrans</groupId>
         <artifactId>easytrans-starter</artifactId>
-        <version>1.2.0-beta</version>
+        <version>1.2.0</version>
       </dependency>
-
-目前稳定版本为 1.1.3，生产请使用该版本
 
 Starter里包含了若干默认的组件实现:基于mysql的分布式事务日志存储，基于ribbon-rest的RPC实现，基于KAFKA的消息队列，若不需要或者要替换，可以EXCLUDE掉
 
@@ -388,7 +386,17 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
 	* 因此CRASH恢复进程使用select for update 查询executed_trans记录时，必然能得到准确的是否已经提交的结果（若主控事务仍在进行中，select for update将会等待）
 	* 使用select for update是为了避免在MVCC情况下错误查询出最终事务提交结果的情况
 
-## 七、其他
+## 七、外部组件版本兼容性
+* ZK请使用3.4及以上版本
+* SpringBoot 2.0.x 以及 SpringCloud F版本的整合请参考Demo里的tccandfescar
+    * 需要注意的是写文档时最新版的spring boot（2.0.8）引入的最新版mysql-connector-java （5.1.47）存在bug,要降级为5.1.46
+    * 另因SpringCloud大版本变更时导致某些包名变动，在F版本时使用ET的Ribbon时，需要在项目单独引入spring-cloud-starter-netflix-ribbon
+* 如果遇到ZK库相关的包匹配问题，需要检查当前项目的相关包版本
+    * 在1.2.0版本后，curator-recipes及curator-framework需为4.x.x,zookeeper客户端版本需为3.4.x或者3.5.x（视ZK服务器版本而定）
+    * 1.2.0版本前，curator-recipes及curator-framework需为2..x.x,zookeeper客户端版本同上
+
+
+## 八、其他
 欢迎加作者个人微信公众号
 
 ![wechat public account](https://raw.githubusercontent.com/QNJR-GROUP/ImageHub/master/easytrans/wechat_public_account.jpg)
@@ -398,8 +406,8 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
 email: skyes.xu@qq.com
 
 我写的关于ET的一些额外文章，请点赞以帮助SEO：
-如何选择分布式事务形态 https://www.cnblogs.com/skyesx/p/9697817.html
-“若干分布式事务框架”与“我的偏见” https://www.cnblogs.com/skyesx/p/10041923.html
+* 如何选择分布式事务形态 https://www.cnblogs.com/skyesx/p/9697817.html
+* “若干分布式事务框架”与“我的偏见” https://www.cnblogs.com/skyesx/p/10041923.html
 
 
 

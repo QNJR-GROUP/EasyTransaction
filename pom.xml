@@ -59,23 +59,21 @@
 	</modules>
 
 
-	<parent>
+ 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.5.6.RELEASE</version>
-		<!-- <version>1.4.4.RELEASE</version> -->
 	</parent>
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
+ 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
 				<version>Dalston.SR5</version>
-				<!-- <version>Camden.SR7</version> -->
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
+			</dependency> 
 
 			<dependency>
 				<groupId>com.yiqiniu.easytrans</groupId>
@@ -125,6 +123,23 @@
 				<version>${revision}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>org.apache.curator</groupId>
+				<artifactId>curator-recipes</artifactId>
+				<version>4.0.1</version>
+			</dependency>
+			
+			<dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+                <version>4.0.1</version>
+            </dependency>
+
+ 			<dependency>
+				<groupId>org.apache.zookeeper</groupId>
+				<artifactId>zookeeper</artifactId>
+				<version>3.4.10</version>
+			</dependency> 
 		</dependencies>
 	</dependencyManagement>
 	
