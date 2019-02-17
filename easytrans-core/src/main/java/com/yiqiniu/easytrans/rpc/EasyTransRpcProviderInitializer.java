@@ -6,7 +6,6 @@ import java.util.Set;
 
 import com.yiqiniu.easytrans.filter.EasyTransFilterChainFactory;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
-import com.yiqiniu.easytrans.protocol.BusinessProvider;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
 import com.yiqiniu.easytrans.provider.factory.ListableProviderFactory;
@@ -30,7 +29,6 @@ public class EasyTransRpcProviderInitializer {
 	}
 
 
-	@SuppressWarnings("unchecked")
 	private void init(){
 		
 		//set filters
@@ -45,7 +43,7 @@ public class EasyTransRpcProviderInitializer {
 			HashMap<BusinessIdentifer,RpcBusinessProvider<?>> map = new HashMap<BusinessIdentifer, RpcBusinessProvider<?>>(services.size());
 			for(Object serviceObject:services){
 				RpcBusinessProvider<?> provider = (RpcBusinessProvider<?>) serviceObject;
-				Class<? extends EasyTransRequest<?, ?>> requestClass = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) provider.getClass());
+				Class<? extends EasyTransRequest<?, ?>> requestClass = ReflectUtil.getRequestClass(provider);
 				BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(requestClass);
 				map.put(businessIdentifer, provider);
 			}

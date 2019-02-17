@@ -1,4 +1,4 @@
-package com.yiqiniu.easytrans.protocol.fescar;
+package com.yiqiniu.easytrans.protocol.autocps;
 
 import java.util.concurrent.Callable;
 
@@ -11,7 +11,7 @@ import com.alibaba.fescar.core.context.RootContext;
  * @author deyou
  *
  */
-public class FescarAtLocalTransactionExecutor {
+public class AutoCpsLocalTransactionExecutor {
 
     public static <R> R executeWithGlobalLockCheck(Callable<R> call) throws Exception {
         try {

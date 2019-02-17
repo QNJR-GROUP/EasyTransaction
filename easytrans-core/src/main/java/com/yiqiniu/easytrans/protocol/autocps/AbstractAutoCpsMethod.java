@@ -1,4 +1,4 @@
-package com.yiqiniu.easytrans.protocol.fescar;
+package com.yiqiniu.easytrans.protocol.autocps;
 
 import java.io.Serializable;
 
@@ -15,16 +15,16 @@ import com.yiqiniu.easytrans.core.EasytransConstant;
 import com.yiqiniu.easytrans.filter.MetaDataFilter;
 import com.yiqiniu.easytrans.protocol.TransactionId;
 
-public abstract class AbstractFescarAtMethod<P extends FescarAtMethodRequest<R>, R extends Serializable> implements FescarAtMethod<P, R> {
+public abstract class AbstractAutoCpsMethod<P extends AutoCpsMethodRequest<R>, R extends Serializable> implements AutoCpsMethod<P, R> {
     
     {
         EtDataSourceManager.initEtDataSourceManager();
     }
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AbstractFescarAtMethod.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(AbstractAutoCpsMethod.class);
 
     @Override
-    public final R doFescarAtBusiness(P param) {
+    public final R doAutoCpsBusiness(P param) {
 
         TransactionId transactionId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
         String xid = getFescarXid(transactionId);
@@ -40,7 +40,7 @@ public abstract class AbstractFescarAtMethod<P extends FescarAtMethodRequest<R>,
     protected abstract R doBusiness(P param);
 
     @Override
-    public final void doFescarAtCommit(P param) {
+    public final void doAutoCpsCommit(P param) {
 
         Integer callSeq = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.CALL_SEQ);
         TransactionId transactionId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);
@@ -65,7 +65,7 @@ public abstract class AbstractFescarAtMethod<P extends FescarAtMethodRequest<R>,
     }
 
     @Override
-    public final void doFescarAtRollback(P param) {
+    public final void doAutoCpsRollback(P param) {
 
         Integer callSeq = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.CALL_SEQ);
         TransactionId transactionId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);

@@ -66,7 +66,6 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 		init();
 	}
 	
-	@SuppressWarnings({ "unchecked" })
 	private void init(){
 		
 		HashMap<String,List<String>> map = new HashMap<String, List<String>>();
@@ -78,7 +77,7 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 			for(Object handler:serviceMap){
 				BusinessProvider<?> messageHandler = (BusinessProvider<?>) handler;
 				wrapToFilter(messageHandler);
-				Class<? extends EasyTransRequest<?, ?>> clazz = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) messageHandler.getClass());
+				Class<? extends EasyTransRequest<?, ?>> clazz = ReflectUtil.getRequestClass(messageHandler);
 				BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(clazz);
 				
 				
@@ -136,37 +135,31 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 	}
 
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void wrapToFilter(final BusinessProvider<?> handler) {
-		
-		List<Class<?>> result = ReflectUtil.getTypeArguments(MessageBusinessProvider.class, (Class)handler.getClass());
-		if(result != null){
-			Class<? extends EasyTransRequest<?, ?>> requestClass = (Class<? extends EasyTransRequest<?, ?>>) result.get(0);
-			
-			EasyTransFilter easyTransFilter = new EasyTransFilter() {
-				
-				@Override
-				public EasyTransResult invoke(EasyTransFilterChain filterChain, Map<String,Object> header,
-						EasyTransRequest<?, ?> request) {
-					EasyTransResult easyTransResult = new EasyTransResult();
-					
-					try {
-						easyTransResult.setValue(((MessageBusinessProvider<?>)handler).consume(request));
-						if(easyTransResult.getValue() == EasyTransConsumeAction.CommitMessage) {
-							logger.info("EasyTrans message consume Success:" + request);
-						} else {
-							logger.warn("EasyTrans message consume later:" + request);
-						}
-					} catch (Throwable e) {
-						easyTransResult.setException(e);
-						logger.error("EasyTrans message consume Exception Occour:" + request,e);
-					}
-					return easyTransResult;
-				}
-			};
-			mapHandler.put(requestClass, easyTransFilter);
-		}
-	}
+    private void wrapToFilter(final BusinessProvider<?> handler) {
+        
+        Class<? extends EasyTransRequest<?, ?>> requestClass = ReflectUtil.getRequestClass(handler);
+
+        EasyTransFilter easyTransFilter = new EasyTransFilter() {
+            @Override
+            public EasyTransResult invoke(EasyTransFilterChain filterChain, Map<String, Object> header, EasyTransRequest<?, ?> request) {
+                EasyTransResult easyTransResult = new EasyTransResult();
+
+                try {
+                    easyTransResult.setValue(((MessageBusinessProvider<?>) handler).consume(request));
+                    if (easyTransResult.getValue() == EasyTransConsumeAction.CommitMessage) {
+                        logger.info("EasyTrans message consume Success:" + request);
+                    } else {
+                        logger.warn("EasyTrans message consume later:" + request);
+                    }
+                } catch (Throwable e) {
+                    easyTransResult.setException(e);
+                    logger.error("EasyTrans message consume Exception Occour:" + request, e);
+                }
+                return easyTransResult;
+            }
+        };
+        mapHandler.put(requestClass, easyTransFilter);
+    }
 	
 	public static class NeedToReconsumeLaterException extends RuntimeException{
 		private static final long serialVersionUID = 1L;

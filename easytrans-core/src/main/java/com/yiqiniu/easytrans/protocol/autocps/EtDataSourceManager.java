@@ -1,4 +1,4 @@
-package com.yiqiniu.easytrans.protocol.fescar;
+package com.yiqiniu.easytrans.protocol.autocps;
 
 import static com.alibaba.fescar.core.exception.TransactionExceptionCode.BranchRollbackFailed_Retriable;
 

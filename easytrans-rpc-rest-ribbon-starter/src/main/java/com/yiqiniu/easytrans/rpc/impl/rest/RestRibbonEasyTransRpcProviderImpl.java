@@ -26,7 +26,6 @@ import com.yiqiniu.easytrans.filter.EasyTransFilterChain;
 import com.yiqiniu.easytrans.filter.EasyTransFilterChainFactory;
 import com.yiqiniu.easytrans.filter.EasyTransResult;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
-import com.yiqiniu.easytrans.protocol.BusinessProvider;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.MethodTransactionStatus;
 import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
@@ -41,7 +40,6 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 	private EasyTransFilterChainFactory filterChainFactory;
 	private ObjectMapper objectMapper;  
 	private ObjectSerializer serializer;
-	
 	private Map<String,Object[]> mapCallMetaData = new HashMap<>();
 	
 	
@@ -161,8 +159,7 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		for(Entry<BusinessIdentifer, RpcBusinessProvider<?>> entry:businessList.entrySet()){
 			BusinessIdentifer businessIdentifer = entry.getKey();
 			RpcBusinessProvider<?> provider = entry.getValue();
-			@SuppressWarnings("unchecked")
-			Class<? extends EasyTransRequest<?, ?>> parameterClass = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) provider.getClass());
+			Class<? extends EasyTransRequest<?, ?>> parameterClass = ReflectUtil.getRequestClass(provider);
 			
 			for(Method method:javaMethod2HttpMethod){
 				

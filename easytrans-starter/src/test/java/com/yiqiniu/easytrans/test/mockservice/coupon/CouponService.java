@@ -7,11 +7,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.yiqiniu.easytrans.core.EasyTransFacade;
+import com.yiqiniu.easytrans.protocol.BusinessProvider;
+import com.yiqiniu.easytrans.protocol.autocps.EtAutoCps;
 import com.yiqiniu.easytrans.test.Constant;
 import com.yiqiniu.easytrans.test.mockservice.TestUtil;
-import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponFescarAtMethod;
-import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponFescarAtMethod.UseCouponMethodRequest;
-import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponFescarAtMethod.UseCouponResult;
+import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponAutoCpsMethod;
+import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponAutoCpsMethod.UseCouponMethodRequest;
+import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponAutoCpsMethod.UseCouponResult;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodRequest;
 
@@ -30,10 +32,11 @@ public class CouponService {
 		return queryForObject == null?0:queryForObject;
 	}
 	
+	@EtAutoCps(idempotentType=BusinessProvider.IDENPOTENT_TYPE_FRAMEWORK)
 	@Transactional(transactionManager="useCouponTransactionManager")
 	public UseCouponResult useCoupon(UseCouponMethodRequest param) {
 	    
-		JdbcTemplate jdbcTemplate = util.getJdbcTemplate(Constant.APPID,UseCouponFescarAtMethod.METHOD_NAME,param);
+		JdbcTemplate jdbcTemplate = util.getJdbcTemplate(Constant.APPID,UseCouponAutoCpsMethod.METHOD_NAME,param);
 		int update = jdbcTemplate.update("update `coupon` set coupon = coupon - ? where user_id = ? and coupon >= ?;", 
 				param.getCoupon(),param.getUserId(),param.getCoupon());
 		

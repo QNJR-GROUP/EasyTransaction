@@ -14,6 +14,9 @@ import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
  * Methods here should be idempotent
  */
 public interface AfterMasterTransMethod<P extends AfterMasterTransRequest<R>, R extends Serializable> extends RpcBusinessProvider<P>{
-	@MethodTransactionStatus(TransactionStatus.COMMITTED)
+	
+    public static final String AFTER_TRANSACTION = "afterTransaction";
+    
+    @MethodTransactionStatus(TransactionStatus.COMMITTED)
 	R afterTransaction(P param);
 }

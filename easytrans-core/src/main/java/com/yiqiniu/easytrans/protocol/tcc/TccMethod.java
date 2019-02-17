@@ -23,12 +23,16 @@ import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
  */
 public interface TccMethod<P extends TccMethodRequest<R>, R  extends Serializable> extends RpcBusinessProvider<P> {
     
-	/**
+	public static final String DO_TRY = "doTry";
+    public static final String DO_CANCEL = "doCancel";
+    public static final String DO_CONFIRM = "doConfirm";
+
+    /**
 	 * reserve the resources that will be used in doConifirm(),so doConfirm() is always practicable in business
 	 * @param param
 	 * @return
 	 */
-	@ExecuteOrder(doNotExecuteAfter = { "doConfirm", "doCancel" }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
+	@ExecuteOrder(doNotExecuteAfter = { DO_CONFIRM, DO_CANCEL }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
 	@MethodTransactionStatus(TransactionStatus.UNKNOWN)
 	R doTry(P param);
 	
@@ -43,7 +47,7 @@ public interface TccMethod<P extends TccMethodRequest<R>, R  extends Serializabl
 	 * release the resources reserved in doTry so the resources can be use by other transactions
 	 * @param param
 	 */
-	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = { "doTry" })
+	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = { DO_TRY })
 	@MethodTransactionStatus(TransactionStatus.ROLLBACKED)
 	void doCancel(P param);
 }

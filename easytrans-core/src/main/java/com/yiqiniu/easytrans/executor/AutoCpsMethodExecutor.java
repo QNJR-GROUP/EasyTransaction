@@ -18,26 +18,22 @@ import com.yiqiniu.easytrans.log.vo.fescar.FescarAtCallRollbackedContent;
 import com.yiqiniu.easytrans.log.vo.fescar.FescarAtPreCallContent;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
-import com.yiqiniu.easytrans.protocol.fescar.FescarAtMethod;
+import com.yiqiniu.easytrans.protocol.autocps.AutoCpsMethod;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
-@RelativeInterface(FescarAtMethod.class)
-public class FescarAtMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLogEventHandler {
+@RelativeInterface(AutoCpsMethod.class)
+public class AutoCpsMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLogEventHandler {
 
 	private EasyTransSynchronizer transSynchronizer;
 	private RemoteServiceCaller rpcClient;
 	
-	public FescarAtMethodExecutor(EasyTransSynchronizer transSynchronizer, RemoteServiceCaller rpcClient) {
+	public AutoCpsMethodExecutor(EasyTransSynchronizer transSynchronizer, RemoteServiceCaller rpcClient) {
 		super();
 		this.transSynchronizer = transSynchronizer;
 		this.rpcClient = rpcClient;
 	}
 
 	private Logger LOG = LoggerFactory.getLogger(this.getClass());
-	
-	private static final String TRY_METHOD_NAME = "doFescarAtBusiness";
-	private static final String CONFIRM_METHOD_NAME = "doFescarAtCommit";
-	private static final String CANCEL_METHOD_NAME = "doFescarAtRollback";
 	
 	@Override
 	public <P extends EasyTransRequest<R,E>,E extends EasyTransExecutor,R extends Serializable> Future<R> execute(final Integer callSeq, final P params) {
@@ -46,7 +42,7 @@ public class FescarAtMethodExecutor implements EasyTransExecutor,LogProcessor,De
 			@Override
 			public R call() throws Exception {
 				BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(params.getClass());
-				return (R) rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(), callSeq, TRY_METHOD_NAME, params,logProcessContext);
+				return (R) rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(), callSeq, AutoCpsMethod.DO_AUTO_CPS_BUSINESS, params,logProcessContext);
 			}
 		};
 		
@@ -82,7 +78,7 @@ public class FescarAtMethodExecutor implements EasyTransExecutor,LogProcessor,De
 		}else if(logCtx.getFinalMasterTransStatus()){
 			//commit
 			//execute confirm and then write Log
-			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), CONFIRM_METHOD_NAME, preCallContent.getParams(),logCtx);
+			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), AutoCpsMethod.DO_AUTO_CPS_COMMIT, preCallContent.getParams(),logCtx);
 			FescarAtCallCommitedContent committedContent = new FescarAtCallCommitedContent();
 			committedContent.setLeftDemiConentId(leftContent.getcId());
 			logCtx.getLogCache().cacheLog(committedContent);
@@ -90,7 +86,7 @@ public class FescarAtMethodExecutor implements EasyTransExecutor,LogProcessor,De
 		}else{
 			//roll back
 			//execute cancel and then write Log
-			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), CANCEL_METHOD_NAME, preCallContent.getParams(),logCtx);
+			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), AutoCpsMethod.DO_AUTO_CPS_ROLLBACK, preCallContent.getParams(),logCtx);
 			FescarAtCallRollbackedContent rollbackedContent = new FescarAtCallRollbackedContent();
 			rollbackedContent.setLeftDemiConentId(leftContent.getcId());
 			logCtx.getLogCache().cacheLog(rollbackedContent);

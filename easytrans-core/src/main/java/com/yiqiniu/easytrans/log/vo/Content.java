@@ -6,7 +6,7 @@ import java.util.HashMap;
 import com.yiqiniu.easytrans.core.LogProcessor;
 import com.yiqiniu.easytrans.executor.AfterTransMethodExecutor;
 import com.yiqiniu.easytrans.executor.CompensableMethodExecutor;
-import com.yiqiniu.easytrans.executor.FescarAtMethodExecutor;
+import com.yiqiniu.easytrans.executor.AutoCpsMethodExecutor;
 import com.yiqiniu.easytrans.executor.ReliableMessageMethodExecutor;
 import com.yiqiniu.easytrans.executor.SagaTccMethodExecutor;
 import com.yiqiniu.easytrans.executor.TccMethodExecutor;
@@ -72,7 +72,7 @@ public abstract class Content implements Serializable {
 		PreSagaTccCall(12,SagaTccMethodExecutor.class,PreSagaTccCallContent.class),
 		SagaTccCallConfirmed(13,null,SagaTccCallConfirmedContent.class),
 		SagaTccCallCanceled(14,null,SagaTccCallCancelledContent.class),
-	    FescarAtPreCall(15,FescarAtMethodExecutor.class,FescarAtPreCallContent.class),
+	    FescarAtPreCall(15,AutoCpsMethodExecutor.class,FescarAtPreCallContent.class),
 	    FescarAtCommited(16,null,FescarAtCallCommitedContent.class),
 	    FescarAtRollbacked(17,null,FescarAtCallRollbackedContent.class),
 		;

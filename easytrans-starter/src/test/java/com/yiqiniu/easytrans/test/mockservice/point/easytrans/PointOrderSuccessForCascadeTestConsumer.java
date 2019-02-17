@@ -21,7 +21,7 @@ public class PointOrderSuccessForCascadeTestConsumer implements ReliableMessageH
 	@Override
 	public EasyTransConsumeAction consume(EasyTransRequest<?, ?> request) {
 
-		pointService.addPointForBuying((OrderMessageForCascadingTest) request);
+		pointService.addPointForBuyingCascading((OrderMessageForCascadingTest) request);
 		return EasyTransConsumeAction.CommitMessage;
 //		return EasyTransConsumeAction.ReconsumeLater;
 	}

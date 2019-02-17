@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.yiqiniu.easytrans.core.EasyTransFacade;
 import com.yiqiniu.easytrans.demos.wallet.api.vo.UseCouponVO.UseCouponMethodRequest;
 import com.yiqiniu.easytrans.demos.wallet.api.vo.UseCouponVO.UseCouponResult;
-import com.yiqiniu.easytrans.protocol.fescar.FescarAtLocalTransactionExecutor;
+import com.yiqiniu.easytrans.protocol.autocps.AutoCpsLocalTransactionExecutor;
 
 @Component
 public class CouponService {
@@ -43,7 +43,7 @@ public class CouponService {
         //使用FescarAtLocalTransactionExecutor.executeWithGlobalLockCheck包裹的事务使用 select for update 
         //或者 进行update、delete时，才能保证获取的值为最新，这是fescar的特性导致
         //后续会提供注解形式
-        return FescarAtLocalTransactionExecutor.executeWithGlobalLockCheck(new Callable<Integer>() {
+        return AutoCpsLocalTransactionExecutor.executeWithGlobalLockCheck(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return jdbcTemplate.queryForObject("select coupon from coupon where user_id = ?", new Object[] {userId}, Integer.class);

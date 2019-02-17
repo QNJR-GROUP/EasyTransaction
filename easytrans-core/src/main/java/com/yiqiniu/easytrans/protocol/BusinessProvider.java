@@ -2,6 +2,8 @@ package com.yiqiniu.easytrans.protocol;
 
 public interface BusinessProvider<P extends EasyTransRequest<?, ?>>{
 	
+    public static final String GET_IDEMPOTENT_TYPE = "getIdempotentType";
+    
 	/**
 	 * Idempotent implement by Framework code<br/>
 	 * this will take extract performance cost,but it will help decrease the complexity of business<br/>

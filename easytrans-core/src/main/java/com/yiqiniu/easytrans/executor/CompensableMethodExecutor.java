@@ -34,9 +34,6 @@ public class CompensableMethodExecutor implements EasyTransExecutor,LogProcessor
 	
 	private Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
-	private static final String COMPENSABLE_BUSINESS_METHOD_NAME = "doCompensableBusiness";
-	private static final String COMPENSATION_METHOD_NAME = "compensation";
-	
 	@Override
 	public <P extends EasyTransRequest<R,E>,E extends EasyTransExecutor,R extends Serializable> Future<R> execute(final Integer sameBusinessCallSeq, final P params) {
 		final LogProcessContext logProcessContext = transSynchronizer.getLogProcessContext();
@@ -44,7 +41,7 @@ public class CompensableMethodExecutor implements EasyTransExecutor,LogProcessor
 			@Override
 			public R call() throws Exception {
 				BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(params.getClass());
-				return (R) rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(),  sameBusinessCallSeq, COMPENSABLE_BUSINESS_METHOD_NAME, params,logProcessContext);
+				return (R) rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(),  sameBusinessCallSeq, CompensableMethod.DO_COMPENSABLE_BUSINESS, params,logProcessContext);
 			}
 		};
 		
@@ -86,7 +83,7 @@ public class CompensableMethodExecutor implements EasyTransExecutor,LogProcessor
 		}else{
 			//roll back
 			//execute compensation and then write Log
-			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCpsContent.getCallSeq(), COMPENSATION_METHOD_NAME, preCpsContent.getParams(),logCtx);
+			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCpsContent.getCallSeq(), CompensableMethod.COMPENSATION, preCpsContent.getParams(),logCtx);
 			CompensatedContent compensatedContent = new CompensatedContent();
 			compensatedContent.setLeftDemiConentId(leftContent.getcId());
 			logCtx.getLogCache().cacheLog(compensatedContent);

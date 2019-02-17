@@ -21,12 +21,16 @@ import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
  * <b>Warning:CompensableMethod do not support cascade transaction!!!<b>
  */
 public interface CompensableMethod<P extends CompensableMethodRequest<R>, R extends Serializable> extends RpcBusinessProvider<P>{
-	/**
+	
+    public static final String DO_COMPENSABLE_BUSINESS = "doCompensableBusiness";
+    public static final String COMPENSATION = "compensation";
+    
+    /**
 	 * finish the the business code
 	 * @param param
 	 * @return
 	 */
-	@ExecuteOrder(doNotExecuteAfter = { "compensation" }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
+	@ExecuteOrder(doNotExecuteAfter = { COMPENSATION }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
 	@MethodTransactionStatus(TransactionStatus.UNKNOWN)
 	R doCompensableBusiness(P param);
 	/**
@@ -34,6 +38,6 @@ public interface CompensableMethod<P extends CompensableMethodRequest<R>, R exte
 	 * @param param
 	 */
 	@MethodTransactionStatus(TransactionStatus.ROLLBACKED)
-	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = {"doCompensableBusiness"})
+	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = {DO_COMPENSABLE_BUSINESS})
     void compensation(P param);
 }

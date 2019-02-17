@@ -31,13 +31,13 @@ import com.yiqiniu.easytrans.log.impl.database.DataBaseTransactionLogConfigurati
 import com.yiqiniu.easytrans.log.vo.LogCollection;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.TransactionId;
-import com.yiqiniu.easytrans.protocol.fescar.FescarAtLocalTransactionExecutor;
+import com.yiqiniu.easytrans.protocol.autocps.AutoCpsLocalTransactionExecutor;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcConsumer;
 import com.yiqiniu.easytrans.test.mockservice.accounting.AccountingService;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequest;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
 import com.yiqiniu.easytrans.test.mockservice.coupon.CouponService;
-import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponFescarAtMethod.UseCouponMethodRequest;
+import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponAutoCpsMethod.UseCouponMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.express.ExpressService;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.ExpressDeliverAfterTransMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.order.NotReliableOrderMessage;
@@ -254,7 +254,7 @@ public class FullTest {
 
         // should be success,it's execute without et
         try {
-            FescarAtLocalTransactionExecutor.executeWithGlobalLockCheck(new Callable<Void>() {
+            AutoCpsLocalTransactionExecutor.executeWithGlobalLockCheck(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
                     couponService.useCoupon(param);
@@ -270,7 +270,7 @@ public class FullTest {
         executeFescarATOnly();
         try {
             // should be failed
-            FescarAtLocalTransactionExecutor.executeWithGlobalLockCheck(new Callable<Void>() {
+            AutoCpsLocalTransactionExecutor.executeWithGlobalLockCheck(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
                     couponService.useCoupon(param);
@@ -299,7 +299,7 @@ public class FullTest {
 		try {
 			OrderService.setExceptionTag(OrderService.EXCEPTION_TAG_IN_SAGA_TRY);
 			orderService.sagaWalletTest(1, 1000);
-		} catch (UtProgramedException e) {
+		} catch (Exception e) {
 			LOG.info(e.getMessage());
 		}
 		

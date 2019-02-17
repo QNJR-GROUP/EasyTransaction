@@ -6,10 +6,10 @@ import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.demos.wallet.api.vo.UseCouponVO.UseCouponMethodRequest;
 import com.yiqiniu.easytrans.demos.wallet.api.vo.UseCouponVO.UseCouponResult;
-import com.yiqiniu.easytrans.protocol.fescar.AbstractFescarAtMethod;
+import com.yiqiniu.easytrans.protocol.autocps.AbstractAutoCpsMethod;
 
 @Component
-public class UseCouponFescarService extends AbstractFescarAtMethod<UseCouponMethodRequest,UseCouponResult>{
+public class UseCouponAutoCpsService extends AbstractAutoCpsMethod<UseCouponMethodRequest,UseCouponResult>{
 
 	@Resource
 	private CouponService couponService;

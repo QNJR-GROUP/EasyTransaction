@@ -1,4 +1,4 @@
-package com.yiqiniu.easytrans.protocol.fescar;
+package com.yiqiniu.easytrans.protocol.autocps;
 
 import java.io.Serializable;
 
@@ -11,29 +11,33 @@ import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
  * Fescar At model<br/>
  * <br/>
  */
-public interface FescarAtMethod<P extends FescarAtMethodRequest<R>, R  extends Serializable> extends RpcBusinessProvider<P> {
+public interface AutoCpsMethod<P extends AutoCpsMethodRequest<R>, R  extends Serializable> extends RpcBusinessProvider<P> {
     
-	/**
+	public static final String DO_AUTO_CPS_BUSINESS = "doAutoCpsBusiness";
+    public static final String DO_AUTO_CPS_ROLLBACK = "doAutoCpsRollback";
+    public static final String DO_AUTO_CPS_COMMIT = "doAutoCpsCommit";
+
+    /**
 	 * do business
 	 * @param param
 	 * @return
 	 */
-	@ExecuteOrder(doNotExecuteAfter = { "doFescarAtCommit", "doFescarAtRollback" }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
+	@ExecuteOrder(doNotExecuteAfter = { DO_AUTO_CPS_COMMIT, DO_AUTO_CPS_ROLLBACK }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
 	@MethodTransactionStatus(TransactionStatus.UNKNOWN)
-	R doFescarAtBusiness(P param);
+	R doAutoCpsBusiness(P param);
 	
 	/**
 	 * you can append logic here when commit, usually just leave it empty
 	 * @param param
 	 */
 	@MethodTransactionStatus(TransactionStatus.COMMITTED)
-	void doFescarAtCommit(P param);
+	void doAutoCpsCommit(P param);
 	
 	/**
      * you can append logic here when roll back, usually just leave it empty
 	 * @param param
 	 */
-	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = { "doFescarAtBusiness" })
+	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = { DO_AUTO_CPS_BUSINESS })
 	@MethodTransactionStatus(TransactionStatus.ROLLBACKED)
-	void doFescarAtRollback(P param);
+	void doAutoCpsRollback(P param);
 }

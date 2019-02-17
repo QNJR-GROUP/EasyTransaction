@@ -45,11 +45,6 @@ public class SagaTccMethodExecutor implements EasyTransExecutor,LogProcessor,Dem
 
 	private Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
-	private static final String TRY_METHOD_NAME = "sagaTry";
-	private static final String CONFIRM_METHOD_NAME = "sagaConfirm";
-	private static final String CANCEL_METHOD_NAME = "sagaCancel";
-	
-
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -81,7 +76,7 @@ public class SagaTccMethodExecutor implements EasyTransExecutor,LogProcessor,Dem
 			EasyTransRequest<?, ?> params = sagaLog.getParams();
 			BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(params.getClass());
 			try {
-				rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(), sagaLog.getCallSeq(), TRY_METHOD_NAME, params,ctx);
+				rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(), sagaLog.getCallSeq(), SagaTccMethod.SAGA_TRY, params,ctx);
 			} catch (Exception e) {
 				LOG.warn("saga try call failed" + sagaLog,e);
 				//execute failed, vote to roll back
@@ -117,7 +112,7 @@ public class SagaTccMethodExecutor implements EasyTransExecutor,LogProcessor,Dem
 		}else if(logCtx.getFinalMasterTransStatus()){
 			//commit
 			//execute confirm and then write Log
-			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), CONFIRM_METHOD_NAME, preCallContent.getParams(),logCtx);
+			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), SagaTccMethod.SAGA_CONFIRM, preCallContent.getParams(),logCtx);
 			SagaTccCallConfirmedContent tccCallConfirmedContent = new SagaTccCallConfirmedContent();
 			tccCallConfirmedContent.setLeftDemiConentId(leftContent.getcId());
 			logCtx.getLogCache().cacheLog(tccCallConfirmedContent);
@@ -125,7 +120,7 @@ public class SagaTccMethodExecutor implements EasyTransExecutor,LogProcessor,Dem
 		}else{
 			//roll back
 			//execute cancel and then write Log
-			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), CANCEL_METHOD_NAME, preCallContent.getParams(),logCtx);
+			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), SagaTccMethod.SAGA_CANCEL, preCallContent.getParams(),logCtx);
 			SagaTccCallCancelledContent tccCallCanceledContent = new SagaTccCallCancelledContent();
 			tccCallCanceledContent.setLeftDemiConentId(leftContent.getcId());
 			logCtx.getLogCache().cacheLog(tccCallCanceledContent);

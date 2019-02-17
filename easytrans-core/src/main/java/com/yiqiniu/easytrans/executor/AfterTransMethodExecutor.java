@@ -38,7 +38,6 @@ public class AfterTransMethodExecutor implements EasyTransExecutor,LogProcessor,
 
 	private Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
-	private static final String AFTER_TRANS_METHOD_NAME = "afterTransaction";
 	
 	private static final String AFTER_TRANS_METHOD_FUTURE_PREFIX = "ATMF";
 	
@@ -88,7 +87,7 @@ public class AfterTransMethodExecutor implements EasyTransExecutor,LogProcessor,
 			FutureTask<Object> futureTask = new FutureTask<Object>(new Callable<Object>() {
 				@Override
 				public Object call() throws Exception {
-					return rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(), afterTransCallContent.getCallSeq(), AFTER_TRANS_METHOD_NAME, afterTransCallContent.getParams(),logCtx);
+					return rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(), afterTransCallContent.getCallSeq(), AfterMasterTransMethod.AFTER_TRANSACTION, afterTransCallContent.getParams(),logCtx);
 				}
 			});
 			
