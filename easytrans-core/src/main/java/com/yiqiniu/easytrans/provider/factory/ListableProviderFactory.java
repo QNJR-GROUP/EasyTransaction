@@ -14,5 +14,4 @@ public interface ListableProviderFactory {
 	Object getService(String appId,String busCode);
 	
 	Class<?> getServiceInterface(String appId,String busCode);
-
 }

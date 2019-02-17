@@ -10,9 +10,7 @@ import org.springframework.beans.BeanUtils;
 
 import com.yiqiniu.easytrans.core.EasyTransFacade;
 import com.yiqiniu.easytrans.executor.EasyTransExecutor;
-import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
-import com.yiqiniu.easytrans.protocol.tcc.TccMethodRequest;
 
 public class CallWrapUtil {
 	
@@ -26,21 +24,6 @@ public class CallWrapUtil {
 		private static final long serialVersionUID = 1L;
 	}
 	
-	public static class Request{
-		
-	}
-	
-	public static interface TestInterface{
-		Result tccCall(Request req);
-	}
-	
-	
-	
-	@BusinessIdentifer(appId="testA",busCode="business")
-	public static class RequestConfig implements TccMethodRequest<Result>{
-		private static final long serialVersionUID = 1L;
-		
-	}
 	
 
 	@SuppressWarnings("unchecked")

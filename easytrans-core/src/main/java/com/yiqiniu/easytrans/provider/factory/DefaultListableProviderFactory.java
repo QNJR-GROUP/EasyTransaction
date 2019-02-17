@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
 
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.BusinessProvider;
@@ -14,6 +18,7 @@ import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.MessageBusinessProvider;
 import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
 import com.yiqiniu.easytrans.protocol.aft.AfterMasterTransMethod;
+import com.yiqiniu.easytrans.protocol.autocps.AutoCpsMethod;
 import com.yiqiniu.easytrans.protocol.cps.CompensableMethod;
 import com.yiqiniu.easytrans.protocol.msg.BestEffortMessageHandler;
 import com.yiqiniu.easytrans.protocol.msg.ReliableMessageHandler;
@@ -22,23 +27,41 @@ import com.yiqiniu.easytrans.protocol.tcc.TccMethod;
 import com.yiqiniu.easytrans.util.ReflectUtil;
 
 
-public class DefaultListableProviderFactory implements ListableProviderFactory {
+public class DefaultListableProviderFactory implements ListableProviderFactory,InitializingBean {
 	
 	private Map<Class<?>/*RpcBusiness、MessageBusiness */,Map<Class<?>/*TransactionType: TccMethod,BestEfforMessageHandler...*/,List<Object>/*Specific Business*/>> mapBusinessProvider = new HashMap<Class<?>, Map<Class<?>,List<Object>>>();
 	
 	private Map<String,Object> mapBusinessObject = new HashMap<String, Object>();
 	private Map<String,Class<?>> mapBusinessInterface = new HashMap<String,Class<?>>();
+	private ApplicationContext ctx;
 	
 	private Map<Class<?>, List<? extends BusinessProvider<?>>> businessProviderTypeBeanMap;
 	
-	public DefaultListableProviderFactory(Map<Class<?>, List<? extends BusinessProvider<?>>> businessProviderTypeBeanMap){
-		this.businessProviderTypeBeanMap = businessProviderTypeBeanMap;
-		initDefaultTypes();
-	}
+//	public DefaultListableProviderFactory(Map<Class<?>, List<? extends BusinessProvider<?>>> businessProviderTypeBeanMap){
+//		this.businessProviderTypeBeanMap = businessProviderTypeBeanMap;
+//		initDefaultTypes();
+//	}
 	
+    public DefaultListableProviderFactory(ApplicationContext ctx) {
+        this.ctx = ctx;
+    }
+    
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        initDefaultTypes();
+    }
 	
-	@SuppressWarnings("unchecked")
-	private void initDefaultTypes(){
+	@SuppressWarnings("rawtypes")
+    private void initDefaultTypes(){
+	    
+        businessProviderTypeBeanMap = new HashMap<Class<?>, List<? extends BusinessProvider<?>>>(4);
+        Map<String, RpcBusinessProvider> rpcList = ctx.getBeansOfType(RpcBusinessProvider.class);
+        Map<String, MessageBusinessProvider> msgList = ctx.getBeansOfType(MessageBusinessProvider.class);
+
+        businessProviderTypeBeanMap.put(RpcBusinessProvider.class, rpcList.values().stream().collect(Collectors.toList()));
+        businessProviderTypeBeanMap.put(MessageBusinessProvider.class, msgList.values().stream().collect(Collectors.toList()));
+    
+	    
 		
 		{
 			HashMap<Class<?>,List<Object>> rpcBusinessMap = new HashMap<Class<?>,List<Object>>();
@@ -48,6 +71,7 @@ public class DefaultListableProviderFactory implements ListableProviderFactory {
 			rpcBusinessMap.put(SagaTccMethod.class, new ArrayList<Object>());
 			rpcBusinessMap.put(CompensableMethod.class, new ArrayList<Object>());
 			rpcBusinessMap.put(AfterMasterTransMethod.class, new ArrayList<Object>());
+			rpcBusinessMap.put(AutoCpsMethod.class, new ArrayList<Object>());
 		}
 		
 		{
@@ -66,7 +90,7 @@ public class DefaultListableProviderFactory implements ListableProviderFactory {
 					Class<?> transactionType = transactionTypeList.getKey();
 					if(transactionType.isAssignableFrom(bean.getClass())){
 						transactionTypeList.getValue().add(bean);
-						Class<? extends EasyTransRequest<?, ?>> requestClass = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) bean.getClass());
+						Class<? extends EasyTransRequest<?, ?>> requestClass =  ReflectUtil.getRequestClass((BusinessProvider<?>)bean);
 						BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(requestClass);
 						if(businessIdentifer == null){
 							throw new RuntimeException("request class did not add Annotation BusinessIdentifer,please add it! class:" + requestClass);
@@ -130,6 +154,5 @@ public class DefaultListableProviderFactory implements ListableProviderFactory {
 	@Override
 	public Class<?> getServiceInterface(String appId, String busCode) {
 		return mapBusinessInterface.get(getBusKey(appId, busCode));
-	}
-	
+	}	
 }

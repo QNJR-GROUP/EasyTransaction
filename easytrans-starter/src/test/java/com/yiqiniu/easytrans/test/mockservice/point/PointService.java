@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.core.EasyTransFacade;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
+import com.yiqiniu.easytrans.protocol.BusinessProvider;
+import com.yiqiniu.easytrans.protocol.msg.EtReliableMsg;
 import com.yiqiniu.easytrans.test.mockservice.TestUtil;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
 import com.yiqiniu.easytrans.test.mockservice.order.OrderMessage;
@@ -56,6 +58,7 @@ public class PointService {
 		this.successErrorCount = successErrorCount;
 	}
 	
+	@EtReliableMsg(idempotentType=BusinessProvider.IDENPOTENT_TYPE_FRAMEWORK)
 	public void addPointForBuying(OrderMessage msg){
 
 		BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(msg.getClass());
@@ -89,7 +92,7 @@ public class PointService {
 	
 	
 	//-----------FOR CASCADING TEST-------------
-	public void addPointForBuying(OrderMessageForCascadingTest msg){
+	public void addPointForBuyingCascading(OrderMessageForCascadingTest msg){
 
 		BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(msg.getClass());
 		

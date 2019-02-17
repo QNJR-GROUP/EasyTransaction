@@ -2,7 +2,6 @@ package com.yiqiniu.easytrans;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -32,6 +32,7 @@ import com.yiqiniu.easytrans.datasource.TransStatusLogger;
 import com.yiqiniu.easytrans.datasource.impl.DefaultTransStatusLoggerImpl;
 import com.yiqiniu.easytrans.datasource.impl.SingleDataSourceSelector;
 import com.yiqiniu.easytrans.executor.AfterTransMethodExecutor;
+import com.yiqiniu.easytrans.executor.AutoCpsMethodExecutor;
 import com.yiqiniu.easytrans.executor.BestEffortMessageMethodExecutor;
 import com.yiqiniu.easytrans.executor.CompensableMethodExecutor;
 import com.yiqiniu.easytrans.executor.ReliableMessageMethodExecutor;
@@ -54,10 +55,16 @@ import com.yiqiniu.easytrans.idgen.impl.ZkBasedSnowFlakeIdGenerator;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
 import com.yiqiniu.easytrans.log.impl.database.EnableLogDatabaseImpl;
 import com.yiqiniu.easytrans.master.impl.EnableMasterZookeeperImpl;
-import com.yiqiniu.easytrans.protocol.BusinessProvider;
+import com.yiqiniu.easytrans.protocol.AnnotationBusinessProviderBuilder;
+import com.yiqiniu.easytrans.protocol.AnnotationProviderRegister;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
-import com.yiqiniu.easytrans.protocol.MessageBusinessProvider;
-import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
+import com.yiqiniu.easytrans.protocol.aft.EtAfterMasterTransAnnotationBusinessProviderBuilder;
+import com.yiqiniu.easytrans.protocol.autocps.EtAutoCpsAnnotationBusinessProviderBuilder;
+import com.yiqiniu.easytrans.protocol.cps.EtCpsAnnotationBusinessProviderBuilder;
+import com.yiqiniu.easytrans.protocol.msg.EtBestEffortMsgAnnotationBusinessProviderBuilder;
+import com.yiqiniu.easytrans.protocol.msg.EtReliableMsgAnnotationBusinessProviderBuilder;
+import com.yiqiniu.easytrans.protocol.saga.EtSagaAnnotationBusinessProviderBuilder;
+import com.yiqiniu.easytrans.protocol.tcc.EtTccAnnotationBusinessProviderBuilder;
 import com.yiqiniu.easytrans.provider.factory.DefaultListableProviderFactory;
 import com.yiqiniu.easytrans.provider.factory.ListableProviderFactory;
 import com.yiqiniu.easytrans.queue.IdenticalQueueTopicMapper;
@@ -211,6 +218,11 @@ public class EasyTransCoreConfiguration {
 			RemoteServiceCaller rpcClient) {
 		return new SagaTccMethodExecutor(transSynchronizer, rpcClient);
 	}
+	
+    @Bean
+    public AutoCpsMethodExecutor fescarAtMethodExecutor(@Lazy EasyTransSynchronizer transSynchronizer, RemoteServiceCaller rpcClient) {
+        return new AutoCpsMethodExecutor(transSynchronizer, rpcClient);
+    }
 
 	@Bean
 	@ConditionalOnMissingBean(EasyTransMsgListener.class)
@@ -274,8 +286,8 @@ public class EasyTransCoreConfiguration {
 	}
 
 	@Bean
-	public MetaDataFilter metaDataFilter(ListableProviderFactory providerFactory) {
-		return new MetaDataFilter(providerFactory);
+	public MetaDataFilter metaDataFilter(ListableProviderFactory providerFactory, DataSourceSelector ds) {
+		return new MetaDataFilter(providerFactory, ds);
 	}
 
 	@Bean
@@ -289,21 +301,28 @@ public class EasyTransCoreConfiguration {
 		return new IdempotentHelper(applicationName, selector, providerFactory, stringCodecer, tablePrefix);
 	}
 
-	@Bean
-	@ConditionalOnMissingBean(ListableProviderFactory.class)
-	public DefaultListableProviderFactory defaultListableProviderFactory(
-			Optional<List<RpcBusinessProvider<?>>> rpcBusinessProviderList,
-			Optional<List<MessageBusinessProvider<?>>> messageBusinessProviderList) {
-		HashMap<Class<?>, List<? extends BusinessProvider<?>>> mapProviderTypeBeans = new HashMap<Class<?>, List<? extends BusinessProvider<?>>>(
-				2);
-
-		List<RpcBusinessProvider<?>> rpcList = rpcBusinessProviderList.orElse(Collections.emptyList());
-		List<MessageBusinessProvider<?>> msgList = messageBusinessProviderList.orElse(Collections.emptyList());
-
-		mapProviderTypeBeans.put(RpcBusinessProvider.class, rpcList);
-		mapProviderTypeBeans.put(MessageBusinessProvider.class, msgList);
-		return new DefaultListableProviderFactory(mapProviderTypeBeans);
-	}
+//	@Bean
+//	@ConditionalOnMissingBean(ListableProviderFactory.class)
+//	public DefaultListableProviderFactory defaultListableProviderFactory(
+//			Optional<List<RpcBusinessProvider<?>>> rpcBusinessProviderList,
+//			Optional<List<MessageBusinessProvider<?>>> messageBusinessProviderList) {
+//		HashMap<Class<?>, List<? extends BusinessProvider<?>>> mapProviderTypeBeans = new HashMap<Class<?>, List<? extends BusinessProvider<?>>>(
+//				2);
+//
+//		List<RpcBusinessProvider<?>> rpcList = rpcBusinessProviderList.orElse(Collections.emptyList());
+//		List<MessageBusinessProvider<?>> msgList = messageBusinessProviderList.orElse(Collections.emptyList());
+//
+//		mapProviderTypeBeans.put(RpcBusinessProvider.class, rpcList);
+//		mapProviderTypeBeans.put(MessageBusinessProvider.class, msgList);
+//		return new DefaultListableProviderFactory(mapProviderTypeBeans);
+//	}
+	
+	
+    @Bean
+    @ConditionalOnMissingBean(ListableProviderFactory.class)
+    public DefaultListableProviderFactory defaultListableProviderFactory(ApplicationContext ctx) {
+        return new DefaultListableProviderFactory(ctx);
+    }
 
 	@ConditionalOnClass(EnableStringCodecZookeeperImpl.class)
 	@EnableStringCodecZookeeperImpl
@@ -361,6 +380,46 @@ public class EasyTransCoreConfiguration {
 	@Bean
 	public CallWrapUtil callWrappUtil(EasyTransFacade facade) {
 		return new CallWrapUtil(facade);
+	}
+	
+    @Bean
+    public EtTccAnnotationBusinessProviderBuilder tccAnnotationBusinessProviderBuilder() {
+        return new EtTccAnnotationBusinessProviderBuilder();
+    }
+    
+    @Bean
+    public EtAfterMasterTransAnnotationBusinessProviderBuilder etAfterMasterTransAnnotationBusinessProviderBuilder() {
+        return new EtAfterMasterTransAnnotationBusinessProviderBuilder();
+    }
+    
+    @Bean
+    public EtCpsAnnotationBusinessProviderBuilder etCpsAnnotationBusinessProviderBuilder() {
+        return new EtCpsAnnotationBusinessProviderBuilder();
+    }
+    
+    @Bean
+    public EtAutoCpsAnnotationBusinessProviderBuilder etAutoCpsAnnotationBusinessProviderBuilder() {
+        return new EtAutoCpsAnnotationBusinessProviderBuilder();
+    }
+    
+    @Bean
+    public EtReliableMsgAnnotationBusinessProviderBuilder etReliableMsgAnnotationBusinessProviderBuilder() {
+        return new EtReliableMsgAnnotationBusinessProviderBuilder();
+    }
+    
+    @Bean
+    public EtBestEffortMsgAnnotationBusinessProviderBuilder etBestEffortMsgAnnotationBusinessProviderBuilder() {
+        return new EtBestEffortMsgAnnotationBusinessProviderBuilder();
+    }
+    
+    @Bean
+    public EtSagaAnnotationBusinessProviderBuilder etSagaAnnotationBusinessProviderBuilder() {
+        return new EtSagaAnnotationBusinessProviderBuilder();
+    }
+	
+	@Bean
+	public AnnotationProviderRegister annotationProviderRegister(List<AnnotationBusinessProviderBuilder> listHandler, ConfigurableListableBeanFactory beanFactory) {
+	    return new AnnotationProviderRegister(listHandler, beanFactory);
 	}
 	
 }

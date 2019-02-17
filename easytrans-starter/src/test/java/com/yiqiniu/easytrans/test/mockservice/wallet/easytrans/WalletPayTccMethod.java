@@ -1,43 +1,14 @@
 package com.yiqiniu.easytrans.test.mockservice.wallet.easytrans;
 
-import javax.annotation.Resource;
-
-import org.springframework.stereotype.Component;
-
 import com.yiqiniu.easytrans.filter.EasyTransResult;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
-import com.yiqiniu.easytrans.protocol.tcc.TccMethod;
 import com.yiqiniu.easytrans.protocol.tcc.TccMethodRequest;
 import com.yiqiniu.easytrans.test.Constant;
-import com.yiqiniu.easytrans.test.mockservice.order.OrderService;
-import com.yiqiniu.easytrans.test.mockservice.wallet.WalletService;
-import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodRequest;
-import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayTccMethod.WalletPayTccMethodResult;
 
-@Component
-public class WalletPayTccMethod implements TccMethod<WalletPayTccMethodRequest, WalletPayTccMethodResult>{
+//@Component  change to annotation delacre
+public class WalletPayTccMethod {
 
 	public static final String METHOD_NAME="pay";
-	
-	@Resource
-	private WalletService wlletService;
-
-	@Override
-	public WalletPayTccMethodResult doTry(WalletPayTccMethodRequest param) {
-		return wlletService.doTryPay(param);
-	}
-
-	@Override
-	public void doConfirm(WalletPayTccMethodRequest param) {
-		OrderService.checkThrowException(OrderService.EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_SUCCESS_MASTER_TRANS);
-		wlletService.doConfirmPay(param);
-	}
-
-
-	@Override
-	public void doCancel(WalletPayTccMethodRequest param) {
-		wlletService.doCancelPay(param);
-	}
 	
 	public static class WalletPayTccMethodResult extends EasyTransResult{
 		private static final long serialVersionUID = 1L;
@@ -83,8 +54,4 @@ public class WalletPayTccMethod implements TccMethod<WalletPayTccMethodRequest, 
 		}
 	}
 
-	@Override
-	public int getIdempotentType() {
-		return IDENPOTENT_TYPE_FRAMEWORK;
-	}
 }

@@ -4,9 +4,13 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.sql.DataSource;
+
 import org.springframework.core.annotation.Order;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import com.yiqiniu.easytrans.core.EasytransConstant;
+import com.yiqiniu.easytrans.datasource.DataSourceSelector;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.MethodTransactionStatus;
 import com.yiqiniu.easytrans.provider.factory.ListableProviderFactory;
@@ -16,9 +20,11 @@ public class MetaDataFilter implements EasyTransFilter {
 	
 	private static ThreadLocal<Map<String, Object>> threadLocalHeader = new ThreadLocal<>();
 	private ListableProviderFactory providerFactory;
+	private DataSourceSelector selector;
 	
-	public MetaDataFilter(ListableProviderFactory providerFactory){
+	public MetaDataFilter(ListableProviderFactory providerFactory, DataSourceSelector selector){
 		this.providerFactory = providerFactory;
+		this.selector = selector;
 	}
 
 	@Override
@@ -27,14 +33,29 @@ public class MetaDataFilter implements EasyTransFilter {
 		
 		EasyTransResult result = null;
 		try {
+		    
 			addParentTrxStatusToHeader(header,filterChain,request);
+			addRelativeDatasourceToHeader(header, filterChain, request);
 			threadLocalHeader.set(header);
+			
 			result = filterChain.invokeFilterChain(header, request);
 		} finally {
 			threadLocalHeader.remove();
 		}
 		return result;
 	}
+
+    private void addRelativeDatasourceToHeader(Map<String, Object> header, EasyTransFilterChain filterChain, EasyTransRequest<?, ?> request) {
+        DataSource relativeDataSource = selector.selectDataSource(filterChain.getAppId(), filterChain.getBusCode(), request);
+        if(relativeDataSource != null) {
+            header.put(EasytransConstant.DataSourceRelative.DATA_SOURCE, relativeDataSource);
+        }
+        
+        PlatformTransactionManager relativeTransactionManager = selector.selectTransactionManager(filterChain.getAppId(), filterChain.getBusCode(), request);
+        if(relativeTransactionManager != null) {
+            header.put(EasytransConstant.DataSourceRelative.TRANSACTION_MANAGER, relativeTransactionManager);
+        }
+    }
 	
 	private void addParentTrxStatusToHeader(Map<String, Object> header, EasyTransFilterChain filterChain ,EasyTransRequest<?, ?> request) {
 		int transactionStatus = getTransactionStatus(filterChain.getAppId(),filterChain.getBusCode(),filterChain.getInnerMethodName());

@@ -21,12 +21,16 @@ import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
  */
 public interface SagaTccMethod<P extends SagaTccMethodRequest> extends RpcBusinessProvider<P> {
     
-	/**
+	public static final String SAGA_TRY = "sagaTry";
+    public static final String SAGA_CANCEL = "sagaCancel";
+    public static final String SAGA_CONFIRM = "sagaConfirm";
+
+    /**
 	 * reserve the resources that will be used in doConifirm(),so doConfirm() is always practicable in business
 	 * @param param
 	 * @return
 	 */
-	@ExecuteOrder(doNotExecuteAfter = { "sagaConfirm", "sagaCancel" }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
+	@ExecuteOrder(doNotExecuteAfter = { SAGA_CONFIRM, SAGA_CANCEL }, ifNotExecutedReturnDirectly = {}, isSynchronousMethod=true)
 	@MethodTransactionStatus(TransactionStatus.UNKNOWN)
 	void sagaTry(P param);
 	
@@ -41,7 +45,7 @@ public interface SagaTccMethod<P extends SagaTccMethodRequest> extends RpcBusine
 	 * release the resources reserved in doTry so the resources can be use by other transactions
 	 * @param param
 	 */
-	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = { "sagaTry" })
+	@ExecuteOrder(doNotExecuteAfter = {}, ifNotExecutedReturnDirectly = { SAGA_TRY })
 	@MethodTransactionStatus(TransactionStatus.ROLLBACKED)
 	void sagaCancel(P param);
 }

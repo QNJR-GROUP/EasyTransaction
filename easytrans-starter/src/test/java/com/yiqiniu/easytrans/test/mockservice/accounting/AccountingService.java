@@ -9,13 +9,17 @@ import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.core.EasytransConstant;
 import com.yiqiniu.easytrans.filter.MetaDataFilter;
+import com.yiqiniu.easytrans.protocol.BusinessProvider;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.TransactionId;
+import com.yiqiniu.easytrans.protocol.cps.EtCps;
 import com.yiqiniu.easytrans.test.Constant;
 import com.yiqiniu.easytrans.test.mockservice.TestUtil;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequest;
+import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingResponse;
+import com.yiqiniu.easytrans.test.mockservice.order.OrderService;
 
 @Component
 public class AccountingService {
@@ -29,6 +33,7 @@ public class AccountingService {
 		return queryForObject==null?0:queryForObject;
 	}
 	
+	@EtCps(cancelMethod="reverseEntry", idempotentType=BusinessProvider.IDENPOTENT_TYPE_FRAMEWORK,cfgClass=AccountingRequestCfg.class)
 	public AccountingResponse accounting(AccountingRequest param) {
 		JdbcTemplate jdbcTemplate = getJdbcTemplate(param);
 		
@@ -49,6 +54,10 @@ public class AccountingService {
 	}
 
 	public void reverseEntry(AccountingRequest param) {
+	    
+
+        OrderService.checkThrowException(OrderService.EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_ROLLEDBACK_MASTER_TRANS);
+    
 		JdbcTemplate jdbcTemplate = getJdbcTemplate(param);
 		
 		TransactionId trxId = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY);

@@ -1,3 +1,6 @@
+This article a bit outofdate, some new function has been added , you can refer readme.md in Chinese for news, or you can submit an issue to let me know you want me to update this article
+
+
 # English
 (English is not my native language, can someone help me to review the text below?)
 

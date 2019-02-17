@@ -2,7 +2,7 @@
 
 # 中文
 ## 零、SEO
-柔性事务，分布式事务，TCC，SAGA，可靠消息，最大努力交付消息，事务消息，补偿，全局事务，soft transaction, distribute transaction, compensation
+柔性事务，分布式事务，TCC，SAGA，可靠消息，最大努力交付消息，事务消息，补偿，全局事务，soft transaction, distribute transaction, compensation,自动补偿
 
 本框架可一站式解决分布式SOA（包括微服务等）的事务问题。
 
@@ -24,6 +24,7 @@
 * 无需额外部署协调者，不同APP的服务协调自身发起的事务，也避免了单点故障
 	* 也可以对某个APP单独部署一个协调者
 * 分布式事务ID可关联业务ID，业务类型，APPID，便于监控各个业务的分布式事务执行情况
+* 整合并大幅改造阿里Fescar的自动补偿核心功能，提供分布式高可用的协调功能（Alpha）
 
 
 ## 二、分布式事务场景及框架对应实现
@@ -40,16 +41,19 @@
     * 有时业务要求一些本质是异步的操作同步返回结果，若同步返回失败则后台异步补单。这种业务本质也归属于无需外部数据变更以协助完成的最终一致性，但介于其同步时要返回结果，其有区别于可靠消息。
 * 使用传统补偿完成的最终一致性事务
     * 适用于需要获取远程执行结果来决定逻辑事务走向 且 可以进行补偿的业务
-    * 次常见
-    * 若使用消息队列不能解决的事务问题优先考虑使用基于补偿的最终一致性事务
+    * 若使用消息队列不能解决的事务问题优先考虑使用基于补偿的最终一致性事务（若需要嵌套事务，则使用TCC）
     * 本框架中传统补偿不支持嵌套，若有需要，可改用TCC
+* 使用自动补偿完成的最终一致性事务（整合改造阿里的Fescar的AT模式完成）
+    * 适用于需要获取远程执行结果来决定逻辑事务走向 且 不介意偶尔读取并展示脏数据的场景
+    * 该模式下，普通select时数据整体处于脏读状态，进行本地更新事务时，若进行逻辑判断所需的字段会参与到全局事务时，需要用Select for update获取准确值后再判断
+    * 因上述全局事务及本地事务的协作是一个隐式、易错点，甚至于写每一个涉及更新的SQL都需要考虑上面这个因素，因此希望引入并使用自动补偿时，需建立好相关使用规范，以避免后续项目失控
+    * 同时由于最终一致到达的时间相对单机事务来说长很多，因此若有某些记录为热记录，并且其用了自动补偿，则性能会下降很多
 * 使用TCC完成最终一致性事务
     * 适用于需要获取远程执行结果来决定逻辑事务走向 且 不可以进行补偿的业务
-    * 最不常见
     * 最终解决办法，囊括所有必须使用2PC实现的场景。编码量最大，性能消耗最大，应尽量避免使用本类型的事务
-* SAGA
-	* 其与传统补偿相似
-	* 但区别为正向操作和反向操作都不在主控事务执行过程中执行，通过队列异步执行，因此可以减少事务记录加锁时间
+* SAGA(Beta)
+	* 其与传统补偿相似（在某些框架里定义的Saga即为本框架定义的传统补偿）
+	* 本框架定义的SAGA为正向操作和反向操作都不在主控事务执行过程中执行，通过队列异步执行，因此可以减少事务记录加锁时间
 	* 若同步操作较多（TCC、补偿）的情况下，可以用SAGA替代同步操作，这样会有性能上的提升
 	* 但使用SAGA其主控方代码形态会有稍有变化，因为其主控方的事务要拆成两个(具体请查看DEMO),有额外编码负担
 	* 本框架实现的SAGA并非传统的SAGA,可以将其类比为异步TCC，与传统SAGA的区别可以类比 传统补偿及TCC的关系
@@ -92,7 +96,7 @@
 	  <dependency>
         <groupId>com.yiqiniu.easytrans</groupId>
         <artifactId>easytrans-starter</artifactId>
-        <version>1.1.3</version>
+        <version>1.2.0</version>
       </dependency>
 
 Starter里包含了若干默认的组件实现:基于mysql的分布式事务日志存储，基于ribbon-rest的RPC实现，基于KAFKA的消息队列，若不需要或者要替换，可以EXCLUDE掉
@@ -312,6 +316,32 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 	SELECT * FROM translog.trans_log_detail;
 
+
+若需要使用自动补偿功能，则需要在业务库额外增加以下两个表
+
+    CREATE TABLE `undo_log` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `branch_id` bigint(20) NOT NULL,
+      `xid` varchar(100) NOT NULL,
+      `rollback_info` longblob NOT NULL,
+      `log_status` int(11) NOT NULL,
+      `log_created` datetime NOT NULL,
+      `log_modified` datetime NOT NULL,
+      `ext` varchar(100) DEFAULT NULL,
+      PRIMARY KEY (`id`),
+      KEY `idx_unionkey` (`xid`,`branch_id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
+    CREATE TABLE `fescar_lock` (
+      `t_name` varchar(64) NOT NULL,
+      `t_pk` varchar(128) NOT NULL,
+      `xid` varchar(256) NOT NULL,
+      `create_time` datetime NOT NULL,
+      PRIMARY KEY (`t_name`,`t_pk`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 详细的配置会后续作出手册，但在此之前各位可以参考easytrans-starter里的UT案例 或者 参考demo进行
 
 
@@ -356,7 +386,17 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
 	* 因此CRASH恢复进程使用select for update 查询executed_trans记录时，必然能得到准确的是否已经提交的结果（若主控事务仍在进行中，select for update将会等待）
 	* 使用select for update是为了避免在MVCC情况下错误查询出最终事务提交结果的情况
 
-## 七、其他
+## 七、外部组件版本兼容性
+* ZK请使用3.4及以上版本
+* SpringBoot 2.0.x 以及 SpringCloud F版本的整合请参考Demo里的tccandfescar
+    * 需要注意的是写文档时最新版的spring boot（2.0.8）引入的最新版mysql-connector-java （5.1.47）存在bug,要降级为5.1.46
+    * 另因SpringCloud大版本变更时导致某些包名变动，在F版本时使用ET的Ribbon时，需要在项目单独引入spring-cloud-starter-netflix-ribbon
+* 如果遇到ZK库相关的包匹配问题，需要检查当前项目的相关包版本
+    * 在1.2.0版本后，curator-recipes及curator-framework需为4.x.x,zookeeper客户端版本需为3.4.x或者3.5.x（视ZK服务器版本而定）
+    * 1.2.0版本前，curator-recipes及curator-framework需为2..x.x,zookeeper客户端版本同上
+
+
+## 八、其他
 欢迎加作者个人微信公众号
 
 ![wechat public account](https://raw.githubusercontent.com/QNJR-GROUP/ImageHub/master/easytrans/wechat_public_account.jpg)
@@ -366,8 +406,8 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
 email: skyes.xu@qq.com
 
 我写的关于ET的一些额外文章，请点赞以帮助SEO：
-如何选择分布式事务形态 https://www.cnblogs.com/skyesx/p/9697817.html
-“若干分布式事务框架”与“我的偏见” https://www.cnblogs.com/skyesx/p/10041923.html
+* 如何选择分布式事务形态 https://www.cnblogs.com/skyesx/p/9697817.html
+* “若干分布式事务框架”与“我的偏见” https://www.cnblogs.com/skyesx/p/10041923.html
 
 
 

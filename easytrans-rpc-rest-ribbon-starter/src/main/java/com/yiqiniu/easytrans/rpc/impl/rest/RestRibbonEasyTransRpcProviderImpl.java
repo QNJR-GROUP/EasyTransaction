@@ -26,7 +26,6 @@ import com.yiqiniu.easytrans.filter.EasyTransFilterChain;
 import com.yiqiniu.easytrans.filter.EasyTransFilterChainFactory;
 import com.yiqiniu.easytrans.filter.EasyTransResult;
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
-import com.yiqiniu.easytrans.protocol.BusinessProvider;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.protocol.MethodTransactionStatus;
 import com.yiqiniu.easytrans.protocol.RpcBusinessProvider;
@@ -41,7 +40,6 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 	private EasyTransFilterChainFactory filterChainFactory;
 	private ObjectMapper objectMapper;  
 	private ObjectSerializer serializer;
-	
 	private Map<String,Object[]> mapCallMetaData = new HashMap<>();
 	
 	
@@ -71,7 +69,7 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		//通过busCode以及http method获取对应要执行的JAVA METHOD以及JAVA OBJECT
 		Object[] objList = getCorrespondingObjArray(innerMethod,busCode);
 		if(objList == null){
-			throw new IllegalArgumentException("对应的接口尚未注册到本服务：" + busCode);
+			throw new IllegalArgumentException("对应的接口尚未注册到本服务：" + busCode + " " + innerMethod);
 		}
 		Object callObj = objList[0];
 		Method callMethod = (Method) objList[1];
@@ -106,6 +104,11 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		
 		Map<String,Object> header = deserializeHeader(easyTransHeader);
 		
+		if(logger.isDebugEnabled()) {
+		    logger.debug("ET RPC call recived,busCode:{},innerMethod:{},header:{},body:{}",busCode,innerMethod, header, requestObj);
+		}
+
+		
 		EasyTransResult result;
 		try {
 			result = filterChain.invokeFilterChain(header,requestObj);
@@ -117,7 +120,8 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		
 		if(result != null){
 			if(result.getException() != null){
-				throw result.getException();
+			    logger.error("ET call exception occour", result.getException());
+			    throw result.getException();
 			}
 		} else {
 			throw new RuntimeException("result is null!");
@@ -155,8 +159,7 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		for(Entry<BusinessIdentifer, RpcBusinessProvider<?>> entry:businessList.entrySet()){
 			BusinessIdentifer businessIdentifer = entry.getKey();
 			RpcBusinessProvider<?> provider = entry.getValue();
-			@SuppressWarnings("unchecked")
-			Class<? extends EasyTransRequest<?, ?>> parameterClass = ReflectUtil.getRequestClass((Class<? extends BusinessProvider<?>>) provider.getClass());
+			Class<? extends EasyTransRequest<?, ?>> parameterClass = ReflectUtil.getRequestClass(provider);
 			
 			for(Method method:javaMethod2HttpMethod){
 				

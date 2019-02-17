@@ -7,7 +7,9 @@ import org.springframework.stereotype.Component;
 
 import com.yiqiniu.easytrans.core.EasytransConstant;
 import com.yiqiniu.easytrans.filter.MetaDataFilter;
+import com.yiqiniu.easytrans.protocol.BusinessProvider;
 import com.yiqiniu.easytrans.protocol.TransactionId;
+import com.yiqiniu.easytrans.protocol.aft.EtAfterMasterTrans;
 import com.yiqiniu.easytrans.test.Constant;
 import com.yiqiniu.easytrans.test.mockservice.TestUtil;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod;
@@ -20,6 +22,7 @@ public class ExpressService {
 	@Resource
 	private TestUtil util;
 	
+	@EtAfterMasterTrans(idempotentType=BusinessProvider.IDENPOTENT_TYPE_FRAMEWORK)
 	public AfterMasterTransMethodResult afterTransaction(ExpressDeliverAfterTransMethodRequest param) {
 		AfterMasterTransMethodResult afterMasterTransMethodResult = new AfterMasterTransMethodResult();
 		afterMasterTransMethodResult.setMessage(callExternalServiceForPickupCargo(param));

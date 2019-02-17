@@ -35,10 +35,6 @@ public class TccMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLog
 
 	private Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
-	private static final String TRY_METHOD_NAME = "doTry";
-	private static final String CONFIRM_METHOD_NAME = "doConfirm";
-	private static final String CANCEL_METHOD_NAME = "doCancel";
-	
 	@Override
 	public <P extends EasyTransRequest<R,E>,E extends EasyTransExecutor,R extends Serializable> Future<R> execute(final Integer callSeq, final P params) {
 		final LogProcessContext logProcessContext = transSynchronizer.getLogProcessContext();
@@ -46,7 +42,7 @@ public class TccMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLog
 			@Override
 			public R call() throws Exception {
 				BusinessIdentifer businessIdentifer = ReflectUtil.getBusinessIdentifer(params.getClass());
-				return (R) rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(), callSeq, TRY_METHOD_NAME, params,logProcessContext);
+				return (R) rpcClient.call(businessIdentifer.appId(), businessIdentifer.busCode(), callSeq, TccMethod.DO_TRY, params,logProcessContext);
 			}
 		};
 		
@@ -82,7 +78,7 @@ public class TccMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLog
 		}else if(logCtx.getFinalMasterTransStatus()){
 			//commit
 			//execute confirm and then write Log
-			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), CONFIRM_METHOD_NAME, preCallContent.getParams(),logCtx);
+			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), TccMethod.DO_CONFIRM, preCallContent.getParams(),logCtx);
 			TccCallConfirmedContent tccCallConfirmedContent = new TccCallConfirmedContent();
 			tccCallConfirmedContent.setLeftDemiConentId(leftContent.getcId());
 			logCtx.getLogCache().cacheLog(tccCallConfirmedContent);
@@ -90,7 +86,7 @@ public class TccMethodExecutor implements EasyTransExecutor,LogProcessor,DemiLog
 		}else{
 			//roll back
 			//execute cancel and then write Log
-			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), CANCEL_METHOD_NAME, preCallContent.getParams(),logCtx);
+			rpcClient.callWithNoReturn(businessIdentifer.appId(), businessIdentifer.busCode(), preCallContent.getCallSeq(), TccMethod.DO_CANCEL, preCallContent.getParams(),logCtx);
 			TccCallCancelledContent tccCallCanceledContent = new TccCallCancelledContent();
 			tccCallCanceledContent.setLeftDemiConentId(leftContent.getcId());
 			logCtx.getLogCache().cacheLog(tccCallCanceledContent);

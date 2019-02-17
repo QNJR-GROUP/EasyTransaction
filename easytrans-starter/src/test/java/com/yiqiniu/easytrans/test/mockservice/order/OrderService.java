@@ -26,6 +26,8 @@ import com.yiqiniu.easytrans.test.mockservice.TestUtil;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingApi;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequest;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingResponse;
+import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponAutoCpsMethod.UseCouponMethodRequest;
+import com.yiqiniu.easytrans.test.mockservice.coupon.easytrans.UseCouponAutoCpsMethod.UseCouponResult;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.AfterMasterTransMethodResult;
 import com.yiqiniu.easytrans.test.mockservice.express.easytrans.ExpressDeliverAfterTransMethod.ExpressDeliverAfterTransMethodRequest;
 import com.yiqiniu.easytrans.test.mockservice.wallet.easytrans.WalletPayCascadeTccMethod.WalletPayCascadeTccMethodRequest;
@@ -112,7 +114,7 @@ public class OrderService {
 	}
 	
 	@Transactional("buySthTransactionManager")
-	public void buySomethingCascading(int userId,long money){
+	public void buySomethingCascading(int userId,long money, boolean enableFescarTest){
 		
 		JdbcTemplate jdbcTemplate = util.getJdbcTemplate(Constant.APPID, BUSINESS_CODE_CASCADE, userId);
 		Integer id = saveOrderRecord(jdbcTemplate,userId,money);
@@ -125,6 +127,7 @@ public class OrderService {
 		WalletPayCascadeTccMethodRequest deductRequest = new WalletPayCascadeTccMethodRequest();
 		deductRequest.setUserId(userId);
 		deductRequest.setPayAmount(money);
+		deductRequest.setUseCoupon(enableFescarTest);
 		Future<WalletPayTccMethodResult> execute = transaction.execute(deductRequest);
 		
 		
@@ -186,7 +189,7 @@ public class OrderService {
 	
 	
 	@Transactional("buySthTransactionManager")
-	public Future<AfterMasterTransMethodResult> buySomething(int userId,long money){
+	public Future<AfterMasterTransMethodResult> buySomething(int userId,long money, boolean enableCouponFescar){
 		
 		/**
 		 * finish the local transaction first, in order for performance and generated of business id
@@ -215,22 +218,17 @@ public class OrderService {
 		 */
 		WalletPayTccMethodRequest deductRequest = new WalletPayTccMethodRequest();
 		deductRequest.setUserId(userId);
-		deductRequest.setPayAmount(money/10);
+		deductRequest.setPayAmount(money/5);
 		
 		//return future for the benefits of performance enhance(batch write execute log and batch execute RPC)
 		//返回future是为了能方便的优化性能(批量写日志及批量调用RPC)
 		Future<WalletPayTccMethodResult> deductFuture = null;
 		if(checkExecuteForTestCase(deductRequest.getClass())){
 			/**
-			 * 执行10遍，每次都扣十分之一钱，以测试相同方法在业务上调用多次的场景
+			 * 执行5遍，以测试相同方法在业务上调用多次的场景
 			 * 因之前版本不支持同一事物内调用同一个方法多次，这里只是测试调用多次的场景，并无其他特殊含义
 			 */
 			// tcc
-			deductFuture = transaction.execute(deductRequest);
-			deductFuture = transaction.execute(deductRequest);
-			deductFuture = transaction.execute(deductRequest);
-			deductFuture = transaction.execute(deductRequest);
-			deductFuture = transaction.execute(deductRequest);
 			deductFuture = transaction.execute(deductRequest);
 			deductFuture = transaction.execute(deductRequest);
 			deductFuture = transaction.execute(deductRequest);
@@ -298,6 +296,22 @@ public class OrderService {
 		if(checkExecuteForTestCase(notReliableMessage.getClass())){
 			transaction.execute(notReliableMessage);
 		}
+		
+	    /**
+         * use Alibaba Fescar AT model(auto compensation)
+         * 
+         * 使用阿里巴巴Fescar AT模式（自动补偿）来进行分布式事务
+         */
+        UseCouponMethodRequest couponRequest = new UseCouponMethodRequest();
+        couponRequest.setUserId(userId);
+        couponRequest.setCoupon(1l);
+
+        @SuppressWarnings("unused")
+        Future<UseCouponResult> couponUsed = null;
+        if(enableCouponFescar && checkExecuteForTestCase(couponRequest.getClass())){
+            couponUsed = transaction.execute(couponRequest);
+        }
+
 		
 		/**
 		 * some actions is a asynchronous action and in most cases it can be done quickly

@@ -14,6 +14,8 @@ logging:
     root: info
 
 easytrans:
+  recovery:
+    delay: 5 # 事务crash recovery的时间设为5以便测试，正常情况下，默认值即可
   common:
     leastLogModel: true # true：记录必要的最少的日志，以达到最终一致的目标，正常流程下性能高,异常流程下可能会导致多次重复调用远程服务（因为幂等，所以没关系，只是有性能损耗） false:记录下整个最终一致过程的日志，易于排错，异常流程下性能高
     tablePrefix: ''

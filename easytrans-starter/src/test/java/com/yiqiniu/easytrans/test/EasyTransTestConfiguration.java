@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.fescar.rm.datasource.DataSourceProxy;
 import com.yiqiniu.easytrans.EnableEasyTransaction;
 import com.yiqiniu.easytrans.queue.QueueTopicMapper;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingApi;
@@ -89,7 +90,7 @@ public class EasyTransTestConfiguration {
 	 * @param properties
 	 * @return
 	 */
-	private DataSource createDatasource(EasyTransTestProperties properties) {
+	private DruidDataSource createDatasource(EasyTransTestProperties properties) {
 		DruidDataSource ds = new DruidDataSource();
 		ds.setUrl(properties.getUrl());
 		ds.setUsername(properties.getUsername());
@@ -203,7 +204,21 @@ public class EasyTransTestConfiguration {
 		return new DataSourceTransactionManager(noticeExpress);
 	}
 	
-	
+	//--------
+    @Bean
+    public DataSource useCoupon(EasyTransTestProperties properties){
+        //use fescar proxy
+        return new DataSourceProxy(createDatasource(properties));
+    }
+    @Bean
+    public JdbcTemplate useCouponJdbcTemplate(DataSource useCoupon){
+        return new JdbcTemplate(useCoupon);
+    }
+    
+    @Bean
+    public DataSourceTransactionManager useCouponTransactionManager(DataSource useCoupon){
+        return new DataSourceTransactionManager(useCoupon);
+    }
 	
 	
 }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import com.yiqiniu.easytrans.core.LogProcessor;
 import com.yiqiniu.easytrans.executor.AfterTransMethodExecutor;
 import com.yiqiniu.easytrans.executor.CompensableMethodExecutor;
+import com.yiqiniu.easytrans.executor.AutoCpsMethodExecutor;
 import com.yiqiniu.easytrans.executor.ReliableMessageMethodExecutor;
 import com.yiqiniu.easytrans.executor.SagaTccMethodExecutor;
 import com.yiqiniu.easytrans.executor.TccMethodExecutor;
@@ -13,6 +14,9 @@ import com.yiqiniu.easytrans.log.vo.aft.AfterTransCallRegisterContent;
 import com.yiqiniu.easytrans.log.vo.aft.AfterTransCalledContent;
 import com.yiqiniu.easytrans.log.vo.compensable.CompensatedContent;
 import com.yiqiniu.easytrans.log.vo.compensable.PreCompensableCallContent;
+import com.yiqiniu.easytrans.log.vo.fescar.FescarAtCallCommitedContent;
+import com.yiqiniu.easytrans.log.vo.fescar.FescarAtCallRollbackedContent;
+import com.yiqiniu.easytrans.log.vo.fescar.FescarAtPreCallContent;
 import com.yiqiniu.easytrans.log.vo.msg.MessageRecordContent;
 import com.yiqiniu.easytrans.log.vo.msg.MessageSentContent;
 import com.yiqiniu.easytrans.log.vo.saga.PreSagaTccCallContent;
@@ -68,6 +72,9 @@ public abstract class Content implements Serializable {
 		PreSagaTccCall(12,SagaTccMethodExecutor.class,PreSagaTccCallContent.class),
 		SagaTccCallConfirmed(13,null,SagaTccCallConfirmedContent.class),
 		SagaTccCallCanceled(14,null,SagaTccCallCancelledContent.class),
+	    FescarAtPreCall(15,AutoCpsMethodExecutor.class,FescarAtPreCallContent.class),
+	    FescarAtCommited(16,null,FescarAtCallCommitedContent.class),
+	    FescarAtRollbacked(17,null,FescarAtCallRollbackedContent.class),
 		;
 		
 		private static HashMap<Integer,ContentType> map = new HashMap<Integer, Content.ContentType>();

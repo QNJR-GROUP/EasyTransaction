@@ -4,19 +4,12 @@ import java.io.Serializable;
 
 import javax.annotation.Resource;
 
-import org.springframework.stereotype.Component;
-
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
-import com.yiqiniu.easytrans.protocol.cps.CompensableMethod;
 import com.yiqiniu.easytrans.protocol.cps.CompensableMethodRequest;
 import com.yiqiniu.easytrans.test.Constant;
 import com.yiqiniu.easytrans.test.mockservice.accounting.AccountingService;
-import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
-import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingResponse;
-import com.yiqiniu.easytrans.test.mockservice.order.OrderService;
 
-@Component
-public class AccountingCpsMethod implements CompensableMethod<AccountingRequestCfg, AccountingResponse>{
+public class AccountingCpsMethod{
 
 	
 	@Resource
@@ -24,16 +17,16 @@ public class AccountingCpsMethod implements CompensableMethod<AccountingRequestC
 	
 	public static final String METHOD_NAME="accounting";
 
-	@Override
-	public AccountingResponse doCompensableBusiness(AccountingRequestCfg param) {
-		return service.accounting(param);
-	}
-
-	@Override
-	public void compensation(AccountingRequestCfg param) {
-		OrderService.checkThrowException(OrderService.EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_ROLLEDBACK_MASTER_TRANS);
-		service.reverseEntry(param);
-	}
+//	@Override
+//	public AccountingResponse doCompensableBusiness(AccountingRequestCfg param) {
+//		return service.accounting(param);
+//	}
+//
+//	@Override
+//	public void compensation(AccountingRequestCfg param) {
+//		OrderService.checkThrowException(OrderService.EXCEPTION_TAG_IN_MIDDLE_OF_CONSISTENT_GUARDIAN_WITH_ROLLEDBACK_MASTER_TRANS);
+//		service.reverseEntry(param);
+//	}
 	
 	public static class AccountingRequest implements Serializable {
 		
@@ -90,11 +83,6 @@ public class AccountingCpsMethod implements CompensableMethod<AccountingRequestC
 			this.success = success;
 		}
 		
-	}
-
-	@Override
-	public int getIdempotentType() {
-		return IDENPOTENT_TYPE_FRAMEWORK;
 	}
 	
 	
