@@ -22,7 +22,7 @@ public class DefaultTransStatusLoggerImpl implements TransStatusLogger {
 
 	private String updateTransStatusWithPTrxId = "UPDATE `executed_trans` SET `status` =  ? WHERE  `p_app_id` =  ? AND `p_bus_code` =  ? AND `p_trx_id` = ? AND `status` != ?;";
 	private String updateTransStatusWithTrxId = "UPDATE `executed_trans` SET `status` =  ? WHERE  `app_id` =  ? AND `bus_code` =  ? AND `trx_id` = ? AND `status` = ?;";
-	private String insertExecutedTag = "INSERT INTO executed_trans (`app_id`, `bus_code`, `trx_id`,`p_app_id`, `p_bus_code`, `p_trx_id`,`status`) VALUES ( ?, ?, ?, ?, ?, ?, ?);";
+	private String insertExecutedTag = "INSERT INTO executed_trans (app_id, bus_code, trx_id,p_app_id, p_bus_code, p_trx_id,status) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
 	private String checkTransExecuted = "select status from executed_trans where app_id = ? and bus_code = ? and trx_id = ? for update;";
 
 	private DataSourceSelector selctor;
