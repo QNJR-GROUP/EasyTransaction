@@ -38,8 +38,8 @@ import com.yiqiniu.easytrans.util.ReflectUtil;
 
 public class IdempotentHelper {
 	
-	private String updateSql = "UPDATE `idempotent` SET `called_methods` = ?, `md5` = ?, `sync_method_result` = ?, `create_time` = ?, `update_time`  = ?, `lock_version` = `lock_version` + 1 WHERE `src_app_id` = ? AND `src_bus_code` = ? AND `src_trx_id` = ? AND `app_id` = ? AND `bus_code` = ?  AND `call_seq` = ? AND `handler` = ? AND `lock_version` = ?;";
-	private String insertSql = "INSERT INTO `idempotent` (`src_app_id`, `src_bus_code`, `src_trx_id`, `app_id`, `bus_code`, `call_seq` , `handler` ,`called_methods`, `md5`, `sync_method_result`, `create_time`, `update_time` , `lock_version`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	private String updateSql = "UPDATE idempotent SET called_methods = ?, md5 = ?, sync_method_result = ?, create_time = ?, update_time  = ?, lock_version = lock_version + 1 WHERE src_app_id = ? AND src_bus_code = ? AND src_trx_id = ? AND app_id = ? AND bus_code = ?  AND call_seq = ? AND handler = ? AND lock_version = ?";
+	private String insertSql = "INSERT INTO idempotent (src_app_id, src_bus_code, src_trx_id, app_id, bus_code, call_seq , handler ,called_methods, md5, sync_method_result, create_time, update_time , lock_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	private String selectSql = "select * from idempotent where src_app_id = ? and src_bus_code = ? and src_trx_id = ? and app_id = ? and bus_code = ? and call_seq = ? and handler = ?";
 	
 	private DataSourceSelector selector;
