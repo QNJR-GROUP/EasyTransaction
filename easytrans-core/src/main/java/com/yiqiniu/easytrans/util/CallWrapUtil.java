@@ -24,7 +24,6 @@ public class CallWrapUtil {
 		private static final long serialVersionUID = 1L;
 	}
 	
-	
 
 	@SuppressWarnings("unchecked")
 	public <T,R extends Serializable,E extends EasyTransExecutor> T createTransactionCallInstance(Class<T> transactionApiClass, Class<? extends EasyTransRequest<R,E>> cfgClass) {
@@ -39,7 +38,7 @@ public class CallWrapUtil {
 		
 		
 		//create proxy that delegates to EasyTransFacade
-		Object instance = Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{transactionApiClass}, new InvocationHandler() {
+		Object instance = Proxy.newProxyInstance(transactionApiClass.getClassLoader(), new Class[]{transactionApiClass}, new InvocationHandler() {
 			
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

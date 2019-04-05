@@ -22,7 +22,7 @@
 			<artifactId>easytrans-core</artifactId>
 		</dependency>
 
-		<dependency>
+ 		<dependency>
 			<groupId>com.yiqiniu.easytrans</groupId>
 			<artifactId>easytrans-log-database-starter</artifactId>
 		</dependency>
@@ -48,11 +48,10 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.46</version>
 			<scope>test</scope>
 		</dependency>
 
-		<!-- <dependency> <groupId>com.yiqiniu.easytrans</groupId> <artifactId>easytrans-log-redis-starter</artifactId> 
-			<version>${easytrans.version}</version> <scope>test</scope> </dependency> -->
 
 
 		<!-- <dependency> <groupId>com.yiqiniu.easytrans</groupId> <artifactId>easytrans-queue-ons-starter</artifactId> 

@@ -182,5 +182,27 @@ public final class ReflectUtil {
 		}
 		return typeArgumentsAsClasses;
 	}
+
+    public static Class<?> getClassWithMark(Class<?> monitorClass, Class<?> mark) {
+
+        Class<?>[] interfaces = monitorClass.getInterfaces();
+        for(Class<?> interfaze : interfaces) {
+            if(interfaze == mark) {
+                return monitorClass;
+            } else {
+                Class<?> result = getClassWithMark(interfaze, mark);
+                if(result != null) {
+                    return result;
+                }
+            }
+        }
+        
+        Class<?> superclass = monitorClass.getSuperclass();
+        if(superclass == null) {
+            return null;
+        } else {
+            return getClassWithMark(superclass, mark);
+        }
+    }
 	
 }

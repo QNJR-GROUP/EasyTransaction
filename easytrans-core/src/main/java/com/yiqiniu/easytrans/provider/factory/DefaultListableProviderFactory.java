@@ -35,7 +35,8 @@ public class DefaultListableProviderFactory implements ListableProviderFactory,I
 	private Map<String,Class<?>> mapBusinessInterface = new HashMap<String,Class<?>>();
 	private ApplicationContext ctx;
 	
-	private Map<Class<?>, List<? extends BusinessProvider<?>>> businessProviderTypeBeanMap;
+	@SuppressWarnings("rawtypes")
+    private Map<Class<?>, List<? extends BusinessProvider>> businessProviderTypeBeanMap;
 	
 //	public DefaultListableProviderFactory(Map<Class<?>, List<? extends BusinessProvider<?>>> businessProviderTypeBeanMap){
 //		this.businessProviderTypeBeanMap = businessProviderTypeBeanMap;
@@ -54,7 +55,7 @@ public class DefaultListableProviderFactory implements ListableProviderFactory,I
 	@SuppressWarnings("rawtypes")
     private void initDefaultTypes(){
 	    
-        businessProviderTypeBeanMap = new HashMap<Class<?>, List<? extends BusinessProvider<?>>>(4);
+        businessProviderTypeBeanMap = new HashMap<Class<?>, List<? extends BusinessProvider>>(4);
         Map<String, RpcBusinessProvider> rpcList = ctx.getBeansOfType(RpcBusinessProvider.class);
         Map<String, MessageBusinessProvider> msgList = ctx.getBeansOfType(MessageBusinessProvider.class);
 
@@ -84,7 +85,7 @@ public class DefaultListableProviderFactory implements ListableProviderFactory,I
 		
 		//handle
 		for(Entry<Class<?>, Map<Class<?>, List<Object>>> entry :mapBusinessProvider.entrySet()){
-			List<? extends BusinessProvider<?>> beansOfType = businessProviderTypeBeanMap.get(entry.getKey());
+			List<? extends BusinessProvider> beansOfType = businessProviderTypeBeanMap.get(entry.getKey());
 			for(Object bean :beansOfType){
 				for(Entry<Class<?>, List<Object>> transactionTypeList:entry.getValue().entrySet()){
 					Class<?> transactionType = transactionTypeList.getKey();

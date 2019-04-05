@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.yiqiniu.easytrans.filter.EasyTransFilterChainFactory;
+import com.yiqiniu.easytrans.monitor.MonitorConsumerFactory;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcConsumer;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcProvider;
 import com.yiqiniu.easytrans.serialization.ObjectSerializer;
@@ -33,6 +34,18 @@ public class RestRibbonEasyTransRpcConfiguration {
 	@ConditionalOnMissingBean(EasyTransRpcProvider.class)
 	public RestRibbonEasyTransRpcProviderImpl restRibbonEasyTransRpcProviderImpl(EasyTransFilterChainFactory filterChainFactory, ObjectSerializer serializer){
 		return new RestRibbonEasyTransRpcProviderImpl(filterChainFactory, serializer);
+	}
+	
+	@Bean
+	@ConditionalOnProperty(name="easytrans.rpc.rest-ribbon.monitor.enabled",havingValue="true",matchIfMissing=true)
+	public RestRibbonMonitorProvider restRibbonMonitorProvider() {
+	    return new RestRibbonMonitorProvider();
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean(MonitorConsumerFactory.class)
+	public MonitorConsumerFactory monitorConsumerFactory(RestRibbonEasyTransRpcConsumerImpl consumer) {
+	    return new RestRibbonMonitorConsumerFactory(consumer);
 	}
 	
 }

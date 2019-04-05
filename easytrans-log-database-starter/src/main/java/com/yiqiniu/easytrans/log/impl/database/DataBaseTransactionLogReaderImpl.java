@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -27,8 +28,8 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 	
 	
 	private String selectTransDetailsByIds = "select * from trans_log_detail where trans_log_id in (:ids)  order by trans_log_id,log_detail_id;";
-	private String selectUnfinishedTransWithPos = "select trans_log_id from trans_log_unfinished where trans_log_id <= ? and trans_log_id >= ? and create_time <= ? ORDER BY trans_log_id LIMIT ?";
-	private String selectUnfinishedTransWithoutPos = "select trans_log_id from trans_log_unfinished where trans_log_id <= ? and trans_log_id >= ? and create_time <= ? and trans_log_id > ? ORDER BY trans_log_id LIMIT ?";
+	private String selectUnfinishedTransWithoutPos= "select trans_log_id from trans_log_unfinished where trans_log_id <= ? and trans_log_id >= ? and create_time <= ? ORDER BY trans_log_id LIMIT ?";
+	private String selectUnfinishedTransWithPos  = "select trans_log_id from trans_log_unfinished where trans_log_id <= ? and trans_log_id >= ? and create_time <= ? and trans_log_id > ? ORDER BY trans_log_id LIMIT ?";
 	
 	
 	public DataBaseTransactionLogReaderImpl(String appId, ObjectSerializer serializer,DataSource dataSource, ByteFormIdCodec idCodec, String tablePrefix) {
@@ -67,21 +68,24 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 		
 		JdbcTemplate localJdbcTemplate = getJdbcTemplate();
 		
-		List<DataBaseTransactionLogDetail> query;
-		
 		List<byte[]> transIdList = null;
 		if(locationId != null){
 			byte[] transIdLocation = idCodec.getTransIdByte(new TransactionId(locationId.getAppId(), locationId.getBusCode(), locationId.getTrxId()));
-			transIdList = localJdbcTemplate.queryForList(selectUnfinishedTransWithoutPos, new Object[]{idCodec.getAppIdCeil(appId), idCodec.getAppIdFloor(appId), createTimeCeiling,transIdLocation,pageSize},byte[].class);
-		}else{
-			transIdList = localJdbcTemplate.queryForList(selectUnfinishedTransWithPos, new Object[]{idCodec.getAppIdCeil(appId), idCodec.getAppIdFloor(appId), createTimeCeiling,pageSize},byte[].class);
+			transIdList = localJdbcTemplate.queryForList(selectUnfinishedTransWithPos, new Object[]{idCodec.getAppIdCeil(appId), idCodec.getAppIdFloor(appId), createTimeCeiling,transIdLocation,pageSize},byte[].class);
+		} else {
+			transIdList = localJdbcTemplate.queryForList(selectUnfinishedTransWithoutPos, new Object[]{idCodec.getAppIdCeil(appId), idCodec.getAppIdFloor(appId), createTimeCeiling,pageSize},byte[].class);
 		}
 		
 		if(transIdList == null || transIdList.size() ==0){
 			return new ArrayList<LogCollection>();
 		}
 		
-		NamedParameterJdbcTemplate namedTemplate = new NamedParameterJdbcTemplate(localJdbcTemplate);
+		return getTransactionLogByIds(localJdbcTemplate, transIdList);
+	}
+	
+    private List<LogCollection> getTransactionLogByIds(JdbcTemplate localJdbcTemplate, List<byte[]> transIdList) {
+        List<DataBaseTransactionLogDetail> query;
+        NamedParameterJdbcTemplate namedTemplate = new NamedParameterJdbcTemplate(localJdbcTemplate);
 		MapSqlParameterSource paramSource = new MapSqlParameterSource();
 		paramSource.addValue("ids", transIdList);
 		query = namedTemplate.query(selectTransDetailsByIds, paramSource,new BeanPropertyRowMapper<DataBaseTransactionLogDetail>(DataBaseTransactionLogDetail.class));
@@ -103,9 +107,8 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 			currentContentList.addAll(deserializer(detailDo));
 		}
 		addToResult(result, currentDoList, currentContentList);
-		
-		return result;
-	}
+        return result;
+    }
 	private List<Content> deserializer(DataBaseTransactionLogDetail detailDo) {
 		return serializer.deserialize(detailDo.getLogDetail());
 	}
@@ -122,5 +125,14 @@ public class DataBaseTransactionLogReaderImpl implements TransactionLogReader {
 					new ArrayList<Content>(currentContentList), first.getCreateTime()));
 		}
 	}
+    @Override
+    public List<LogCollection> getTransactionLogById(List<TransactionId> ids) {
+        
+        List<byte[]> keys = ids.stream().map(
+                locationId->idCodec.getTransIdByte(new TransactionId(locationId.getAppId(), locationId.getBusCode(), locationId.getTrxId())))
+                .collect(Collectors.toList());
+        
+        return getTransactionLogByIds(getJdbcTemplate(), keys);
+    }
 		
 }

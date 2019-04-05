@@ -1,6 +1,8 @@
 package com.yiqiniu.easytrans.rpc.impl.rest;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -28,6 +30,7 @@ import com.google.common.hash.Hashing;
 import com.netflix.loadbalancer.BestAvailableRule;
 import com.netflix.loadbalancer.IRule;
 import com.netflix.loadbalancer.Server;
+import com.yiqiniu.easytrans.monitor.EtMonitor;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
 import com.yiqiniu.easytrans.rpc.EasyTransRpcConsumer;
 import com.yiqiniu.easytrans.rpc.impl.rest.RestRibbonEasyTransRpcProperties.RestConsumerProperties;
@@ -112,11 +115,7 @@ public class RestRibbonEasyTransRpcConsumerImpl implements EasyTransRpcConsumer{
 	@Override
 	public <P extends EasyTransRequest<R, ?>, R extends Serializable> R call(String appId, String busCode, String innerMethod, Map<String,Object> header, P params) {
 		
-		RestConsumerProperties restConsumerProperties = properties.getConsumer().get(appId);
-		String context = RestRibbonEasyTransConstants.DEFAULT_URL_CONTEXT;
-		if(restConsumerProperties!= null && restConsumerProperties.getContext() != null){
-			context = restConsumerProperties.getContext();
-		}
+		String context = getHttpContext(appId);
 		
 		Class<? extends EasyTransRequest> paramsClass = params.getClass();
 		Class<?> resultClass = ReflectUtil.getResultClass(paramsClass);
@@ -133,6 +132,41 @@ public class RestRibbonEasyTransRpcConsumerImpl implements EasyTransRpcConsumer{
 		
 		return (R) exchangeResult.getBody();
 	}
+
+    private String getHttpContext(String appId) {
+        RestConsumerProperties restConsumerProperties = properties.getConsumer().get(appId);
+		String context = RestRibbonEasyTransConstants.DEFAULT_URL_CONTEXT;
+		if(restConsumerProperties!= null && restConsumerProperties.getContext() != null){
+			context = restConsumerProperties.getContext();
+		}
+        return context;
+    }
+    
+    public Object sendMonitorRequest(String appId, Class<? extends EtMonitor> monitorClass, Method m,Object[] params) {
+        String httpContext = getHttpContext(appId);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://").append(appId)
+        .append("/").append(httpContext)
+        .append("/").append(RestRibbonMonitorProvider.MONITOR_CONTEXT)
+        .append("/").append(monitorClass.getSimpleName())
+        .append("/").append(m.getName())
+        .append("?");
+        
+        int pos = 0;
+        for(Parameter param : m.getParameters()) {
+            if(params[pos] != null) {
+                sb.append(param.getName()).append("=").append(params[pos++]).append("&");
+            }
+        }
+        
+        ResponseEntity<?> exchangeResult = loadBalancedRestTemplate.exchange(sb.toString(), HttpMethod.GET, null, Object.class );
+        if(!exchangeResult.getStatusCode().is2xxSuccessful()){
+            throw new RuntimeException("远程请求发生错误:" + exchangeResult);
+        }
+        
+        return exchangeResult.getBody();
+    }
 
 	private String encodeEasyTransHeader(Map<String, Object> header) {
 		return new String(Base64.getEncoder().encode(serializer.serialization(header)), StandardCharsets.ISO_8859_1);

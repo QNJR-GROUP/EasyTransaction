@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <a href="string2IdMap">获取字符串与其对应id的映射关系</a>
+    <a href="unfinishedLogs">获取未完成的事务记录</a>
+    
+    <form action="unfinishedLogs" method="get">
+        <span>AppId</span><input type="text" name="appId" th:value="${appId}" />
+        <span>拉取数量</span><input type="text" name="pageSize" th:value="${pageSize}" />
+        <span>事务创建最大时间戳（long型）</span><input type="text" name="timestamp" th:value="${timestamp}" />
+        <input type="submit"/>
+    </form>
+    <div>从这里可以看哪些事务没有完成</div>
+    <div>
+    
+        <table>
+        <thead>
+            <tr>
+                <th>   </th>
+                <th>appId</th>
+                <th>busCode</th>
+                <th>trxId</th>
+                <th>createTime</th>
+                <th>事务日志内容</th>
+            </tr>
+        </thead>
+        <tbody th:remove="all-but-first">
+            <tr th:each="trx : ${result}">
+                <td><a th:href="${'consistentGuardian?appId=' + trx.appId + '&amp;busCode=' + trx.busCode + '&amp;trxId=' + trx.trxId}">重试</a></td>
+                <td th:text="${trx.appId}"></td>
+                <td th:text="${trx.busCode}"></td>
+                <td th:text="${trx.trxId}"></td>
+                <td th:text="${#dates.format(new java.util.Date(trx.createTime),'yyyyMMddHHmmssSSS')}"></td>
+                <td th:text="${trx.orderedContents}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+        </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: easytrans-dashboard  # the same with com.yiqiniu.easytrans.demos.order.Constant.APPID
+
+server: 
+  port: 8888
+  
+easytrans:
+  recovery:
+    enabled: false
+  master:
+    zk:
+      enabled: false
+
+# RIBBON用，也可以直接开启Eureka
+order-service:
+  ribbon:
+    listOfServers: localhost:8080
+
+wallet-service:
+  ribbon:
+    listOfServers: localhost:8081
+
+# DUBBO 配置
+dubbo:
+  application:
+    name: easytrans-dashboard
+  protocol:
+    name: dubbo
+    port: 20880
+  registry:
+    address: zookeeper://localhost:2281
+  provider:
+    timeout: 1000
+  consumer:
+    timeout: 1000
+
+    
+debug: true
