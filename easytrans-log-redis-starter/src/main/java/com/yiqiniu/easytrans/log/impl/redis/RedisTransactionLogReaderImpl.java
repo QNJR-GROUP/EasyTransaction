@@ -115,4 +115,28 @@ public class RedisTransactionLogReaderImpl implements TransactionLogReader {
 
 		return result;
 	}
+
+    @Override
+    public List<LogCollection> getTransactionLogById(List<TransactionId> ids) {
+        
+        Map<String, TransactionId> mapStringTrx = ids.stream().collect(Collectors.toMap(trxId -> ObjectDigestUtil.byteArrayToHexString(idCodec.getTransIdByte(trxId)), trxId->trxId));
+        
+        Map<String, List<Content>> mapContent = mapStringTrx.keySet().stream()
+        .collect(Collectors.toMap(
+                id->id, 
+                id->{
+                    try {
+                        return async.lrange(keyPrefix + id, 0,-1).get().stream().map(objectSerializer::<Content>deserialize).collect(Collectors.toList());
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+                }));
+        
+        return mapContent.entrySet().stream().map(
+                entry -> {
+                    TransactionId transactionId = mapStringTrx.get(entry.getKey());
+                    return new LogCollection(transactionId.getAppId(), transactionId.getBusCode(), transactionId.getTrxId(), entry.getValue(), null);
+                })
+                .collect(Collectors.toList());
+    }
 }

@@ -172,8 +172,7 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 			}
 		}
 	}
-
-
+	
 	@Override
 	public void addEasyTransFilter(List<EasyTransFilter> filters) {
 		this.filters.addAll(filters);

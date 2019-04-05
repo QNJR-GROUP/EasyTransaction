@@ -66,7 +66,7 @@ public class EtDataSourceManager extends DataSourceManager {
         Integer callSeq = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.CALL_SEQ);
 
         // check locks
-        if (StringUtils.isEmpty(lockKey)) {
+        if (StringUtils.isNullOrEmpty(lockKey)) {
             return callSeq== null?-1:callSeq.longValue();
         }
 

@@ -43,7 +43,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<revision>1.2.0</revision>
+		<revision>1.3.0</revision>
 	</properties>
 
 
@@ -56,13 +56,14 @@
 		<module>easytrans-rpc-rest-ribbon-starter</module>
 		<module>easytrans-queue-ons-starter</module>
 		<module>easytrans-queue-kafka-starter</module>
+		<module>easytrans-dashboard</module>
 	</modules>
 
 
  	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.6.RELEASE</version>
+		<version>1.5.19.RELEASE</version>
 	</parent>
 
 	<dependencyManagement>
@@ -122,6 +123,12 @@
 				<artifactId>easytrans-log-redis-starter</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			
+			<dependency>
+                <groupId>com.yiqiniu.easytrans</groupId>
+                <artifactId>easytrans-dashboard</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
 			<dependency>
 				<groupId>org.apache.curator</groupId>

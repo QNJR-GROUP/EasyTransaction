@@ -1,6 +1,7 @@
 package com.yiqiniu.easytrans.stringcodec.impl;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -15,9 +16,9 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.yiqiniu.easytrans.stringcodec.StringCodec;
+import com.yiqiniu.easytrans.stringcodec.ListableStringCodec;
 
-public class ZooKeeperStringCodecImpl implements StringCodec {
+public class ZooKeeperStringCodecImpl implements ListableStringCodec {
 	
 	private static Logger LOG = LoggerFactory.getLogger(ZooKeeperStringCodecImpl.class);
 		
@@ -184,4 +185,11 @@ public class ZooKeeperStringCodecImpl implements StringCodec {
 		}
 		throw new RuntimeException("get string failed!" + stringType + "," + id);
 	}
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Map<String, Map<String, Integer>> getMapStr2Id() {
+        Map map = mapStr2Id;
+        return map;
+    }
 }

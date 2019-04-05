@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <a href="string2IdMap">获取字符串与其对应id的映射关系</a>
+    <a href="unfinishedLogs">获取未完成的事务记录</a>
+    
+    <form action="string2IdMap" method="get">
+        <span>AppId</span><input type="text" name="appId" th:value="${appId}" />
+        <input type="submit"/>
+    </form>
+    <div>根据数字及ID可以反查在 事务日志、已执行事务、幂等信息 相关数据</div>
+    <div>
+        <pre th:text="${result}"></pre>
+    </div>
+</body>
+</html>

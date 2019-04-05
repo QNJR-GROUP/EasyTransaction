@@ -52,9 +52,14 @@ import com.yiqiniu.easytrans.idgen.BusinessCodeGenerator;
 import com.yiqiniu.easytrans.idgen.TrxIdGenerator;
 import com.yiqiniu.easytrans.idgen.impl.ConstantBusinessCodeGenerator;
 import com.yiqiniu.easytrans.idgen.impl.ZkBasedSnowFlakeIdGenerator;
+import com.yiqiniu.easytrans.log.TransactionLogReader;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
 import com.yiqiniu.easytrans.log.impl.database.EnableLogDatabaseImpl;
 import com.yiqiniu.easytrans.master.impl.EnableMasterZookeeperImpl;
+import com.yiqiniu.easytrans.monitor.StringCodecMonitor;
+import com.yiqiniu.easytrans.monitor.TransactionLogMonitor;
+import com.yiqiniu.easytrans.monitor.server.ServerSideStringCodecMonitor;
+import com.yiqiniu.easytrans.monitor.server.ServerSideTransactionLogMonitor;
 import com.yiqiniu.easytrans.protocol.AnnotationBusinessProviderBuilder;
 import com.yiqiniu.easytrans.protocol.AnnotationProviderRegister;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
@@ -263,7 +268,7 @@ public class EasyTransCoreConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(DataSourceSelector.class)
 	public SingleDataSourceSelector singleDataSourceSelector(DataSource dataSource,
-			PlatformTransactionManager transactionManager) {
+	        PlatformTransactionManager transactionManager) {
 		return new SingleDataSourceSelector(dataSource, transactionManager);
 	}
 
@@ -420,6 +425,22 @@ public class EasyTransCoreConfiguration {
 	@Bean
 	public AnnotationProviderRegister annotationProviderRegister(List<AnnotationBusinessProviderBuilder> listHandler, ConfigurableListableBeanFactory beanFactory) {
 	    return new AnnotationProviderRegister(listHandler, beanFactory);
+	}
+	
+	
+	/**
+	 * -------  monitors  --------
+	 */
+	@Bean
+	@ConditionalOnMissingBean(StringCodecMonitor.class)
+	public StringCodecMonitor stringCodecMonitor(StringCodec stringCodec) {
+	    return new ServerSideStringCodecMonitor(stringCodec);
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean(TransactionLogMonitor.class)
+	public TransactionLogMonitor transactionLogMonitor(TransactionLogReader logReader, ConsistentGuardian consistentGuardian) {
+	    return new ServerSideTransactionLogMonitor(applicationName, logReader, consistentGuardian);
 	}
 	
 }
