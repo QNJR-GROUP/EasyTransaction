@@ -408,6 +408,7 @@ email: skyes.xu@qq.com
 我写的关于ET的一些额外文章，请点赞以帮助SEO：
 * 如何选择分布式事务形态 https://www.cnblogs.com/skyesx/p/9697817.html
 * “若干分布式事务框架”与“我的偏见” https://www.cnblogs.com/skyesx/p/10041923.html
+* Seata及EasyTransaction架构的比对思考 https://www.cnblogs.com/skyesx/p/10674700.html
 
 
 
