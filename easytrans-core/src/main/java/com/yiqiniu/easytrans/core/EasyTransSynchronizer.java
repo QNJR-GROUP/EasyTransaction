@@ -142,7 +142,7 @@ public class EasyTransSynchronizer {
 			//flush all the logs and execute all the compensable methods before commit
 			LogProcessContext logProcessContext = getLogProcessContext();
 			logProcessContext.getLogCache().flush(false);
-			logProcessContext.getExecuteManager().excuteCahcheMehods();
+			logProcessContext.getExecuteManager().executeCacheMethods();
 			Map<Callable<?>, Exception> errorCalls = logProcessContext.getExecuteManager().getErrorCalls();
 			if(errorCalls.size() != 0){
 				Entry<Callable<?>, Exception> next = errorCalls.entrySet().iterator().next();

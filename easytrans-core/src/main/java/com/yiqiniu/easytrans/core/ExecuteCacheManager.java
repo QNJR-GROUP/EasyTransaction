@@ -122,7 +122,7 @@ public class ExecuteCacheManager {
 			//before compensable methods call,flush all the logs
 			logCtx.getLogCache().flush(false);
 			//batch execute all the cached compensable methods
-			excuteCahcheMehods();
+			executeCacheMethods();
 			//get the specific result of compensableCall 
 			Object[] objects = mapCallable.get(compensableCall);
 			
@@ -139,7 +139,7 @@ public class ExecuteCacheManager {
 	}
 	
 	
-	public void excuteCahcheMehods() {
+	public void executeCacheMethods() {
 		
 		Map<Callable<?>,Future<?>> listFuture = new HashMap<Callable<?>,Future<?>>();
 		
