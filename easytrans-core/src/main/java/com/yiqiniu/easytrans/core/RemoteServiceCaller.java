@@ -18,6 +18,8 @@ public class RemoteServiceCaller {
 	private EasyTransMsgPublisher publisher;
 	private ObjectSerializer serializer;
 	private QueueTopicMapper queueTopicMapper;
+
+	private static final ThreadLocal<LogProcessContext> logProcessContextThreadLocal = new ThreadLocal<>();
 	
 	
 	public RemoteServiceCaller(EasyTransRpcConsumer consumer, EasyTransMsgPublisher publisher,
@@ -30,19 +32,34 @@ public class RemoteServiceCaller {
 	}
 
 	public <P extends EasyTransRequest<R,?>,R extends Serializable> R call(String appId,String busCode, Integer callSeq,String innerMethod,P params,LogProcessContext logContext){
-		return consumer.call(appId, busCode, innerMethod,initEasyTransRequestHeader(callSeq,logContext), params);
+		try {
+			logProcessContextThreadLocal.set(logContext);
+			return consumer.call(appId, busCode, innerMethod,initEasyTransRequestHeader(callSeq,logContext), params);
+		}finally {
+			logProcessContextThreadLocal.remove();
+		}
+
 	}
 	
 	public <P extends EasyTransRequest<R,?>,R extends Serializable> void callWithNoReturn(String appId,String busCode, Integer callSeq, String innerMethod,P params,LogProcessContext logContext){
-		consumer.callWithNoReturn(appId, busCode, innerMethod,initEasyTransRequestHeader(callSeq,logContext), params);
+		try {
+			logProcessContextThreadLocal.set(logContext);
+			consumer.callWithNoReturn(appId, busCode, innerMethod,initEasyTransRequestHeader(callSeq,logContext), params);
+		} finally {
+			logProcessContextThreadLocal.remove();
+		}
 	}
 	
 	
 	public EasyTransMsgPublishResult publish(String appid, String busCode, Integer callSeq, String key, EasyTransRequest<?, ?> request,LogProcessContext logContext){
-		
-		String[] topicTag = queueTopicMapper.mapToTopicTag(appid, busCode);
-		
-		return publisher.publish(topicTag[0], topicTag[1], key, initEasyTransRequestHeader(callSeq,logContext) ,serializer.serialization(request));
+		try{
+			logProcessContextThreadLocal.set(logContext);
+			String[] topicTag = queueTopicMapper.mapToTopicTag(appid, busCode);
+			return publisher.publish(topicTag[0], topicTag[1], key, initEasyTransRequestHeader(callSeq,logContext) ,serializer.serialization(request));
+		}finally {
+			logProcessContextThreadLocal.remove();
+		}
+
 	}
 	
 	private Map<String,Object> initEasyTransRequestHeader(Integer callSeq, LogProcessContext logContext){
@@ -50,5 +67,9 @@ public class RemoteServiceCaller {
 		header.put(EasytransConstant.CallHeadKeys.PARENT_TRX_ID_KEY, logContext.getTransactionId());
 		header.put(EasytransConstant.CallHeadKeys.CALL_SEQ, callSeq);
 		return header; 
+	}
+
+	public static LogProcessContext getCurrentLogProcessContext() {
+		return logProcessContextThreadLocal.get();
 	}
 }
