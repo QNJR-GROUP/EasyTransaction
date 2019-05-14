@@ -19,7 +19,7 @@ public class RemoteServiceCaller {
 	private ObjectSerializer serializer;
 	private QueueTopicMapper queueTopicMapper;
 
-	private static ThreadLocal<LogProcessContext> logProcessContextThreadLocal = new ThreadLocal<>();
+	private static final ThreadLocal<LogProcessContext> logProcessContextThreadLocal = new ThreadLocal<>();
 	
 	
 	public RemoteServiceCaller(EasyTransRpcConsumer consumer, EasyTransMsgPublisher publisher,
@@ -69,11 +69,7 @@ public class RemoteServiceCaller {
 		return header; 
 	}
 
-	public static ThreadLocal<LogProcessContext> getLogProcessContextThreadLocal() {
-		return logProcessContextThreadLocal;
-	}
-
-	public static void setLogProcessContextThreadLocal(ThreadLocal<LogProcessContext> logProcessContextThreadLocal) {
-		RemoteServiceCaller.logProcessContextThreadLocal = logProcessContextThreadLocal;
+	public static LogProcessContext getCurrentLogProcessContext() {
+		return logProcessContextThreadLocal.get();
 	}
 }
