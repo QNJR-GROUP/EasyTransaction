@@ -409,7 +409,7 @@ email: skyes.xu@qq.com
 * 如何选择分布式事务形态 https://www.cnblogs.com/skyesx/p/9697817.html
 * “若干分布式事务框架”与“我的偏见” https://www.cnblogs.com/skyesx/p/10041923.html
 * Seata及EasyTransaction架构的比对思考 https://www.cnblogs.com/skyesx/p/10674700.html
-
+* EasyTransaction主要源码分析（请先阅读  Seata架构的比对思考，再结合 代码以及demo调试过程看这篇，直接看的话这里的点太零碎了） https://www.cnblogs.com/skyesx/p/11111726.html
 
 
 
