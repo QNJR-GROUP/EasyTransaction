@@ -7,13 +7,15 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.fescar.core.context.RootContext;
-import com.alibaba.fescar.core.exception.TransactionException;
-import com.alibaba.fescar.core.model.Resource;
-import com.alibaba.fescar.rm.datasource.DataSourceManager;
 import com.yiqiniu.easytrans.core.EasytransConstant;
 import com.yiqiniu.easytrans.filter.MetaDataFilter;
 import com.yiqiniu.easytrans.protocol.TransactionId;
+
+import io.seata.core.context.RootContext;
+import io.seata.core.exception.TransactionException;
+import io.seata.core.model.BranchType;
+import io.seata.core.model.Resource;
+import io.seata.rm.DefaultResourceManager;
 
 public abstract class AbstractAutoCpsMethod<P extends AutoCpsMethodRequest<R>, R extends Serializable> implements AutoCpsMethod<P, R> {
     
@@ -49,7 +51,7 @@ public abstract class AbstractAutoCpsMethod<P extends AutoCpsMethodRequest<R>, R
         if (ds instanceof Resource) {
             Resource rs = (Resource) ds;
             try {
-                DataSourceManager.get().branchCommit(getFescarXid(transactionId), callSeq, rs.getResourceId(), null);
+                DefaultResourceManager.get().branchCommit(BranchType.AT,getFescarXid(transactionId), callSeq, rs.getResourceId(), null);
             } catch (TransactionException e) {
                 LOGGER.error("transaction commit exception occour , code:" + e.getCode(), e);
                 throw new RuntimeException("transaction exception", e);
@@ -74,7 +76,7 @@ public abstract class AbstractAutoCpsMethod<P extends AutoCpsMethodRequest<R>, R
         if (ds instanceof Resource) {
             Resource rs = (Resource) ds;
             try {
-                DataSourceManager.get().branchRollback(getFescarXid(transactionId), callSeq, rs.getResourceId(), null);
+                DefaultResourceManager.get().branchRollback(BranchType.AT,getFescarXid(transactionId), callSeq, rs.getResourceId(), null);
             } catch (TransactionException e) {
                 LOGGER.error("transaction roll back exception occour , code:" + e.getCode(), e);
                 throw new RuntimeException("transaction exception", e);

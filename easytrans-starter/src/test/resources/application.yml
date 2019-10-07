@@ -14,6 +14,19 @@ logging:
     root: info
 
 easytrans:
+  extensionsuite: # 扩展套装，如基于数据库实现的 选主、字符串编码、id生成器、事务日志等
+    database:
+      enabled: true
+      logCleanEnabled: true
+      logReservedDays: 14
+      logCleanTime: 01:22:00
+      tablePrefix: ''
+      dbSetting: # extension suite 公用的数据源的配置，不一定要配置为当前业务数据库，可公用一个配置，也可以每个业务库单独配置一个
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/translog?characterEncoding=UTF-8&useSSL=false
+        username: root
+        password: 123456
+      
   recovery:
     delay: 5 # 事务crash recovery的时间设为5以便测试，正常情况下，默认值即可
   common:
@@ -21,14 +34,16 @@ easytrans:
     tablePrefix: ''
   master:
     zk:
+      enabled: false
       zooKeeperUrl: localhost:2281
   stringcodec:
     zk:
-      enabled: true
+      enabled: false
       zooKeeperUrl: ${easytrans.master.zk.zooKeeperUrl}
   idgen:
     trxId:
       zkSnow:
+        enabled: false
         zooKeeperUrl: ${easytrans.master.zk.zooKeeperUrl}
   log:
     redis:
@@ -36,7 +51,7 @@ easytrans:
       keyPrefix: "et:"
       redisUri: redis://localhost/ # 具体格式请参考 https://lettuce.io/core/release/reference/#redisuri.uri-syntax
     database:
-      enabled: true
+      enabled: false
       logCleanEnabled: true
       logReservedDays: 14
       logCleanTime: 01:22:00

@@ -14,12 +14,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.fescar.rm.datasource.DataSourceProxy;
 import com.yiqiniu.easytrans.EnableEasyTransaction;
+import com.yiqiniu.easytrans.extensionsuite.impl.database.EnableExtensionSuiteDatabaseImpl;
 import com.yiqiniu.easytrans.queue.QueueTopicMapper;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingApi;
 import com.yiqiniu.easytrans.test.mockservice.accounting.easytrans.AccountingCpsMethod.AccountingRequestCfg;
 import com.yiqiniu.easytrans.util.CallWrapUtil;
+
+import io.seata.rm.datasource.DataSourceProxy;
 
 @SpringBootApplication
 @EnableEasyTransaction
@@ -30,6 +32,7 @@ import com.yiqiniu.easytrans.util.CallWrapUtil;
 //@EnableQueueOnsImpl
 //@EnableRpcDubboImpl
 //@EnableLogRedisImpl
+@EnableExtensionSuiteDatabaseImpl
 @EnableTransactionManagement
 @EnableAutoConfiguration(exclude=DataSourceAutoConfiguration.class)
 public class EasyTransTestConfiguration {

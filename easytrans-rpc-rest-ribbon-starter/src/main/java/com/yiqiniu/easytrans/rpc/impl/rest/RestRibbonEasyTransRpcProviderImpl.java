@@ -104,8 +104,8 @@ public class RestRibbonEasyTransRpcProviderImpl implements EasyTransRpcProvider{
 		
 		Map<String,Object> header = deserializeHeader(easyTransHeader);
 		
-		if(logger.isDebugEnabled()) {
-		    logger.debug("ET RPC call recived,busCode:{},innerMethod:{},header:{},body:{}",busCode,innerMethod, header, requestObj);
+		if(logger.isInfoEnabled()) {
+		    logger.info("ET RPC call recived,busCode:{},innerMethod:{},header:{},body:{}",busCode,innerMethod, header, requestObj);
 		}
 
 		

@@ -74,6 +74,7 @@ public class ConsistentGuardian {
 		for(int i = 0;i < orderedContents.size() ; i++){
 			Content content = orderedContents.get(i);
 			//check log order
+			LOG.info("log content item {}, cid {}, tostring : {}", i,content.getcId(),content.toString());
 			Assert.isTrue(content.getcId() != null && content.getcId().equals(i + 1),"content list did not sort or contentId is null");
 			
 			Class<? extends LogProcessor> proccessorClass = ContentType.getById(content.getLogType()).getProccessorClass();

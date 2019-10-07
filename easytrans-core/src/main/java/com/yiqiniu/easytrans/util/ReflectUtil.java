@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.aop.support.AopUtils;
+
 import com.yiqiniu.easytrans.protocol.BusinessIdentifer;
 import com.yiqiniu.easytrans.protocol.BusinessProvider;
 import com.yiqiniu.easytrans.protocol.EasyTransRequest;
@@ -28,7 +30,7 @@ public final class ReflectUtil {
 	
 	@SuppressWarnings("unchecked")
 	public static Class<? extends EasyTransRequest<?, ?>> getRequestClass(Class<? extends BusinessProvider<?>> providerClass){
-		List<Class<?>> pType = getTypeArguments(BusinessProvider.class, providerClass);
+	    List<Class<?>> pType = getTypeArguments(BusinessProvider.class, providerClass);
 		if(pType != null && pType.size() == 1) {
 		    return (Class<? extends EasyTransRequest<?, ?>>) pType.get(0);
 		} else {
@@ -42,7 +44,7 @@ public final class ReflectUtil {
         if (provider instanceof RequestClassAware) {
             return ((RequestClassAware) provider).getRequestClass();
         } else {
-            return getRequestClass((Class<? extends BusinessProvider<?>>) provider.getClass());
+            return getRequestClass((Class<? extends BusinessProvider<?>>) AopUtils.getTargetClass(provider));
         }
     }
 

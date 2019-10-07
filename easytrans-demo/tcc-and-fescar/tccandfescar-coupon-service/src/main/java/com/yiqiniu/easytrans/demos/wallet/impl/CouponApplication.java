@@ -8,8 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.fescar.rm.datasource.DataSourceProxy;
 import com.yiqiniu.easytrans.EnableEasyTransaction;
+
+import io.seata.rm.datasource.DataSourceProxy;
 
 @SpringBootApplication
 @EnableEasyTransaction

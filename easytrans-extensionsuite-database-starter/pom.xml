@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+    <name>EasyTransaction extensionsuite RDBS implement</name>
+  
+  <artifactId>easytrans-extensionsuite-database-starter</artifactId>
+
+  	<parent>
+		  <groupId>com.yiqiniu.easytrans</groupId>
+		  <artifactId>easytrans</artifactId>
+		  <version>${revision}</version>
+		  <relativePath>../pom.xml</relativePath>
+	</parent>
+  
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+<dependencies>
+	<dependency>
+		<groupId>com.yiqiniu.easytrans</groupId>
+		<artifactId>easytrans-core</artifactId>
+		<exclusions>
+            <exclusion>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-recipes</artifactId>
+            </exclusion>
+            <exclusion>
+		        <groupId>org.apache.zookeeper</groupId>
+		        <artifactId>zookeeper</artifactId>
+            </exclusion>
+		</exclusions>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.yiqiniu.easytrans</groupId>
+		<artifactId>easytrans-log-database-starter</artifactId>
+	</dependency>
+</dependencies>
+  
+</project>

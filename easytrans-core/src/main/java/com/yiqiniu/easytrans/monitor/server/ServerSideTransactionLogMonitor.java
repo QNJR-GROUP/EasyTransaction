@@ -4,7 +4,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import com.alibaba.nacos.client.naming.utils.CollectionUtils;
+import org.springframework.util.CollectionUtils;
+
 import com.yiqiniu.easytrans.core.ConsistentGuardian;
 import com.yiqiniu.easytrans.log.TransactionLogReader;
 import com.yiqiniu.easytrans.log.vo.LogCollection;

@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.13.RELEASE</version>
+	</parent>
+
+	<groupId>com.yiqiniu.easytrans.demos</groupId>
+	<artifactId>interfacecallnozk</artifactId>
+	<version>${revision}</version>
+	<packaging>pom</packaging>
+
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<revision>1.4.0</revision>
+	</properties>
+
+
+	<modules>
+		<module>interfacecallnozk-wallet-api</module>
+		<module>interfacecallnozk-wallet-service</module>
+		<module>interfacecallnozk-order-service</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+		
+			<dependency>
+				<groupId>com.yiqiniu.easytrans</groupId>
+				<artifactId>easytrans</artifactId>
+				<version>${revision}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>interfacecallnozk-wallet-api</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>interfacecallnozk-wallet-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.yiqiniu.easytrans.demos</groupId>
+				<artifactId>interfacecallnozk-order-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+</project>

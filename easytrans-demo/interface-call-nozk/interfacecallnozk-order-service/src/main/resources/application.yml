@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: order-service  # the same with com.yiqiniu.easytrans.demos.order.Constant.APPID
+  datasource: # order service datasource config
+    url: jdbc:mysql://localhost:3306/order?characterEncoding=UTF-8&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+
+server: 
+  port: 8080
+
+# RIBBON用，也可以直接开启Eureka
+order-service:
+  ribbon:
+    listOfServers: localhost:8080
+
+wallet-service:
+  ribbon:
+    listOfServers: localhost:8081
+
+easytrans:
+  extensionsuite: # 扩展套装，如基于数据库实现的 选主、字符串编码、id生成器、事务日志等
+    database:
+      enabled: true
+      logCleanEnabled: true
+      logReservedDays: 14
+      logCleanTime: 01:22:00
+      tablePrefix: ''
+      dbSetting: # extension suite 公用的数据源的配置，不一定要配置为当前业务数据库，可公用一个配置，也可以每个业务库单独配置一个
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/translog?characterEncoding=UTF-8&useSSL=false
+        username: root
+        password: 123456
+# close the default implement to use database extensionsuite
+  log:
+    database:
+      enabled: false
+  master:
+    zk:
+      enabled: false
+  stringcodec:
+    zk:
+      enabled: false
+  idgen:
+    trxId:
+      zkSnow:
+        enabled: false
+
+
+
+    
+      
