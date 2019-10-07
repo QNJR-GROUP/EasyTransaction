@@ -2,7 +2,8 @@ package com.yiqiniu.easytrans.protocol.autocps;
 
 import java.util.concurrent.Callable;
 
-import com.alibaba.fescar.core.context.RootContext;
+import io.seata.core.context.RootContext;
+
 
 /**
  * 用于执行本地事务时，确保更新、Select for update等操作能获取正确值

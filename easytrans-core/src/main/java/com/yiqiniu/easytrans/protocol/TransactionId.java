@@ -72,7 +72,10 @@ public class TransactionId implements Serializable {
 		return true;
 	}
 
-
+    @Override
+    public String toString() {
+        return "TransactionId [appId=" + appId + ", busCode=" + busCode + ", trxId=" + trxId + "]";
+    }
 
 	
 }

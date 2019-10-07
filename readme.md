@@ -15,16 +15,15 @@
 
 特性：
 
+* 引入JAR包即用，无需独立部署协调者，无需独立部署ZooKeeper(使用extensionsuite-database-starter时)
 * 一个框架包含多种事务形态，一个框架搞定所有类型的事务
 * 多种事务形态可混合使用
 * 高性能,大多数业务系统瓶颈在业务数据库，若不启用框架的幂等功能，对业务数据库的额外消耗仅为写入25字节的一行
 * 可选的框架自带幂等实现及调用错乱次序处理，大幅减轻业务开发工作量,但启用的同时会在业务数据库增加一条幂等控制行
 * 业务代码可实现完全无入侵
 * 支持嵌套事务
-* 无需额外部署协调者，不同APP的服务协调自身发起的事务，也避免了单点故障
-	* 也可以对某个APP单独部署一个协调者
 * 分布式事务ID可关联业务ID，业务类型，APPID，便于监控各个业务的分布式事务执行情况
-* 整合并大幅改造阿里Fescar的自动补偿核心功能，提供分布式高可用的协调功能
+* 整合Seata的AT模式，改造行锁使其存储到本地，改造集中式TC为ET的分布式协调
 
 
 ## 二、分布式事务场景及框架对应实现
@@ -96,7 +95,7 @@
 	  <dependency>
         <groupId>com.yiqiniu.easytrans</groupId>
         <artifactId>easytrans-starter</artifactId>
-        <version>1.3.1</version>
+        <version>1.4.0</version>
       </dependency>
 
 Starter里包含了若干默认的组件实现:基于mysql的分布式事务日志存储，基于ribbon-rest的RPC实现，基于KAFKA的消息队列，若不需要或者要替换，可以EXCLUDE掉
@@ -323,13 +322,14 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
       `id` bigint(20) NOT NULL AUTO_INCREMENT,
       `branch_id` bigint(20) NOT NULL,
       `xid` varchar(100) NOT NULL,
+      `context` varchar(128) NOT NULL,
       `rollback_info` longblob NOT NULL,
       `log_status` int(11) NOT NULL,
       `log_created` datetime NOT NULL,
       `log_modified` datetime NOT NULL,
       `ext` varchar(100) DEFAULT NULL,
       PRIMARY KEY (`id`),
-      KEY `idx_unionkey` (`xid`,`branch_id`)
+      UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
@@ -366,8 +366,14 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
     * 目前提供基于关系数据库及REDIS的实现
     * 为提高效率，可自行实现基于其他形式的事务日志，如文件系统，HBASE等，欢迎PR
 * 主从选择器
-    * 目前基于ZK实现了主从选择
-    * 若不想采用ZK可自行替换ZK实现
+    * 基于ZK的主从选择
+    * 基于MySQL的主从选择
+* 字符串编码器
+    * 基于ZK的字符串编码
+    * 基于MYSQL的字符串编码
+* id生成器
+    * 基于ZK的雪花ID生成
+    * 基于MYSQL的雪花ID生成
 
 ## 五、最佳实践
 
@@ -387,7 +393,7 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
 	* 使用select for update是为了避免在MVCC情况下错误查询出最终事务提交结果的情况
 
 ## 七、外部组件版本兼容性
-* ZK请使用3.4及以上版本
+* 若未使用 extensionsuite-database-starter需要使用ZK时，ZK请使用3.4及以上版本
 * SpringBoot 2.0.x 以及 SpringCloud F版本的整合请参考Demo里的tccandfescar
     * 需要注意的是写文档时最新版的spring boot（2.0.8）引入的最新版mysql-connector-java （5.1.47）存在bug,要降级为5.1.46
     * 另因SpringCloud大版本变更时导致某些包名变动，在F版本时使用ET的Ribbon时，需要在项目单独引入spring-cloud-starter-netflix-ribbon
@@ -397,9 +403,15 @@ Starter里包含了若干默认的组件实现:基于mysql的分布式事务日�
 
 
 ## 八、其他
-欢迎加作者个人微信公众号
+欢迎加作者个人微信及公众号
+
+公众号
 
 ![wechat public account](https://raw.githubusercontent.com/QNJR-GROUP/ImageHub/master/easytrans/wechat_public_account.jpg)
+
+微信（加微信请注明来源 ET）
+
+![wechat](https://github.com/QNJR-GROUP/ImageHub/blob/master/easytrans/wechat.png?raw=true)
 
 若觉得框架不错，希望能STAR,THX
 

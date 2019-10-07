@@ -52,6 +52,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.yiqiniu.easytrans</groupId>
+			<artifactId>
+				easytrans-extensionsuite-database-starter
+			</artifactId>
+		</dependency>
 
 
 		<!-- <dependency> <groupId>com.yiqiniu.easytrans</groupId> <artifactId>easytrans-queue-ons-starter</artifactId> 

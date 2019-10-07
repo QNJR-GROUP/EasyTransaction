@@ -1,6 +1,5 @@
 package com.yiqiniu.easytrans.protocol.autocps;
 
-import static com.alibaba.fescar.core.exception.TransactionExceptionCode.BranchRollbackFailed_Retriable;
 
 import java.sql.Blob;
 import java.sql.Connection;
@@ -18,33 +17,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
-import com.alibaba.fescar.common.exception.ShouldNeverHappenException;
-import com.alibaba.fescar.common.util.StringUtils;
-import com.alibaba.fescar.core.exception.TransactionException;
-import com.alibaba.fescar.core.model.BranchStatus;
-import com.alibaba.fescar.core.model.BranchType;
-import com.alibaba.fescar.core.model.Resource;
-import com.alibaba.fescar.rm.datasource.ConnectionProxy;
-import com.alibaba.fescar.rm.datasource.DataSourceManager;
-import com.alibaba.fescar.rm.datasource.DataSourceProxy;
-import com.alibaba.fescar.rm.datasource.sql.struct.Field;
-import com.alibaba.fescar.rm.datasource.sql.struct.TableMeta;
-import com.alibaba.fescar.rm.datasource.sql.struct.TableMetaCache;
-import com.alibaba.fescar.rm.datasource.undo.AbstractUndoExecutor;
-import com.alibaba.fescar.rm.datasource.undo.BranchUndoLog;
-import com.alibaba.fescar.rm.datasource.undo.SQLUndoLog;
-import com.alibaba.fescar.rm.datasource.undo.UndoExecutorFactory;
-import com.alibaba.fescar.rm.datasource.undo.UndoLogParserFactory;
 import com.yiqiniu.easytrans.core.EasytransConstant;
 import com.yiqiniu.easytrans.filter.MetaDataFilter;
+
+import io.seata.common.exception.ShouldNeverHappenException;
+import io.seata.common.util.BlobUtils;
+import io.seata.common.util.StringUtils;
+import io.seata.core.exception.TransactionException;
+import io.seata.core.exception.TransactionExceptionCode;
+import io.seata.core.model.BranchStatus;
+import io.seata.core.model.BranchType;
+import io.seata.core.model.Resource;
+import io.seata.rm.DefaultResourceManager;
+import io.seata.rm.datasource.ConnectionProxy;
+import io.seata.rm.datasource.DataSourceManager;
+import io.seata.rm.datasource.DataSourceProxy;
+import io.seata.rm.datasource.sql.struct.Field;
+import io.seata.rm.datasource.sql.struct.TableMeta;
+import io.seata.rm.datasource.sql.struct.TableMetaCache;
+import io.seata.rm.datasource.undo.AbstractUndoExecutor;
+import io.seata.rm.datasource.undo.BranchUndoLog;
+import io.seata.rm.datasource.undo.SQLUndoLog;
+import io.seata.rm.datasource.undo.UndoExecutorFactory;
+import io.seata.rm.datasource.undo.UndoLogParserFactory;
 
 public class EtDataSourceManager extends DataSourceManager {
 
     private static Logger LOGGER = LoggerFactory.getLogger(EtDataSourceManager.class);
     
     public static void initEtDataSourceManager() {
-        DataSourceManager.set(new EtDataSourceManager());
-        LOGGER.info("Trigger EtDataSourceManager init!");
+        DefaultResourceManager.get();
+        DefaultResourceManager.mockResourceManager(BranchType.AT, new EtDataSourceManager());
+        LOGGER.info("Trigger EtSeataDataSourceManager init!");
     }
 
     private static final String UNDO_LOG_TABLE_NAME = "undo_log";
@@ -61,7 +65,8 @@ public class EtDataSourceManager extends DataSourceManager {
     
     
     @Override
-    public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid, String lockKey) throws TransactionException {
+    public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid, String applicationData, String lockKey) throws TransactionException {
+//        public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid, String lockKey) throws TransactionException {
 
         Integer callSeq = MetaDataFilter.getMetaData(EasytransConstant.CallHeadKeys.CALL_SEQ);
 
@@ -98,7 +103,7 @@ public class EtDataSourceManager extends DataSourceManager {
     }
 
     @Override
-    public void branchReport(String xid, long branchId, BranchStatus status, String applicationData) throws TransactionException {
+    public void branchReport(BranchType branchType, String xid, long branchId, BranchStatus status, String applicationData) throws TransactionException {
         // do nothing here, because in ET do not have remote centralized TC
     }
 
@@ -123,7 +128,8 @@ public class EtDataSourceManager extends DataSourceManager {
     }
 
     @Override
-    public BranchStatus branchCommit(String xid, long branchId, String resourceId, String applicationData) throws TransactionException {
+    public BranchStatus branchCommit(BranchType branchType, String xid, long branchId, String resourceId,
+            String applicationData) throws TransactionException {
 
         executeInTransaction(resourceId, new ExecuteWithConn<Void>() {
 
@@ -131,7 +137,7 @@ public class EtDataSourceManager extends DataSourceManager {
             public Void execute(Connection conn) throws SQLException {
                 
                 //get undo log
-                List<String> rollbackInfos = getRollbackInfo(xid, branchId, conn, resourceId);
+                List<byte[]> rollbackInfos = getRollbackInfo(xid, branchId, conn, resourceId);
                 
                 // clean the lock
                 cleanLocks(xid, branchId, conn, rollbackInfos, resourceId);
@@ -147,7 +153,8 @@ public class EtDataSourceManager extends DataSourceManager {
     }
 
     @Override
-    public BranchStatus branchRollback(String xid, long branchId, String resourceId, String applicationData) throws TransactionException {
+    public BranchStatus branchRollback(BranchType branchType, String xid, long branchId, String resourceId,
+            String applicationData) throws TransactionException {
 
         executeInTransaction(resourceId, new ExecuteWithConn<Void>() {
 
@@ -155,7 +162,7 @@ public class EtDataSourceManager extends DataSourceManager {
             public Void execute(Connection conn) throws SQLException {
 
                 // rollback info
-                List<String> rollbackInfos = getRollbackInfo(xid, branchId, conn, resourceId);
+                List<byte[]> rollbackInfos = getRollbackInfo(xid, branchId, conn, resourceId);
 
                 // recover the records
                 undoRecords(conn, resourceId, rollbackInfos);
@@ -179,11 +186,11 @@ public class EtDataSourceManager extends DataSourceManager {
         deletePST.executeUpdate();
     }
 
-    private void undoRecords(Connection conn, String resourceId, List<String> rollbackInfos) throws SQLException {
+    private void undoRecords(Connection conn, String resourceId, List<byte[]> rollbackInfos) throws SQLException {
 
         DataSourceProxy dataSourceProxy = get(resourceId);
 
-        for (String rollbackInfo : rollbackInfos) {
+        for (byte[] rollbackInfo : rollbackInfos) {
             BranchUndoLog branchUndoLog = UndoLogParserFactory.getInstance().decode(rollbackInfo);
 
             for (SQLUndoLog sqlUndoLog : branchUndoLog.getSqlUndoLogs()) {
@@ -197,7 +204,7 @@ public class EtDataSourceManager extends DataSourceManager {
 
     }
 
-    private List<String> getRollbackInfo(String xid, long branchId, Connection conn, String resourceId) throws SQLException {
+    private List<byte[]> getRollbackInfo(String xid, long branchId, Connection conn, String resourceId) throws SQLException {
 
         ResultSet rs = null;
         PreparedStatement selectPST = null;
@@ -206,12 +213,12 @@ public class EtDataSourceManager extends DataSourceManager {
         selectPST.setString(2, xid);
         rs = selectPST.executeQuery();
 
-        List<String> result = new ArrayList<>();
+        List<byte[]> result = new ArrayList<>();
 
         try {
             while (rs.next()) {
                 Blob b = rs.getBlob("rollback_info");
-                String rollbackInfo = StringUtils.blob2string(b);
+                byte[] rollbackInfo = BlobUtils.blob2Bytes(b);
                 result.add(rollbackInfo);
             }
         } finally {
@@ -222,13 +229,13 @@ public class EtDataSourceManager extends DataSourceManager {
 
     }
 
-    private void cleanLocks(String xid, long branchId, Connection conn, List<String> rollbackInfos, String resourceId) throws SQLException {
+    private void cleanLocks(String xid, long branchId, Connection conn, List<byte[]> rollbackInfos, String resourceId) throws SQLException {
 
         DataSourceProxy dataSourceProxy = get(resourceId);
         PreparedStatement pdst = conn.prepareStatement(DELETE_LOCK_SQL);
 
         int cleanRecords = 0;
-        for (String rollbackInfo : rollbackInfos) {
+        for (byte[] rollbackInfo : rollbackInfos) {
             BranchUndoLog branchUndoLog = UndoLogParserFactory.getInstance().decode(rollbackInfo);
 
             for (SQLUndoLog sqlUndoLog : branchUndoLog.getSqlUndoLogs()) {
@@ -380,7 +387,7 @@ public class EtDataSourceManager extends DataSourceManager {
                     LOGGER.warn("Failed to close JDBC resource ... ", rollbackEx);
                 }
             }
-            throw new TransactionException(BranchRollbackFailed_Retriable, e);
+            throw new TransactionException(TransactionExceptionCode.BranchRollbackFailed_Retriable, e);
 
         } finally {
             try {
