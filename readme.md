@@ -95,7 +95,7 @@
 	  <dependency>
         <groupId>com.yiqiniu.easytrans</groupId>
         <artifactId>easytrans-starter</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.2</version>
       </dependency>
 
 Starter里包含了若干默认的组件实现:基于mysql的分布式事务日志存储，基于ribbon-rest的RPC实现，基于KAFKA的消息队列，若不需要或者要替换，可以EXCLUDE掉

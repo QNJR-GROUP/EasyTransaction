@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,6 +27,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.yiqiniu.easytrans.core.ConsistentGuardian;
 import com.yiqiniu.easytrans.core.EasytransConstant;
+import com.yiqiniu.easytrans.extensionsuite.impl.database.GetExtentionSuiteDatabase;
 import com.yiqiniu.easytrans.log.TransactionLogReader;
 import com.yiqiniu.easytrans.log.impl.database.DataBaseTransactionLogConfiguration.DataBaseForLog;
 import com.yiqiniu.easytrans.log.vo.LogCollection;
@@ -80,6 +82,8 @@ public class FullTest {
 	private WalletService walletService;
 	@Autowired(required=false)
 	private DataBaseForLog dbForLog;
+	@Autowired(required=false)
+	private GetExtentionSuiteDatabase suiteDatabase;
 	
 	@Resource
 	private CouponService couponService;
@@ -561,8 +565,16 @@ public class FullTest {
                 "TRUNCATE `undo_log`"
 				});
 
-		if(dbForLog != null){
-			JdbcTemplate transLogJdbcTemplate = new JdbcTemplate(dbForLog.getDataSource());
+		if(dbForLog != null || suiteDatabase != null){
+		    
+		    DataSource dataSource = null;
+		    if(dbForLog != null) {
+		        dataSource = dbForLog.getDataSource();
+		    } else {
+		        dataSource = suiteDatabase.getDataSource();
+		    }
+		    
+			JdbcTemplate transLogJdbcTemplate = new JdbcTemplate(dataSource);
 			transLogJdbcTemplate
 			.batchUpdate(new String[] { "TRUNCATE `trans_log_unfinished`", "TRUNCATE `trans_log_detail`", });
 		}
