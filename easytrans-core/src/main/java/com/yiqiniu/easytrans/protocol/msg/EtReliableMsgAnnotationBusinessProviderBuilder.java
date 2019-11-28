@@ -39,8 +39,12 @@ public class EtReliableMsgAnnotationBusinessProviderBuilder extends AnnotationBu
                 case RequestClassAware.GET_REQUEST_CLASS:
                     return finalRequestClass;
                 case MessageBusinessProvider.CONSUME:
-                    targetMethod.invoke(springProxiedBean, args);
-                    return EasyTransConsumeAction.CommitMessage;
+                    Object result = targetMethod.invoke(springProxiedBean, args);
+                    if(result instanceof EasyTransConsumeAction) {
+                        return result;
+                    } else {
+                        return EasyTransConsumeAction.CommitMessage;
+                    }
                 default:
                     throw new RuntimeException("not recognized method!" + method);
                 }
