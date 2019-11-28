@@ -48,6 +48,7 @@ public class EasyTransMsgInitializer implements EasyTransMsgListener {
 					|| result.getException() != null
 					|| result.getValue().equals(EasyTransConsumeAction.ReconsumeLater)){
 				result.setException(new NeedToReconsumeLaterException());//help to roll back in idempotent filter
+				result.setValue(EasyTransConsumeAction.ReconsumeLater);
 			}
 			return result;
 		}
