@@ -21,7 +21,7 @@ public class ZkBasedSnowFlakeIdGenerator implements TrxIdGenerator {
 			String path = "/EasyTransIdGen/" + applicationName + "/P";
 			String nodeName = client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(path);
 			String sequenceStr = nodeName.replaceAll(path, "");
-			hostSeq = Long.parseLong(sequenceStr) % (2^SnowFlake.MACHINE_BIT);
+			this.hostSeq = Long.parseLong(sequenceStr) % (long)Math.pow(2,SnowFlake.MACHINE_BIT);
 			client.close();//do not need to keep connection, hostSeq will not change
 		} catch (Exception e) {
 			throw new RuntimeException("create Id generator failed",e);

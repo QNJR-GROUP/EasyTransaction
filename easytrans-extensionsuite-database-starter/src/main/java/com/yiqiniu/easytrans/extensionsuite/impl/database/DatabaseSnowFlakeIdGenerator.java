@@ -12,7 +12,7 @@ public class DatabaseSnowFlakeIdGenerator implements TrxIdGenerator {
 
 	
 	public DatabaseSnowFlakeIdGenerator(long hostSeq) {
-	    hostSeq = hostSeq % (2^SnowFlake.MACHINE_BIT);
+	    this.hostSeq = hostSeq % (long)(Math.pow(2, SnowFlake.MACHINE_BIT));
 	}
 
 
