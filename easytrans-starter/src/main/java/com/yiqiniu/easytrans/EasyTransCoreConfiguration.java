@@ -385,7 +385,7 @@ public class EasyTransCoreConfiguration {
 	}
 	
 	@Bean
-	public CallWrapUtil callWrappUtil(EasyTransFacade facade) {
+	public CallWrapUtil callWrapUtil(EasyTransFacade facade) {
 		return new CallWrapUtil(facade);
 	}
 	
