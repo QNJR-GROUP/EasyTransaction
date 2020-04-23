@@ -86,6 +86,7 @@ public class DatabaseStringCodecImpl implements ListableStringCodec {
             GET_MAX_ID_AND_LOCK = addTablePrefix(tablePrefix, GET_MAX_ID_AND_LOCK);
             GET_KEY_AND_LOCK = addTablePrefix(tablePrefix, GET_KEY_AND_LOCK);
             GET_ALL = addTablePrefix(tablePrefix, GET_ALL);
+            GET_BY_ID = addTablePrefix(tablePrefix, GET_BY_ID);
         }
         
         List<DataObject> result = jdbcTemplate.query(GET_ALL, dataObjectMapper);
