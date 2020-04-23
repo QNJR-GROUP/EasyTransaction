@@ -14,9 +14,9 @@ create table in mysql, it's not necessary to use the same database of business(b
 
     CREATE TABLE `str_codec` (
       `key_int` int(11) NOT NULL,
-      `str_type` varchar(45) NOT NULL,
+      `type_str` varchar(45) NOT NULL,
       `value_str` varchar(2000) NOT NULL,
       `create_time` datetime NOT NULL,
       PRIMARY KEY (`key_int`),
-      UNIQUE KEY `str_type_UNIQUE` (`str_type`,`value_str`)
+      UNIQUE KEY `str_type_UNIQUE` (`type_str`,`value_str`)
     ) ENGINE=InnoDB;
