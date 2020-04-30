@@ -44,7 +44,7 @@ public class DataBaseTransactionLogWritterImpl implements TransactionLogWritter 
 		this.idCodec = idCodec;
 		this.dataSource = dataSource;
 		transactionManager = new DataSourceTransactionManager(dataSource);
-		transactionTemplate = new TransactionTemplate(transactionManager, new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
+		transactionTemplate = new TransactionTemplate(transactionManager, new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
 		
 		if(!StringUtils.isEmpty(tablePrefix)) {
 			tablePrefix = tablePrefix.trim();
