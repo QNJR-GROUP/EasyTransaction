@@ -16,10 +16,7 @@ import com.yiqiniu.easytrans.core.ExecuteCacheManager;
 import com.yiqiniu.easytrans.datasource.TransStatusLogger;
 import com.yiqiniu.easytrans.log.LogCache;
 import com.yiqiniu.easytrans.log.TransactionLogWritter;
-import com.yiqiniu.easytrans.log.vo.AfterCommit;
-import com.yiqiniu.easytrans.log.vo.Content;
-import com.yiqiniu.easytrans.log.vo.DemiLeftContent;
-import com.yiqiniu.easytrans.log.vo.LogCollection;
+import com.yiqiniu.easytrans.log.vo.*;
 import com.yiqiniu.easytrans.protocol.TransactionId;
 
 
@@ -184,7 +181,7 @@ public class LogProcessContext{
 	private boolean isRollBackLog(Class<? extends Content> contentClass){
 		Boolean isRollbackedLogContent = mapRollBackLogContent.get(contentClass);
 		if(isRollbackedLogContent == null){
-			isRollbackedLogContent = hasAnnotion(contentClass,AfterCommit.class);
+			isRollbackedLogContent = hasAnnotion(contentClass,AfterRollBack.class);
 			mapRollBackLogContent.put(contentClass, isRollbackedLogContent);
 		}
 		return isRollbackedLogContent;
