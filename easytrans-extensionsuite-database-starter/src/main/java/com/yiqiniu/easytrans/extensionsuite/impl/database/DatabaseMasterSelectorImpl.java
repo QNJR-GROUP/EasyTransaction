@@ -33,9 +33,9 @@ public class DatabaseMasterSelectorImpl implements EasyTransMasterSelector {
 
     private String GET_MAX_INSTANCE_ID = "select ifnull(max(instance_id),0)  max_instance_id  from election where app_id  = ? for update";
     private String INSERT_INSTANCE_CONTROL_LINE = "insert into election values(?, ?,now(),?)";
-    private String UPDATE_HEARTBEAT_TIME = "update election set heart_beat_time = now() where app_id = ? and instance_id = ? and TIME_TO_SEC(TIMEDIFF(NOW(), heart_beat_time)) <= ?";
-    private String GET_MASTER_INSTANCE = "select min(instance_id) from election where app_id = ? and TIME_TO_SEC(TIMEDIFF(NOW(), heart_beat_time)) <= ?";
-    private String CLEAN_EXPIRED_INSTANCE_RECORD = "delete from election where app_id = ? and TIME_TO_SEC(TIMEDIFF(NOW(), heart_beat_time)) > ?";
+    private String UPDATE_HEARTBEAT_TIME = "update election set heart_beat_time = now() where app_id = ? and instance_id = ? and TIMESTAMPDIFF(SECOND, heart_beat_time, NOW()) <= ?";
+    private String GET_MASTER_INSTANCE = "select min(instance_id) from election where app_id = ? and TIMESTAMPDIFF(SECOND, heart_beat_time, NOW()) <= ?";
+    private String CLEAN_EXPIRED_INSTANCE_RECORD = "delete from election where app_id = ? and TIMESTAMPDIFF(SECOND, heart_beat_time, NOW()) > ?";
 	
 	
     private volatile Integer instanceId;
