@@ -1,9 +1,6 @@
 package com.yiqiniu.easytrans.queue.impl.ons;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import com.aliyun.openservices.ons.api.Action;
 import com.aliyun.openservices.ons.api.ConsumeContext;
@@ -36,7 +33,11 @@ public class OnsEasyTransMsgConsumerImpl implements EasyTransMsgConsumer {
 	
 	private String getAliTagsString(Collection<String> topicSubs) {
 		StringBuilder sb = new StringBuilder();
-		for(String s:topicSubs){
+
+		List<String> topicSubList = new ArrayList<>(topicSubs);
+		Collections.sort(topicSubList);
+
+		for(String s : topicSubList) {
 			sb.append(s);
 			sb.append("||");
 		}
