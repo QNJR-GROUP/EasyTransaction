@@ -32,6 +32,7 @@ public class OnsEasyTransMsgConsumerImpl implements EasyTransMsgConsumer {
 	
 	
 	private String getAliTagsString(Collection<String> topicSubs) {
+		// 排序，防止 ons 出现订阅关系不一致
 		List<String> topicSubList = new ArrayList<>(topicSubs);
 		Collections.sort(topicSubList);
 
