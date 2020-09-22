@@ -32,11 +32,10 @@ public class OnsEasyTransMsgConsumerImpl implements EasyTransMsgConsumer {
 	
 	
 	private String getAliTagsString(Collection<String> topicSubs) {
-		StringBuilder sb = new StringBuilder();
-
 		List<String> topicSubList = new ArrayList<>(topicSubs);
 		Collections.sort(topicSubList);
 
+		StringBuilder sb = new StringBuilder();
 		for(String s : topicSubList) {
 			sb.append(s);
 			sb.append("||");
